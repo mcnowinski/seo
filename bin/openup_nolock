@@ -1,0 +1,86 @@
+#!/bin/csh
+#prepares the observatory for observations
+#and a check of the telescope and systems
+#	opening the observatory consists of making sure that t
+#		a. the slit is open
+#		b. the tracking is at the sidereal rate
+#	if any of these functions is not in the correct state it is
+#		corrected, and a general test of other equipment is made
+
+echo $argv | grep -w help > /dev/null
+if ($status == 0) then
+	echo "usage: openup [user=] [logid=] [nocloud]"
+	exit 0
+endif
+ 
+set logid=`echo $argv | getkey logid default=0`
+
+set user=`echo $argv | getkey user default=$LOGNAME`
+#set msg=`tx lock user=$user | grep ERROR` 
+#if ($status == 0) then
+#	echo $msg
+#	exit 1
+#endif 
+
+set CLOUDLIMIT=.3
+#check if cloudy
+set cloud=`tx taux | getkey cloud`
+if ($status) then
+	set msg "cloud error"
+	goto die
+endif 
+echo `ut iso` opening observatory user=$user cloud=$cloud 
+echo $argv | grep -w nocloud > /dev/null
+if ($status) then
+	if (`echo "$cloud > $CLOUDLIMIT" | bc`) then
+		# now check if the slit is already open
+		#if it is close it
+		tx slit | getkey slit | grep -w open > /dev/null
+		if ($status == 0 ) then
+			closedown
+		endif
+		set msg="openup: too cloudy cloud=$cloud"
+		goto die
+	endif
+endif
+
+#see if the slit is open
+set slitmsg=`tx slit`
+echo $slitmsg | grep -w open > /dev/null
+if ( $status ) then
+	#check if it can be opened
+	echo $slitmsg | grep -w cantopen
+	if ($status == 0 ) then
+		set reason=`echo $slitmsg | getkey cantopen`
+		set msg="openup: cannot open slit: $reason"
+		tx track off > /dev/null
+		goto die
+	endif
+
+#	tx mirror close > /dev/null		# never open the slit with the mirror open
+	tx slit open
+endif
+
+#open the mirror cover
+tx mirror open
+
+#turn on the CCD cooling power 
+ccd cool nowait
+
+#turn on telescope fans
+tx fan power=1 | grep ERROR 
+
+exit 0
+
+# Updates the log file for various failures
+# also clears the observer lock
+die:
+tx lock clear | grep ERROR
+if ($logid) then
+	set query="UPDATE Log SET Message='$msg' WHERE LogID=$logid"
+	echo $query | query
+	echo $query
+else
+	echo $msg
+endif
+exit 1

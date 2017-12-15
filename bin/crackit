@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+alert "Opening ('cracking') observatory..."
+
+tin
+tx taux
+tx mets
+tx lock clear
+tx lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=slack 
+tin interrupt
+openup nocloud
+keepopen maxtime=36000 slit
+tx track on
+
+alert "Observatory has been opened ('cracked')!"

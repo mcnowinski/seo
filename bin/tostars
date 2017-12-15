@@ -1,0 +1,45 @@
+#!/bin/bash -f
+#use -f to prevent glob expansion
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+source $DIR/stars.conf
+
+#check parameters
+if [ $# -ne 2 ]; then
+    echo "This routine sends fits files (*.fits) to the stars server."
+    echo "Usage: tostars <source, e.g. ./*.fits> <destination path, e.g. /data/images/StoneEdge/0.5meter/2017/2017-06-07/M11>"    
+    exit 1
+fi
+
+#all but last
+#SRC=${@:1:$#-1}
+SRC=$1
+#last item
+#bDEST=${@: -1}
+DEST=$2
+
+#re-enable globbing
+set +f
+
+FILE_COUNT=`ls -1q ${SRC} | wc -l`
+if [ $FILE_COUNT -eq 0 ]; then
+    alert "Error. No matching images found in ${SRC}."
+    exit 1
+fi
+
+debug "Copying ${FILE_COUNT} image(s) to stars.uchicago.edu (${DEST})..."
+
+#copy new image to STARS server, i.e. stars.uchicago.edu
+#ensure ssh keys are already set up!
+#ensure image target folder exists
+#IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p ${DEST}; exit"
+scp -q -i $STARS_PRIVATE_KEY_PATH ${SRC} $STARS_USERNAME@$STARS_SERVER:${DEST}/
+
+if [ $? -eq 0 ]; then
+    debug "Image transfer to stars.uchicago.edu is complete."
+else
+    alert "Error. Image transfer to stars.uchicago.edu failed."
+fi

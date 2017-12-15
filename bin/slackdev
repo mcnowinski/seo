@@ -1,0 +1,18 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/slack.conf
+
+# Usage: slackdev "<message>"
+if [ $# -ne 1 ]; then
+    echo usage: slackdev "<message>"
+    exit 1
+fi
+
+text=$1
+
+escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
+
+json="{\"channel\": \"$slackdev_channel\", \"username\":\"$slackdev_username\", \"icon_emoji\":\"ghost\", \"attachments\":[{\"color\":\"danger\" , \"text\": \"$escapedText\"}]}"
+
+curl -s -d "payload=$json" "$slackdev_webhook_url" > /dev/null 2>&1

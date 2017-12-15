@@ -1,0 +1,3 @@
+#!/bin/bash
+
+stdbuf -oL /home/mcnowinski/anaconda2/bin/python /home/mcnowinski/giterdone/seo/itzamna/itzamna.py xoxp-65734257202-66876617764-95344392531-54d9c0f109f77b34b94f59b7ac73121a 9e2bb67ff9ec183a &> /home/mcnowinski/var/log/itzamna.log

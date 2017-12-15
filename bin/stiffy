@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Usage: slackpost "<message>"
+if [ $# -ne 2 ]; then
+    echo usage: stiffy "<FITS input file> <TIFF output file>"
+    exit 1
+fi
+
+LD_LIBRARY_PATH=/home/mcnowinski/bin /home/mcnowinski/bin/stiff -c /home/mcnowinski/bin/stiff.conf $1 -OUTFILE_NAME $2 > /dev/null 2>&1

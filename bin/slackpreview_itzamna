@@ -1,0 +1,15 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/slack.conf
+
+# Usage: slackpreview "<filepath> <title (optional)>"
+if [ $# -lt 1 ]; then
+    echo usage: slackpreview_itzamna "<filepath> <title>"
+    exit 1
+fi
+
+file=$1
+title=$2
+
+curl -F file=@$file -F channels=$slackpreview_itzamna_channel -F title="$title" -F token=$slackpreview_itzamna_token $slackpreview_itzamna_url > /dev/null 2>&1

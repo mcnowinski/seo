@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#solve field path and parameters
+SOLVE_FIELD="solve-field --no-verify --overwrite --cpulimit 10 --no-plots"
+
+FILENAME=$1
+FILENAME_NOEXT=${FILENAME%.*}
+
+$SOLVE_FIELD $FILENAME
+
+#clean up temp files
+echo "Removing astrometry temp files..."
+if [ -f "$FILENAME_NOEXT-indx.xyls" ]; then
+    rm "$FILENAME_NOEXT-indx.xyls"
+fi
+if [ -f "$FILENAME_NOEXT.axy" ]; then
+    rm "$FILENAME_NOEXT.axy"
+fi
+if [ -f "$FILENAME_NOEXT.match" ]; then
+    rm "$FILENAME_NOEXT.match"
+fi
+if [ -f "$FILENAME_NOEXT.rdls" ]; then
+    rm "$FILENAME_NOEXT.rdls"
+fi
+if [ -f "$FILENAME_NOEXT.solved" ]; then
+    rm "$FILENAME_NOEXT.solved"
+fi
+if [ -f "$FILENAME_NOEXT.wcs" ]; then
+    rm "$FILENAME_NOEXT.wcs"
+fi
+if [ -f "$FILENAME_NOEXT.corr" ]; then
+    rm "$FILENAME_NOEXT.corr"
+fi
+if [ -f "$FILENAME_NOEXT.png" ]; then
+    rm "$FILENAME_NOEXT.png"
+fi
+if [ -f "$FILENAME_NOEXT.new" ]; then
+    rm "$FILENAME_NOEXT.new"
+fi

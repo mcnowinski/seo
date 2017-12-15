@@ -1,0 +1,185 @@
+#send text notification to Slack #seo9000 channel
+#parameter is $1=message, e.g. alert "This is a test!"
+function alert {
+    local MESSAGE="`date -u +"%m-%d-%Y %H:%M:%S"` $1"
+    slackalert "$MESSAGE" &
+    #echo $MESSAGE
+    debug "$1" &
+}
+
+#upload image to Slack #seo9001 channel
+#parameter is $1=filepath, e.g. preview <filepath> <message (optional)>
+function preview {
+    stiffy "$1" "$1.tif"
+    convert -resize 50% -normalize -quality 75 "$1.tif" "$1.tif.jpg"
+    (slackpreview "$1.tif.jpg" "$1"; rm "$1.tif"; rm "$1.tif.jpg") &
+}
+
+#send text notification to Slack #seo9001 channel
+#parameter is $1=message, e.g. debug "This is a test!"
+function debug {
+    local MESSAGE="`date -u +"%m-%d-%Y %H:%M:%S"` $1"
+    slackdebug "$MESSAGE" &
+    echo $MESSAGE
+}
+
+function checkCCDTemp {
+  local MAX_CCD_TEMP=-20
+  local CCD_TEMP=`tx ccd_status | grep -o 'tchip=[0-9\.\-]\+' | cut -c7-`
+  if [ ${CCD_TEMP%.*} -gt ${MAX_CCD_TEMP%.*} ]
+  then
+ 	alert "CCD not cooled (T=$CCD_TEMP). Cooling..."
+	ccd cool
+    sleep 3
+    local CCD_TEMP2=`tx ccd_status | grep -o 'tchip=[0-9\.\-]\+' | cut -c7-`
+    #echo $CCD_TEMP2
+    if [ ${CCD_TEMP2%.*} -gt ${MAX_CCD_TEMP%.*} ]
+    then
+      alert "Error. CCD cooling failed. Image sequence aborted."
+      exit 1
+    else
+      debug "CCD temperature is $CCD_TEMP2 degrees."
+    fi
+#  else
+#    debug "CCD temperature is $CCD_TEMP degrees."
+  fi
+}
+
+#take image
+SUCCESS=0
+#parameters are $1=time, $2=binning, $3=outfile, $4=flags, e.g., "notel" or "dark", $5=preview (optional, 0=OFF, 1=ON; default is 1)
+function getImage {
+    SUCCESS=1 #assume success!
+    PREVIEW=${5:-1} #preview is ON by default
+    #echo image time=$1 bin=$2 outfile=$3 $4
+    image time=$1 bin=$2 outfile=$3 $4
+    if [ $? -eq 0 ]
+    then
+        debug "Got image ($3)."
+        if [ $PREVIEW -eq 1 ]
+        then
+            preview "$3" "$3"
+        fi
+    else
+        alert "Error. Image command failed ($3)."
+        SUCCESS=0
+    fi
+}
+
+NUM_ALERTS=50
+SNOOZE_TIME_S=10
+#is slit open? if not, exit
+function checkSlit {
+  #if [ -n "`tx slit | grep "slit=open"`" ]
+  tx slit | grep "slit=open"
+  if [ $? == 0 ]
+  then
+  	echo "Slit is open." > /dev/null
+  else
+	alert "Slit closed unexpectedly."
+	COUNTER=0
+	while [  $COUNTER -lt $NUM_ALERTS ]; do
+		let COUNTER=COUNTER+1 
+		alert "Slit closed unexpectedly ($COUNTER of $NUM_ALERTS alerts)."
+		sleep $SNOOZE_TIME_S
+	done
+	alert "Slit closed unexpectedly. Closing down observatory..."
+	squeezeit
+	alert "Slit closed unexpectedly. Observatory closed."
+    exit 1
+  fi
+}
+
+MINIMUM_ALT=25
+#check to be sure telescope altitude is within limits
+function checkAlt {
+  local ALT=`tx where | grep -o 'alt=[0-9\.]\+' | cut -c5-`
+  if [ ${ALT%.*} -lt ${MINIMUM_ALT%.*} ]
+  then
+ 	alert "Telescope altitude ($ALT deg) too low (< $MINIMUM_ALT deg). Closing observatory..."
+    squeezeit
+    exit 1
+  fi
+}
+
+MAXIMUM_ALT_SUN=-5
+#check to be sun altitude is within limits
+function checkAltSun {
+  local ALT=`sun | grep -o 'alt=[0-9\.]\+' | cut -c5-`
+  if [ ${ALT%.*} -gt ${MAXIMUM_ALT_SUN%.*} ]
+  then
+ 	alert "Sun altitude ($ALT deg) too high (> $MAXIMUM_ALT_SUN deg). Closing observatory..."
+    squeezeit
+    exit 1
+  fi
+}
+
+MIN_ALT=29
+MIN_HA=-80
+MAX_HA=80
+#check to be sure the the target is within limits
+#$1 is RA, $2 is DEC
+function checkAltTarget {
+  local ALT=`echo $1 $2 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+  local HA=`echo $1 $2 2000 | altaz | grep -o 'ha=[0-9+\.\-]\+' | cut -c4-`
+  if [ ${ALT%.*} -lt ${MIN_ALT%.*} ] || [ ${HA%.*} -lt ${MIN_HA%.*} ] || [ ${HA%.*} -gt ${MAX_HA%.*} ]
+  then
+    debug "Target is not observable (ALT=${ALT} deg, HA=${HA} deg). Aborting script..."
+    SUCCESS=0
+  fi 
+}
+
+MAXIMUM_CLOUDS_IMAGE=50
+MAXIMUM_CLOUDS_SLIT=80
+#check to be sure cloud cover is not too thick
+function checkClouds {
+  local CLOUDS=`tx taux | grep -o 'cloud=[0-9\.\+\-]\+' | cut -c7-`
+  local CLOUD_PCT=$(expr $CLOUDS*100 | bc)
+  if [ ${CLOUD_PCT%.*} -gt ${MAXIMUM_CLOUDS_SLIT%.*} ]
+  then
+ 	alert "Too many clouds (${CLOUD_PCT%.*}%). Closing observatory..."
+	#squeezeit
+	#exit 1
+    #tx slit close
+    squeezeit
+    SUCCESS=0
+    return 1
+  fi
+  if [ ${CLOUD_PCT%.*} -gt ${MAXIMUM_CLOUDS_IMAGE%.*} ]
+  then
+ 	alert "Too many clouds (${CLOUD_PCT%.*}%). Pausing image sequence..."
+	#closedown
+	#exit 1
+	while [ ${CLOUD_PCT%.*} -gt ${MAXIMUM_CLOUDS_IMAGE%.*} ]
+	do
+		if [ ${CLOUD_PCT%.*} -gt ${MAXIMUM_CLOUDS_SLIT%.*} ]
+		then
+			alert "Too many clouds (${CLOUD_PCT%.*}%). Closing observatory..."
+            #squeezeit
+            #exit 1
+            #tx slit close
+            squeezeit
+            SUCCESS=0
+            return 1
+		fi	
+		debug "Cloud cover is ${CLOUD_PCT%.*}%."
+		sleep 60
+		#checkSlit
+        checkAlt
+        checkAltSun
+		CLOUDS=`tx taux | grep -o 'cloud=[0-9\.\+\-]\+' | cut -c7-`
+		CLOUD_PCT=$(expr $CLOUDS*100 | bc)		
+	done
+    tx slit open
+  fi
+}
+
+MAX_SUN_ALT=-10
+function checkSun {
+  local SUN_ALT=`sun | grep -o 'alt=[0-9\.\-]\+' | cut -c5-`
+  if [ ${SUN_ALT%.*} -gt ${MAX_SUN_ALT%.*} ]
+  then
+    debug "Sun is UP. Altitude is $SUN_ALT deg."
+    SUCCESS=0
+  fi
+}

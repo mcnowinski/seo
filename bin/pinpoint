@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#get path to this script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+#command for plate solving, auto-offset script?
+PINPOINT="/home/mcnowinski/anaconda2/bin/python $DIR/pinpoint.py"
+
+function point {
+    #check parameters
+    if [ $# -lt 2 ]
+    then
+        echo "This routine precisely (pin) points the telescope."
+        echo "Usage: pinpoint <ra> <dec>"
+        exit 1
+    fi
+    #echo $1 $2
+    tx track on > /dev/null 2>&1
+    debug "Pointing telescope to target (RA/DEC=$1/$2)..."
+    tx point ra=$1 dec=$2 > /dev/null 2>&1
+    debug "Refining telescope position..."
+    $PINPOINT $1 $2
+	if [ $? -eq 1 ]
+	then
+		debug "Error. Pinpoint command failed. Using mechanical tracking only."
+	else
+		debug "Telescope PIN-pointed to RA/DEC=$1/$2!"	
+	fi
+}
+
+#checkSlit
+#checkClouds
+
+if [ -n $1 ] && [ -n $2 ]; then
+    point $1 $2
+else
+    point `cat`
+fi

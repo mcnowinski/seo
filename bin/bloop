@@ -1,0 +1,59 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+source $DIR/stars.conf
+
+#check parameters
+if [ $# -ne 2 ]; then
+	echo "This routine obtains bias calibration frames"
+    echo "Usage: bloop <number of frames> <binning>"
+    exit 1
+fi
+
+NUM_BIAS=$1
+BINNING=$2
+EXPOSURE_SEC=0.1
+COUNT=0
+
+NAME=bias
+USER=mcnowinski
+FILTER=clear
+
+#assign stars server destination pathname
+IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+
+#generate 8-character unique hash for this run
+UNIQUE_HASH=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 8`
+
+#TOSTARS_FILE_LIST=input_`date -u +"%Y%b%d_%Hh%Mm%Ss"`
+##create list of files for input to to stars
+#touch $TOSTARS_FILE_LIST
+
+#not really necessary, but why not
+pfilter $FILTER
+
+#get bias frames
+alert "Taking $NUM_BIAS bias frame(s) (bin=$BINNING, time=$EXPOSURE_SEC)..."
+
+#check ccd status before starting
+checkCCDTemp
+for (( i=1; i<=$NUM_BIAS; i++ )); do
+  IMAGE_FILENAME=${NAME}_${FILTER}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_${UNIQUE_HASH}_seo.fits
+  getImage $EXPOSURE_SEC $BINNING $IMAGE_FILENAME dark 0
+  #getImage $EXPOSURE_SEC $BINNING `date -u +"%Y%m%d.%H%M%S%3N"`.`printf "%03d" $COUNT`.bias.$BINNING.$EXPOSURE_SEC.fits dark 0
+  if [ $SUCCESS -eq 1 ]
+  then
+    COUNT=$((COUNT+1))
+    #echo $IMAGE_FILENAME >> $TOSTARS_FILE_LIST
+  fi
+done
+
+alert "Bias frame sequence complete. Obtained $COUNT bias frame(s)."
+
+#copy new image to STARS server, i.e. stars.uchicago.edu
+#ensure ssh keys are already set up!
+#ensure image target folder exists
+#IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+tostars ./\*${UNIQUE_HASH}_seo.fits $IMAGE_PATHNAME &

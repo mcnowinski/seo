@@ -1,0 +1,33 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+RA1=01:31:12.37
+DEC1=16:23:26.6
+NUM1=1000
+EXP1=120
+BIN1=2
+FILTERS1=clear
+#MIN_ALT1=29
+MIN_ALT1=30
+NAME1=1637Swings
+#NAME1=1269Rollandia
+WAIT4TIME=7:15
+DELAY_S=0
+
+#wait for certain time
+#wait4time $WAIT4TIME
+wait4target $RA1 $DEC1 $MIN_ALT1
+
+#open observatory
+if [ $? -eq 0 ]; then
+    crackit
+else
+    alert "Error. wait4time script failed."
+fi
+
+iloop $NUM1 $EXP1 $BIN1 $FILTERS1 $RA1 $DEC1 $NAME1
+
+squeezeit

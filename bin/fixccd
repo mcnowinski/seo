@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#su sonoma -c 'killall tserver; startnet noccd; tx lamps seven=off; sleep 2; tx lamps seven=on; sleep 20; startnet; exit;'
+su sonoma -c 'tx lamps seven=off; sleep 10; tx lamps seven=on; sleep 20; startnet; exit;'
+tx ccd_status

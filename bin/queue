@@ -1,0 +1,79 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+MAX_SUN_ALT=-10
+function sunIsNotUp {
+  local SUN_ALT=`sun | grep -o 'alt=[0-9\.\-]\+' | cut -c5-`
+  if [ ${SUN_ALT%.*} -gt ${MAX_SUN_ALT%.*} ]
+  then
+    #debug "Sun is UP. Altitude is $SUN_ALT deg."
+    return 1
+  else
+    #debug "Sun altitude is $SUN_ALT deg."
+    return 0
+  fi
+}
+
+target=("M101" "M104" "M109" "M11" "M110" "M16" "M17" "M20" "M27" "M29" "M30" "M31" "M33" "M51" "M55" "M57" "M60" "M61" "M64" "M72" "M74" "M76" "M8" "M83" "M86" "M88" "M94" "NGC1097" "NGC3372" "NGC6302" "NGC7293" "PGC10488" "PGC12286" "PGC13434" "PGC13586" "PGC14897" "PGC3238" "PGC48082" "PGC5818" "PGC5974" "PGC62836" "PGC63616" "PGC65001" "PGC69327" "PGC73049" "PGC11819")
+#filters=()
+done=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+NUM=1
+EXP=30
+BIN=1
+FILTERS=clear,g-band,r-band,i-band
+MIN_ALT=30
+MIN_HA=-85
+MAX_HA=85
+
+COUNT=1
+DONE=0
+
+#crackit
+
+#repeat until sun is up or until all targets have ben observed
+while [ sunIsNotUp ] && [ $DONE -lt ${#target[*]} ]
+do
+    #loop through targets
+    debug "Looping through targets in list (Run ${COUNT})..."
+    for ((i=0; i<${#target[*]}; i++));
+    do
+        #echo ${target[i]}
+        #don't re-observe targets in the list
+        if [ ${done[$i]} == 0 ]; then
+            #get ra and dec from target name
+            RADEC=`catalog ${target[i]} | grep -o '^[0-9\.\+\-\:]\+\s[0-9\.\+\-\:]\+'`
+            #echo $ra_dec
+            if [ $? == 0 ]; then
+                ALT=`echo $RADEC 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+                HA=`echo $RADEC 2000 | altaz | grep -o 'ha=[0-9+\.\-]\+' | cut -c4-`            
+                if [ ${ALT%.*} -lt ${MIN_ALT%.*} ] || [ ${HA%.*} -lt ${MIN_HA%.*} ] || [ ${HA%.*} -gt ${MAX_HA%.*} ]
+                then
+                    debug "Waiting for target (${target[i]}) to be observable (ALT=${ALT} deg, HA=${HA} deg)..."           
+                else
+                    debug "Taking an image of ${target[i]} (ALT=${ALT} deg, HA=${HA} deg)..."
+                    iloop $NUM $EXP $BIN $FILTERS $RADEC ${target[i]}
+                    #echo "iloop $NUM $EXP $BIN $FILTERS $RADEC ${target[i]}"  
+                    #if there is a fatal error, shut this guy down
+                    RESULT=$?
+                    if [ $RESULT -eq 1 ]; then
+                        squeezeit
+                        #echo "squeezeit"
+                        exit 1
+                    fi
+                    #done! mark it off
+                    if [ $RESULT -eq 0 ]; then
+                        done[$i]=1
+                        DONE=$((DONE+1))
+                    fi
+                fi
+            fi
+        fi
+    done
+    sleep 5
+    COUNT=$((COUNT+1))    
+done
+
+#squeezeit

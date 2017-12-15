@@ -1,0 +1,124 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+source $DIR/stars.conf
+
+#command for plate solving, auto-offset script?
+PINPOINT="/home/mcnowinski/anaconda2/bin/python $DIR/pinpoint.py"
+
+if [ $# -ne 7 ]; then
+	echo "This routine takes a sequence of images."
+    echo "Usage: iloop <number of image sets> <exposure time (seconds)> <binning, e.g., 2> <filters, e.g. clear,g-band,i-band> <ra (HH:MM:SS)> <dec (DD:MM:SS)> <target name>"
+    exit 1
+fi
+
+#input params
+NUM_IMAGES=$1
+EXPOSURE_SEC=$2
+BINNING=$3
+FILTER_NAMES=$4
+RA=$5
+DEC=$6
+NAME=$7
+COUNT=0
+DO_PINPOINT=1
+
+USER=mcnowinski
+
+#get array of filters
+FILTERS=(${FILTER_NAMES//,/ })
+
+#copy new image to STARS server, i.e. stars.uchicago.edu
+#ensure ssh keys are already set up!
+#ensure image target folder exists
+IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+
+#generate 8-character unique hash for this run
+UNIQUE_HASH=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 8`
+
+#target altitude pre-check
+MINIMUM_ALT_TARGET_LOCAL=29
+MIN_HA=-85
+MAX_HA=85
+#check to be sure the the target is within limits
+ALT=`echo $RA $DEC 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+HA=`echo $RA $DEC 2000 | altaz | grep -o 'ha=[0-9+\.\-]\+' | cut -c4-`
+if [ ${ALT%.*} -lt ${MIN_ALT%.*} ] || [ ${HA%.*} -lt ${MIN_HA%.*} ] || [ ${HA%.*} -gt ${MAX_HA%.*} ]
+then
+    debug "Target is not observable (ALT=${ALT} deg, HA=${HA} deg). Aborting script..."
+    exit 2
+fi
+
+#get the target images
+debug "Taking $NUM_IMAGES image set(s) (bin=$BINNING, time=$EXPOSURE_SEC, filter(s)=$FILTER_NAMES)..."
+
+checkCCDTemp
+
+tx track on
+debug "Pointing telescope to target (RA/DEC=$RA/$DEC)..."
+tx point ra=$RA dec=$DEC
+
+for (( k=1; k<=$NUM_IMAGES; k++ )); do
+    #repeat for each filter
+    for filter in "${FILTERS[@]}"
+    do
+      SUCCESS=1
+      #checkCCDTemp
+      checkSun
+      checkSlit
+      checkAlt
+      checkClouds
+      checkAltTarget $RA $DEC
+      #if target alt is too low, squeezeit and save images 
+      #figure out to wrap this into all of the above routines!
+      if [ $SUCCESS -eq 0 ]
+      then
+        debug "Image sequence complete. Obtained $COUNT image(s)."
+        #copy new image to STARS server, i.e. stars.uchicago.edu
+        #ensure ssh keys are already set up!
+        #ensure image target folder exists
+        tostars ./\*${UNIQUE_HASH}_seo.fits $IMAGE_PATHNAME &        
+        exit 1
+      fi      
+      #ensure tracking is on
+      debug "Refining telescope position..."
+      if [ $DO_PINPOINT -eq 1 ]
+      then
+          $PINPOINT $RA $DEC
+          if [ $? -eq 1 ]
+          then
+            debug "Error. Pinpoint command failed."
+            #DO_PINPOINT=0
+          else
+            debug "Telescope PIN-pointed to RA/DEC=$RA/$DEC!"	
+          fi
+      else
+          debug "Pinpoint command failed."  
+      fi
+      #ensure dome is centered on telescope pointing location
+      tx dome center > /dev/null
+      tx track on > /dev/null
+      #report position
+      tx where
+      #get scope info
+      tx taux
+      pfilter $filter
+      IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_${UNIQUE_HASH}_seo.fits
+      getImage $EXPOSURE_SEC $BINNING $IMAGE_FILENAME
+      if [ $SUCCESS -eq 1 ]
+      then
+        COUNT=$((COUNT+1))
+      fi
+    done
+done
+
+tx track off
+
+debug "Image sequence complete. Obtained $COUNT image(s)."
+
+#copy new image to STARS server, i.e. stars.uchicago.edu
+#ensure ssh keys are already set up!
+#ensure image target folder exists
+tostars ./\*${UNIQUE_HASH}_seo.fits $IMAGE_PATHNAME &

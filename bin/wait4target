@@ -1,0 +1,47 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+if [ $# -ne 3 ]; then
+	echo "This routine loops until a given target is observable above a certain altitude."
+    echo "Usage: wait4target <RA> <DEC> <min. ALT in deg>"
+    exit 1
+fi
+
+RA=$1
+DEC=$2
+MIN_ALT=$3
+MIN_HA=-88
+MAX_HA=88
+
+#MINIMUM_ALT_TARGET=29
+##check to be sure the the target is within limits
+##$1 is RA, $2 is DEC
+#function checkAltTarget {
+#  local ALT=`echo $1 $2 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+#  if [ ${ALT%.*} -lt ${MINIMUM_ALT_TARGET%.*} ]
+#  then
+# 	alert "Target ($1 $2) altitude too low ($ALT < $MINIMUM_ALT_TARGET deg). Closing observatory..."
+#    squeezeit
+#    exit 1
+#  fi
+#}
+
+#wait until ?
+ALT=`echo $1 $2 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+HA=`echo $1 $2 2000 | altaz | grep -o 'ha=[0-9+\.\-]\+' | cut -c4-`
+#echo $HA
+#exit 1
+while [ ${ALT%.*} -lt ${MIN_ALT%.*} ] || [ ${HA%.*} -lt ${MIN_HA%.*} ] || [ ${HA%.*} -gt ${MAX_HA%.*} ]
+do
+    debug "Waiting for target to be observable (ALT=${ALT} deg, HA=${HA} deg)..."
+    sleep 30
+    ALT=`echo $1 $2 2000 | altaz | grep -o 'alt=[0-9+\.\-]\+' | cut -c5-`
+    HA=`echo $1 $2 2000 | altaz | grep -o 'ha=[0-9+\.\-]\+' | cut -c4-`
+done
+
+debug "Done waiting!"
+
+exit 0

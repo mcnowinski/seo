@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+alert "Telescope control system calibration started."
+
+alert "Calibrating HA drive..."
+tx home ha
+
+alert "Calibrating DEC drive.."
+tx home dec
+
+alert "Calibrating DOME drive..."
+tx home domer
+tx home domel
+
+alert "Telescope control system calibration complete."

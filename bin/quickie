@@ -1,0 +1,84 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+#get current hour
+DT=`date -u +"%H"`
+HOUR=`echo ${DT} | bc`
+#if early in the current day (night is still youn), create folder for today
+#if not, create folder for "tomorrow"
+if [ $HOUR -gt 12 ]
+then
+  IMAGEPATH=/home/mcnowinski/images/`date -u -d "+1 days" +"%Y%m%d"`
+else
+  IMAGEPATH=/home/mcnowinski/images/`date -u +"%Y%m%d"`  
+fi
+#echo $IMAGEPATH
+#exit 1
+
+tx lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=domebiasdarks
+
+alert "Telescope diagnostic routine started."
+
+#calibrate telescope control system
+homer
+
+NUMBIAS=5
+NUMDARK=10
+EXPDARK=120
+
+FLATPATH=$IMAGEPATH/flat
+DARKPATH=$IMAGEPATH/dark
+BIASPATH=$IMAGEPATH/bias
+
+#create date-stamped image folder
+TEMPPATH=$IMAGEPATH
+if [ ! -d "$TEMPPATH" ]; then
+  mkdir $TEMPPATH
+  echo "Directory ($TEMPPATH) created."
+else
+  echo "Directory ($TEMPPATH) already exists."
+fi
+
+#create flat cal folder
+TEMPPATH=$FLATPATH
+if [ ! -d "$TEMPPATH" ]; then
+  mkdir $TEMPPATH
+  echo "Directory ($TEMPPATH) created."
+else
+  echo "Directory ($TEMPPATH) already exists."
+fi
+
+#create dark cal folder
+TEMPPATH=$DARKPATH
+if [ ! -d "$TEMPPATH" ]; then
+  mkdir $TEMPPATH
+  echo "Directory ($TEMPPATH) created."
+else
+  echo "Directory ($TEMPPATH) already exists."
+fi
+
+#create bias cal folder
+TEMPPATH=$BIASPATH
+if [ ! -d "$TEMPPATH" ]; then
+  mkdir $TEMPPATH
+  echo "Directory ($TEMPPATH) created."
+else
+  echo "Directory ($TEMPPATH) already exists."
+fi
+
+#create bias frames
+cd $BIASPATH
+bloop $NUMBIAS 1
+#bloop $NUMBIAS 2
+
+##create dark frames
+#cd $DARKPATH
+#dloop $NUMDARK $EXPDARK 1
+#dloop $NUMDARK $EXPDARK 2
+
+tx lock clear
+
+alert "Telescope diagnostic routine complete."

@@ -1,0 +1,53 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+source $DIR/stars.conf
+
+if [ $# -ne 6 ]; then
+	echo "This routine takes a sequence of images."
+    echo "Usage: doimage <name> <user> <number of images> <exposure time (seconds)> <binning, e.g., 2> <filter, e.g. clear>"
+    exit 1
+fi
+
+#input params
+NAME=$1
+USER=$2
+NUM_IMAGES=$3
+EXPOSURE_SEC=$4
+BINNING=$5
+FILTER=$6
+COUNT=0
+
+#get the target images
+alert "Taking $NUM_IMAGES image(s) (bin=$BINNING, time=$EXPOSURE_SEC)..."
+
+#Created Image directories on STARS server :Directory /data/images/StoneEdge/0.5meter/2017/2017-04-14/unknown EXISTS
+#Copied image to STARS server at /data/images/StoneEdge/0.5meter/2017/2017-04-14/unknown/unknown_clear_10sec_bin2_2017apr14_mcnowinski_num1_seo.fits
+
+for (( k=1; k<=$NUM_IMAGES; k++ ))
+do
+  checkCCDTemp
+  checkSlit
+  checkAlt
+  checkClouds
+  tx where
+  #get scope info
+  tx taux
+  pfilter $FILTER
+  #m42_h-alpha_60sec_bin1_2017mar26_emil.pellett_num4_seo
+  IMAGE_FILENAME=${NAME}_${FILTER}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_seo.fits
+  getImage $EXPOSURE_SEC $BINNING $IMAGE_FILENAME
+  if [ $SUCCESS -eq 1 ]
+  then
+	COUNT=$((COUNT+1))
+    #copy new image to STARS server, i.e. stars.uchicago.edu
+    #ensure ssh keys are already set up!
+    #ensure image target folder exists
+    IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+    (ssh -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
+  fi
+done
+
+alert "Image sequence complete. Obtained $COUNT image(s)."

@@ -1,0 +1,217 @@
+#!/bin/csh
+
+# Generates sky flats adjusting the exposure time 
+set observer="mcnowinski"
+
+set STARS_IMAGE_PATH="/data/images/StoneEdge/0.5meter"
+set IMAGE_PATHNAME="$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/flat"
+
+#generate 8-character unique hash for this run
+set UNIQUE_HASH=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 8`
+
+#set TOSTARS_FILE_LIST="input_`date -u +"%Y%b%d_%Hh%Mm%Ss"`"
+##create list of files for input to to stars
+#touch $TOSTARS_FILE_LIST
+
+set logid=0
+#`echo $argv | getkey logid default=0`
+set OPTIMUM=`echo $argv | getkey quiet optimum default=20000`
+set MAXTIME=60
+set MINTIME=2.0
+set SLEEPTIME=10
+set msg="unknown"
+
+#filter names
+set filters = ( u-band g-band r-band i-band z-band clear h-alpha )
+
+#dusk
+set dusk=1
+set ha=-10 
+set fudge=1.13
+set daz=90
+set SORTORDER="DESC"
+
+#set picids = (175 275 255 235 245 225 165 265)
+set picids = (175 275 155 135 145 125 255 235 165 245 225 265)
+set bins = (1 2 1 1 1 1 2 2 1 2 2 2)
+#h-alpha=7, clear=6, z-band=5, i-band=4, r-band=3, g-band=2, u-band=1
+#h-alpha h-alpha z-band r-band i-band g-band clear clear
+set filter_nums = (7 7 5 3 4 2 5 3 6 4 2 6)
+#set counts = (5 5 5 5 5 5 5 5 5)
+set counts = (5 5 5 5 5 5 5 5 10 5 5 10)
+
+set sunalt=-1
+
+tx lock user=$observer email=mcnowinski@gmail.com phone=7032869140 comment=fatflats 
+
+set msg="Taking 'fat' dusk flat frames..."
+set MESSAGE=`date -u +"%m-%d-%Y %H:%M:%S "`
+set MESSAGE="$MESSAGE $msg"
+slackalert "$MESSAGE"
+slackdebug "$MESSAGE"
+
+sunset $sunalt
+
+#prepare the observatory for observations
+openup nocloud logid=$logid
+if ($status)  exit 1
+
+#stop any scheduled jobs
+tin interrupt
+
+tx lamps all=off
+set count=0
+while (1)
+	set tchip=`tx ccd_status | getkey tchip`
+	if (`echo "$tchip < 2" | bc`) then
+		break
+	endif
+	if ($count > 5 ) then
+		set msg="cooler taking too long"
+		tx ccd_setup reg=0 set=0 fan=0
+		goto die
+	endif	 
+	@ count++
+	echo sleeping while CCD cools tchip=$tchip
+	tx slit keepopen | grep ERROR
+	sleep 60
+end
+
+#point the telescope straight up and tracking
+tx track off > /dev/null
+sleep 2
+set lat=`tx tel_status | getkey lat`
+tx point ha=$ha dec=$lat decimal nodome | grep -w ERROR
+tx dome put=$daz | grep -w ERROR
+tx slit keepopen | grep -w ERROR
+if ($status == 0 ) then
+	set msg='skyflat: slit error'
+	goto die
+endif
+
+#generate the sky flats
+set index = 0
+foreach picid ($picids)
+    @ index ++
+	if ($status) then
+		set msg='skyflat: database error'
+		goto die
+	endif
+	set bin=$bins[$index]
+	set num=$filter_nums[$index]
+	set count=$counts[$index]
+	set exptime=1
+	tx filter num=$num | grep -w ERROR
+	if ($status == 0 ) then
+		set msg='skyflat: filter error'
+		goto die
+	endif
+	rm -f skyflat*.fits > /dev/null
+    set num_images=0
+	while ( $count )
+		echo image time=$exptime bin=$bin filter=`pfilter` 
+		image time=$exptime bin=$bin notime
+        #getImage $EXPOSURE_SEC $BINNING image.fits        
+		if ($status) exit
+        #set bias=/home/mcnowinski/bias/bias.$bin.fits
+        #echo $bias
+		##set bias=`findcal image bias` 
+		#sub image $bias 
+		#if ($status) then
+		#	set msg="skyflat: sub error"
+		#	goto die
+		#endif
+		set mean=`mn image | getkey mean`	
+		set factor=`echo "scale=2; $OPTIMUM/$mean" | bc`
+		set newtime=`echo "scale=2; $factor*$exptime*$fudge" | bc`
+		echo mean=$mean factor=$factor newtime=$newtime
+		tx dome center > /dev/null
+		tx slit keepopen | grep ERROR
+		if ($status == 0 ) then
+			set msg="skyflat: slit error"
+			goto die
+		endif 
+		if ( `echo "($newtime) < $MINTIME" | bc` ) then
+			set msg='skyflat: exposure time too short'
+			if ($dusk) then
+				echo sleeping $SLEEPTIME
+				keepopen maxtime=$SLEEPTIME slit
+				if ($status) then
+					set msg="skyflat: slit error"
+					goto die
+				endif 
+				sleep $SLEEPTIME
+				continue
+			else
+				goto die
+			endif
+		endif
+		if ( `echo "($newtime) > $MAXTIME" | bc` ) then
+			set msg='skyflat: exposure time too long'
+			goto die
+		endif
+        set fits=flat_$filters[$num]_bin${bin}_${exptime}sec_${observer}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" ${num_images}`_${UNIQUE_HASH}_seo.fits
+		set exptime=$newtime
+		# jog the telescope around a bit
+		set r=`rand n=2`
+		tx offset ha=`echo $r[1]-.5 | bc` dec=`echo $r[2]-.5 | bc` cos > /dev/null
+		#mv image.fits skyflat$count.fits
+        #cp image.fits flat.$filters[$num].bin$bin.`date -u +"%Y%m%d.%H%M%S%3N"`.fits
+        cp image.fits $fits
+        #echo $fits >> $TOSTARS_FILE_LIST
+        #preview in Slack
+        stiffy image.fits image.tif
+        convert -resize 50% -normalize -quality 75 image.tif image.jpg
+        (slackpreview image.jpg "Got flat image (bin=$bin, filter=$filters[$num])."; rm image.tif; rm image.jpg) &
+		@ count--
+        @ num_images++
+	end
+	#median skyflat*.fits mean outfile=image
+    #rm skyflat*.fits
+	header image "OBSERVER='$observer'"
+	header image "IMAGETYP='FLAT    '"
+	header image "OBJECT='sky'"
+	header image "PICID=$picid"
+	if($logid) header image "LOGID=$logid"
+	#header image "BIAS=$bias"
+	#header image "COUNT=$specs[3]"
+	header image COMMENT='generated by flatmatt'
+	#create unique media flat
+	#cp image.fits flat.master.$filters[$num].bin$bin.`date -u +"%m-%d-%YT%Hh%Mm%Ss"`.fits
+    rm image.fits > /dev/null
+    rm skyflat*.fits > /dev/null
+end
+
+set msg="Flat frame sequence complete."
+set MESSAGE=`date -u +"%m-%d-%Y %H:%M:%S "`
+set MESSAGE="$MESSAGE $msg"
+slackalert "$MESSAGE"
+slackdebug "$MESSAGE"
+
+#copy new image to STARS server, i.e. stars.uchicago.edu
+#ensure ssh keys are already set up!
+#ensure image target folder exists
+#IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/flat
+tostars ./\*${UNIQUE_HASH}_seo.fits $IMAGE_PATHNAME &
+
+tx lock clear
+squeezeit
+
+exit 0
+
+# Updates the log file for various failures
+die:
+tx lock clear
+if ($logid) then
+	set query="UPDATE Log SET Message='$msg' WHERE LogID=$logid"
+	echo $query | query
+	echo $query
+else
+	echo $msg
+	set MESSAGE=`date -u +"%m-%d-%Y %H:%M:%S "`
+	set MESSAGE="$MESSAGE $msg"
+	slackalert "$MESSAGE"
+	slackdebug "$MESSAGE"
+endif
+squeezeit
+exit 1

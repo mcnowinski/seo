@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#get path to this script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+#command for plate solving, auto-offset script?
+FIXPOINT="/home/mcnowinski/anaconda2/bin/python $DIR/fixpoint.py"
+
+function point {
+    #check parameters
+    if [ $# -lt 2 ]
+    then
+        echo "This routine refines telescope pointing."
+        echo "Usage: fixpoint <ra> <dec>"
+        exit 1
+    fi
+    #echo $1 $2
+    tx track on > /dev/null 2>&1
+    alert "Pointing telescope to target (RA/DEC=$1/$2)..."
+    tx point ra=$1 dec=$2 > /dev/null 2>&1
+    alert "Refining telescope position..."
+    $FIXPOINT $1 $2
+	if [ $? -eq 1 ]
+	then
+		alert "Error. Fixpoint command failed. Using mechanical tracking only."
+	else
+		alert "Telescope FIX-pointed to RA/DEC=$1/$2!"	
+	fi
+}
+
+checkSlit
+checkClouds
+
+if [ -t 0 ]; then
+    point $*
+else
+    point `cat`
+fi

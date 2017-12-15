@@ -1,0 +1,68 @@
+#!/bin/csh
+# returns a focus star near the meridian that is not a double
+# usage:  focusstar [lst]
+
+if ($#argv < 1 ) then
+	set lst=`lst`
+else
+	set lst=$argv[1]
+endif
+set h=`echo $lst | awk -F: '{print $1}' | sed s/^0//`
+
+switch ($h)
+	case '1':
+	case '2':
+		bright index=75149 sao
+		breaksw
+	case '3'
+	case '4'
+		bright index=76343 sao
+		breaksw
+	case '5'
+	case '6'
+		bright index=40387 sao
+		breaksw
+	case '7'
+	case '8'
+		bright index=60291 sao
+		breaksw
+	case '9'
+	case '10'
+		bright index=61117 sao
+		breaksw
+	case '11'
+	case '12'
+		bright index=81810 sao
+		breaksw
+	case '13'
+	case '14'
+		bright index=100801 sao
+		breaksw
+	case '15'
+	case '16'
+		bright index=101744 sao
+		breaksw
+	case '17'
+	case '18'
+		bright index=66531 sao
+		breaksw
+	case '19'
+	case '20'
+#		bright index=68806 sao  BAD 
+		bright index=86981 sao  
+		breaksw
+	case '21'
+	case '22'
+		bright index=71237 sao  
+		breaksw
+	case '24'
+	case '0'
+#		bright index=73010 sao  
+#		bright index=73306 sao  
+		bright index=72924 sao  
+		breaksw
+	default:
+		stderr focustar: not found
+		exit 1
+endsw
+

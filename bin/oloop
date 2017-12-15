@@ -1,0 +1,181 @@
+#!/bin/bash
+
+if [ $# -ne 6 ]; then
+	echo "This routine obtains observation frames"
+    echo "Usage: oloop <number of frames> <exposure time in seconds> <binning> <ra> <dec> <filter>"
+    exit 1
+fi
+
+SET_SIZE=$1
+EXPOSURE_SEC=$2
+BINNING=$3
+RA=$4
+DEC=$5
+FILTER=$6
+
+#update these values as needed
+NUM_DARKS_START=0
+NUM_BIAS_START=0
+NUM_DARKS_END=10
+NUM_BIAS_END=100
+NUM_SETS=1
+
+COUNT=0
+SUCCESS=0
+
+#is slit open? if not, closedown
+function checkSlit {
+  if [ -n "`tx slit | grep "slit=open"`" ]
+  then
+  	echo "Slit is open." > /dev/null
+  else
+	alert "Slit closed unexpectedly. Closing down observatory..."
+	closedown
+	exit 1	  
+  fi
+}
+
+function checkAlt {
+  local ALT=`tx where | grep -o 'alt=[0-9\.]\+' | cut -c5-`
+  if [ ${ALT%.*} -lt ${MINIMUM_ALT%.*} ]
+  then
+ 	alert "Altitude of telescope ($ALT) too low. Closing down observatory..."
+	closedown
+	exit 1
+  fi
+}
+#send text notification to Slack #seo9000 channel
+#parameter is $1=message, e.g. alert "This is a test!"
+function alert {
+    local MESSAGE="`date -u +"%m-%d-%Y %H:%M:%S"` $1"
+    slackalert "$MESSAGE"
+    echo $MESSAGE
+    debug "$1"
+}
+
+#upload image to Slack #seo9001 channel
+#parameter is $1=filepath, e.g. preview <filepath> <message (optional)>
+function preview {
+    stiffy "$1" "$1.tif"
+    convert -resize 50% -normalize -quality 75 "$1.tif" "$1.tif.jpg"
+    (slackpreview "$1.tif.jpg" "$1"; rm "$1.tif"; rm "$1.tif.jpg") &
+}
+
+#send text notification to Slack #seo9001 channel
+#parameter is $1=message, e.g. debug "This is a test!"
+function debug {
+    local MESSAGE="`date -u +"%m-%d-%Y %H:%M:%S"` $1"
+    slackdebug "$MESSAGE"
+    #echo $MESSAGE
+}
+
+function checkCCDTemp {
+  local MAX_CCD_TEMP=0
+  local CCD_TEMP=`tx ccd_status | grep -o 'tchip=[0-9\.\-]\+' | cut -c7-`
+  if [ ${CCD_TEMP%.*} -gt ${MAX_CCD_TEMP%.*} ]
+  then
+ 	alert "CCD not cooled (T=$CCD_TEMP). Cooling..."
+	ccd cool
+    sleep 3
+    local CCD_TEMP2=`tx ccd_status | grep -o 'tchip=[0-9\.\-]\+' | cut -c7-`
+    #echo $CCD_TEMP2
+    if [ ${CCD_TEMP2%.*} -gt ${MAX_CCD_TEMP%.*} ]
+    then
+      alert "Error. CCD cooling failed. Image sequence aborted."
+      exit 1
+    else
+      debug "CCD temperature is $CCD_TEMP2 degrees."
+    fi
+  else
+    debug "CCD temperature is $CCD_TEMP degrees."
+  fi
+}
+
+#take image
+#parameters are $1=time, $2=binning, $3="dark" or "", $4=outfile
+function getImage {
+    SUCCESS=1
+    image time=$1 bin=$2 $3 outfile=$4
+    if [ $? -eq 0 ]
+    then
+        debug "Got image ($4)."
+        preview "$4" "$4"
+#echo "Got image ($4)." > /dev/null
+    else
+        alert "Error. Image command failed ($4)."
+        sleep 5
+        SUCCESS=0
+    fi
+}
+
+#make sure the slit is open!
+checkSlit
+
+pfilter $FILTER
+tx track on
+tx point ra=$RA dec=$DEC
+
+#make sure telescope is not set too low
+checkAlt
+
+#get start darks
+if [ "$NUM_DARKS_START" -gt 0 ]
+then
+	dloop $NUM_DARKS_START $EXPOSURE_SEC $BINNING
+fi
+
+#get start bias
+if [ "$NUM_BIAS_START" -gt 0 ]
+then
+	bloop $NUM_BIAS_START $BINNING
+fi
+
+#get the target images
+#num targets = NUM_SETS * SET_SIZE
+for (( j=1; j<=$NUM_SETS; j++ ))
+do
+
+alert "Taking $SET_SIZE target frames (bin=$BINNING, time=$EXPOSURE_SEC)..."
+#check ccd status before starting
+checkCCDTemp
+for (( k=1; k<=$SET_SIZE; k++ ))
+do
+  checkSlit
+  checkAlt
+  #report position
+  tx where
+  getImage $EXPOSURE_SEC $BINNING "" `date -u +"%Y%m%d.%H%M%S%3N"`.`printf "%03d" $COUNT`.fits
+  if [ $SUCCESS -eq 1 ]
+  then
+    echo -e "`date -u +"%m-%d-%Y %H:%M:%S"` Image frame (#=`printf "%03d" $COUNT`) complete."
+	COUNT=$((COUNT+1))
+  fi
+  #repoint the telescope to mitigate drifting
+  tx point ra=$RA dec=$DEC
+  #ensure tracking is on
+  tx track on > /dev/null
+  #ensure dome is centered on telescope pointing location
+  tx dome center > /dev/null
+done
+
+alert "Target frame sequence complete. Obtained $COUNT target frames."
+
+done
+
+tx track off
+tx slit close
+#get end darks
+if [ "$NUM_DARKS_END" -gt 0 ]
+then
+	dloop $NUM_DARKS_END $EXPOSURE_SEC $BINNING
+fi
+#get end bias
+if [ "$NUM_BIAS_END" -gt 0 ]
+then
+	bloop $NUM_BIAS_END $BINNING
+fi
+
+alert "Observation sequence complete. Closing down observatory..."
+
+#close up shop!
+closedown

@@ -1,0 +1,164 @@
+#!/bin/csh -f
+# generate a series of of images at different focal position 
+
+
+set present=0
+set SIZE=150
+set msg="focusgrid: unknown"
+if ($#argv < 1) then
+	stderr usage: focusgrid " [tarid=] [logid=] [meridian] [montage] [nocenter]"
+	exit 1
+endif
+set tarid=`echo $argv | getkey tarid default=0`
+set logid=`echo $argv | getkey logid default=0`
+
+echo $argv | grep -v meridian > /dev/null
+set meridian=$status
+echo $argv | grep -v nocenter > /dev/null
+set nocenter=$status
+
+if($tarid) then
+	set query="SELECT PictureID FROM Picture WHERE TargetID=$tarid"
+#	echo $query
+	set picid=`echo $query | query`
+else
+	set picid=0;
+endif
+
+echo $argv | grep montage > /dev/null
+if ( $status == 0 ) goto bypass 
+
+openup nocloud logid=$logid 
+if ($status) exit 1
+
+if($meridian) then
+	tx track on > /dev/null
+	focusstar | dopoint
+	if ($status) then 
+		set msg="focusgrid: point error"
+		goto die
+	endif
+endif
+
+#center the star
+image time=1 notime bin=1
+if ($?DISPLAY) tv image zoom=.25 span=1000 gamma=.6
+if ($nocenter == 0 ) then
+	set s=`stars image minsig=2000 | sort -n -r -k3 -b | head -1`
+	if ($status) exit
+	if ($#s == 0 ) then
+		set msg="focusgrid: no stars found"
+		goto die
+	endif
+	echo $s
+	set offs=`echo $s | toworld image offset`
+	tx offset $offs | grep -w ERROR
+endif
+
+# determine the present focus
+set present=`tx focus | getkey pos`
+if ($status) then 
+	set msg="focusgrid: error getting focus position"
+	exit 1
+endif
+
+# generate a bunch of images at different focus positions 
+set i=0
+set nstep=20
+set focus_step=50
+set exptime=1.0
+set bin=`header image xbin`
+set crpix1=`header image crpix1`
+set crpix2=`header image crpix2`
+set pix1=`echo  "$bin*$crpix1" | bc | awk '{printf "%d",$1}'`
+set pix2=`echo  "$bin*$crpix2" | bc | awk '{printf "%d",$1}'`
+set box=$pix2,$pix1,$SIZE,$SIZE,1
+
+set foc_pos=`echo "scale=3; $present+$nstep*$focus_step/2" | bc`
+
+set fstem=focus
+set x=0
+set y=0
+rm $fstem.*.fits
+while ($i < $nstep )
+	echo  -n $foc_pos  " "
+    tx focus pos=$foc_pos | grep -w ERROR 
+    if ( $status == 0 ) then 
+		echo trying focus again   this should not happen
+    	tx focus pos=$foc_pos | grep -w ERROR 
+    	if ( $status == 0 ) goto die
+	endif 
+	sleep  1
+	set id=`echo $i |  awk '{printf "%2.2d",$1}'`
+    echo "image time=$exptime outfile=$fstem.$id.fits bin=1 box=$box notime"
+#	image time=$exptime outfile=$fstem.$id.fits bin=1 box=$box notime
+	image time=$exptime outfile=$fstem.$id.fits bin=1 notime
+	if ($status ) 	goto die
+	if ($?DISPLAY) tv $fstem.$id.fits span=2000 xo=$x  yo=$y gamma=.5
+	set foc_pos=`echo "scale=0; $foc_pos-$focus_step" | bc`	#increment focus 
+	tx slit keepopen | grep -w ERROR 
+	if ($status == 0 ) goto die
+	@ i++
+	@ x+=100
+	if ($x > 1000) then
+		set x=0
+		@ y +=200
+		echo " "
+	endif
+end
+echo done
+
+#reset the telescope focus
+tx focus pos=$present  > /dev/null
+
+bypass:
+#make a montage
+set files=`ls -tr focus.*.fits`
+set width=`echo "sqrt($#files)*$SIZE" | bc`
+set height=`echo "$#files*$SIZE*$SIZE/$width" | bc`
+echo width=$width height=$height
+pstar nrow=$height ncol=$width outfile=focus
+set x=0
+set y=0
+set n=0 
+foreach i ($files)
+	echo $i $x $y
+	cat $i | implant focus dr=$y dc=$x corner
+	header focus foc$n=`header $i telfocus`
+	@ x+=$SIZE
+	@ n++
+	if ($x == $width) then
+		set x=0
+		@ y+=$SIZE
+	endif
+end
+header focus oat=`header focus.fits oat`
+header focus ambient=`header focus.00.fits ambient`
+header focus primary=`header focus.00.fits primary`
+header focus filter=`header focus.00.fits filter`
+if ($logid) header focus logid=$logid
+if ($tarid) header focus tarid=$tarid
+if ($picid) header focus picid=$picid
+set ut=`ut iso`
+header focus "date-obs='$ut'"
+header focus "IMAGETYP='FOCUS  '"
+
+#analyze but don't do anything
+focanl focus.fits
+
+#rename if under program control
+if ($logid) mkid focus.fits
+
+exit 0
+
+#this is where the program goes when something bad happens
+die:
+if ($present) tx focus pos=$present
+if ($logid) then
+	set query="UPDATE Log SET Message='$msg' WHERE LogID=$logid"
+	echo $query | query
+	echo $query
+else
+	echo $msg
+endif
+exit 1

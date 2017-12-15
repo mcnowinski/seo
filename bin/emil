@@ -1,0 +1,60 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+MAX_SUN_ALT=-10
+function sunIsNotUp {
+  local SUN_ALT=`sun | grep -o 'alt=[0-9\.\-]\+' | cut -c5-`
+  if [ ${SUN_ALT%.*} -gt ${MAX_SUN_ALT%.*} ]
+  then
+    #debug "Sun is UP. Altitude is $SUN_ALT deg."
+    return 1
+  else
+    #debug "Sun altitude is $SUN_ALT deg."
+    return 0
+  fi
+}
+
+RA1=1:05:18.69
+DEC1=63:21:24.5988
+NUM1=1
+EXP1=70
+BIN1=2
+FILTERS1=g-band,r-band,i-band
+MIN_ALT1=29
+NAME1=V552Cas
+WAIT4TIME=7:15
+DELAY_S=0
+
+#wait for certain time
+#wait4time $WAIT4TIME
+wait4target $RA1 $DEC1 $MIN_ALT1
+
+#open observatory
+if [ $? -eq 0 ]; then
+    crackit
+else
+    alert "Error. wait4time script failed."
+fi
+
+while sunIsNotUp
+do
+    #take images
+    iloop $NUM1 $EXP1 $BIN1 $FILTERS1 $RA1 $DEC1 $NAME1
+    #if there is a fatal error, shut this guy down
+    RESULT=$?
+    if [ $RESULT -eq 1 ]; then
+        squeezeit
+        exit 1
+    fi
+    if [ $RESULT -eq 0 ]; then
+        debug "Pausing between observations for $DELAY_S seconds..."
+        sleep $DELAY_S
+    else
+        sleep 60
+    fi
+done
+
+squeezeit

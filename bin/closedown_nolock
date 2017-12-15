@@ -1,0 +1,37 @@
+#!/bin/csh
+#Closes the observatory
+
+echo $argv | grep -w help > /dev/null
+if ($status == 0) then
+	echo "usage: closedown [user=] "
+	exit 0
+endif
+
+set user=`echo $argv | getkey user default=$LOGNAME`
+#tx lock user=$user | grep ERROR
+#if ($status == 0) exit 1
+
+echo `ut iso` closing observatory user=$user 
+
+#point to zenith
+tx track off > /dev/null
+set lat=`tx tel_status | getkey lat` 
+tx point ha=0 dec=$lat decimal nodome > /dev/null
+
+tx mirror close   > /dev/null
+killall -q keepopen
+tx slit close  > /dev/null
+
+tx dome put=315 > /dev/null
+tx power off > /dev/null
+
+tx fan power=0 | grep ERROR 
+
+# I am not turning off the CCD
+#tx ccd_setup off fan=0 | grep ERROR
+
+#put the cheapest filter in the way 
+pfilter clear  > /dev/null
+
+tx lamps all=off  | grep ERROR
+tx lock clear | grep ERROR

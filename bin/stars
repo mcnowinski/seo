@@ -1,0 +1,62 @@
+#!/bin/csh
+# very crude wrapper to Source Extractor
+if ($#argv < 1) then
+	stderr "usage: stars filename [minsig=1000] [debug] [blend=] [detection=] [ellipse]"
+	exit 1
+endif
+
+set fname=$argv[1]
+if (-e $fname == 0 ) then
+	if ( -e $fname.fits  == 0) then
+		stderr "stars: $argv[1] or $fname not found" 
+		exit 1
+	endif
+	set fname=$fname.fits
+endif
+
+set minsig=`echo $argv  | getkey minsig default=1000`
+set blend=`echo $argv  | getkey blend default=.005`
+set detection=
+set detection=`echo $argv  | getkey detection quiet`
+if ($status == 0 ) then
+	if (-e $detection == 0) then
+		if ( -e $detection.fits  == 0) then
+			stderr "stars: $detection or $detection.fits not found" 
+			exit 1
+		endif
+		set detection=$detection.fits
+	endif
+endif
+
+echo $argv  | grep debug > /dev/null
+if ($status) then 
+	set debug=QUIET
+else
+	set debug=FULL
+endif
+set config=~/giterdone/seo/bin
+
+cat << END > stars1.tmp
+Y_IMAGE
+X_IMAGE
+FLUX_ISO
+FWHM_IMAGE
+NUMBER
+END
+
+#add ellipticity if desired
+echo $argv  | grep -w -v ellipse > /dev/null 
+if ($status) then
+	echo ELLIPTICITY >> stars1.tmp
+endif
+
+sex $detection $fname -c $config/default.sex \
+	-PARAMETERS_NAME stars1.tmp -FILTER_NAME $config/default.conv \
+	-CATALOG_NAME stars2.tmp \
+	-THRESH_TYPE ABSOLUTE	-DETECT_THRESH $minsig  \
+	-DEBLEND_MINCONT $blend \
+	-VERBOSE_TYPE $debug | stderr -
+	
+grep -v "^#" stars2.tmp 
+
+rm stars?.tmp  

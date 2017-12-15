@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while true
+do
+    if [ -n "`tx lock | grep "user="`" ]
+    then
+        echo "Telescope is being used."
+    else
+        tput bel
+    fi
+    sleep 20
+done
