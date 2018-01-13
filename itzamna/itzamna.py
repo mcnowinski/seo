@@ -1214,8 +1214,10 @@ def getWeather(command, user):
     wind_mph = parsed_json['current_observation']['wind_mph']
     dewpoint = parsed_json['current_observation']['dewpoint_string']
     icon_url = parsed_json['current_observation']['icon_url']
+    last_update = parsed_json['current_observation']['observation_time']
     #send_message("", [{"image_url":"%s"%icon_url, "title":"Weather at SEO (%s):"%station}])
     send_message("", [{"image_url":"%s"%icon_url, "title":"Current Weather:"}])
+    send_message(">%s" %(last_update))  
     send_message(">Conditions: %s" %(weather))    
     send_message(">Temperature: %s" %(temp))
     send_message(">Winds: %s" %(wind))
