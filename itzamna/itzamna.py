@@ -478,6 +478,33 @@ def doFocus(command, user):
     else:
         logme('Error. Unexpected command format (%s).'%command)
         return        
+
+def doOffset(command, user):
+    #this command requires that user has telescope locked
+    if not lockedByYou(user):
+        send_message('Please lock the telescope before calling this command.')
+        return
+
+    match = re.search('^\\\\(nudge)\\s([\\-\\.0-9]+)\\s([\\-\\.0-9]+)', command, re.IGNORECASE)
+    if(match):
+        offset_ra = float(match.group(2)) #in arcmin (of hour)
+        offset_dec = float(match.group(3)) #in arcmin (of degree)
+        if offset_ra > 60 or offset_ra < -60 or offset_dec > 60 or offset_dec < -60:
+            send_message('Error. Valid values of RA and DEC offsets are +/- 0 to 60 arcmin.')
+            return
+        #convert to degrees
+        offset_ra_deg = (offset_ra/60.0)*(360.0/24.0)
+        offset_dec_deg = offset_dec/60.0
+        (output, error, pid) = runSubprocess(['tx','offset', 'ra=%f'%offset_ra_deg, 'dec=%f'%offset_dec_deg]) 
+        #send_message("tx offset ra=%f' dec=%f'"%(offset_ra, offset_dec))
+        #send_message("tx offset ra=%f deg dec=%f deg"%(offset_ra_deg, offset_dec_deg))
+        if not re.search('done offset', output):
+            send_message("Error. Could not set offset to dRA=%.2f', dDEC=%.2f'."%(offset_ra,offset_dec))  
+        else:
+            send_message("Telescope pointing successfully offset (dRA=%.2f', dDEC=%.2f')."%(offset_ra,offset_dec))         
+    else:
+        logme('Error. Unexpected command format (%s).'%command)
+        return  
         
 def doHomer(command, user):
     #this command requires that user has telescope locked
@@ -1168,7 +1195,12 @@ def getWeather(command, user):
     logme('Retrieving the current weather conditions from wunderground.com...') 
     
     #match = re.search('^\\\\(weather)\s(hourly)', command)
-    f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/conditions/q/pws:%s.json'%(wunderground_token, wunderground_station))
+    #just in case wunderground is down...
+    try:
+        f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/conditions/q/pws:%s.json'%(wunderground_token, wunderground_station))
+    except:
+        send_message("Weather forecast failed.")
+        return
     json_string = f.read()
     #print json_string
     parsed_json = json.loads(json_string)
@@ -1220,6 +1252,7 @@ def getHelp(command, user=None):
                     '>`\\point <RA (hh:mm:ss.s)> <DEC (dd:mm:ss.s)>` or `\\point <object#>` points the telescope\n' + \
                     '>`\\pinpoint <RA (hh:mm:ss.s)> <DEC (dd:mm:ss.s)>` or `\\pinpoint <object#>` pinpoints the telescope\n' + \
                     #'>`\\track <on/off>` toggles telescope tracking\n' + \
+                    #'>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \                    
                     '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
                     '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview17/|stars> (run this command at the end of your session)\n'
                 )
@@ -1388,7 +1421,8 @@ reconnect_delay_s=10
 #name of this book
 bot_name='Itzamna'
 #specify a station close to SEO, e.g. LOLO Sonoma Farms
-wunderground_station = 'KCASONOM27'
+#wunderground_station = 'KCASONOM27'
+wunderground_station = 'KCASONOM51'
 #how many hours of forecast should we show? 
 wunderground_max_forecast_hours = 12 
 #giphy shown when itzamna app is first started
@@ -1442,6 +1476,7 @@ commands = [
 ['^\\\\(clouds)', getClouds],
 ['^\\\\(focus)\\s([0-9]+)', doFocus],
 ['^\\\\(focus)', getFocus],
+['^\\\\(nudge)\\s([\\-\\.0-9]+)\\s([\\-\\.0-9]+)', doOffset],
 ['^\\\\(tostars)', toStars] 
 ]
 

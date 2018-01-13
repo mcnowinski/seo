@@ -26,6 +26,16 @@ import re
 #set up logger
 logger = log.setup_custom_logger('chultun')
 
+#python path
+python_path = '/home/mcnowinski/anaconda2/bin/python'
+
+#path to pinpoint script
+pinpoint_path = '/home/mcnowinski/seo/bin/pinpoint.py'
+
+#max time to allow for (just) pinpoint operation
+#report alert if exceeded
+max_pinpoint_time_s = 60
+
 #
 #the SEO elescope
 #
@@ -81,7 +91,7 @@ class Telescope():
             self.slackdev(msg)
             return
         msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
-        logger.debug(msg)
+        logger.info(msg)
         (output, error, pid) = self.runSubprocess(['slackalert', msg])
             
     #send debug message to slack        
@@ -157,7 +167,7 @@ class Telescope():
             
     #check sun altitude
     #if the sun is too high, squeeze it
-    def checkSun(self):
+    def checkSun(self, wait = False):
         (output, error, pid) = self.runSubprocess(['sun'])
         match = re.search('alt=([\\-\\+\\.0-9]+)', output)
         if match:
@@ -166,8 +176,22 @@ class Telescope():
             if alt > self.max_sun_alt:
                 logger.error('Sun is too high (%s > %s deg).'%(alt, self.max_sun_alt))
                 self.slackalert('Sun is too high (%s > %s deg).'%(alt, self.max_sun_alt))
-                if not self.simulate:
-                    self.done()
+                #if wait is True, wait until sun rises
+                if wait == True:
+                    while alt > self.max_sun_alt:
+                        (output, error, pid) = self.runSubprocess(['sun'])
+                        match = re.search('alt=([\\-\\+\\.0-9]+)', output)
+                        if match:
+                            alt = float(match.group(1))
+                            logger.debug('Sun altitude is %s deg.'%alt)                        
+                        else:
+                            logger.error('Error. Could not determine the current altitude of the sun (%s).'%output)
+                            self.slackalert('Error. Could not determine the current altitude of the sun.')
+                            self.done()
+                        time.sleep(30)                        
+                else: #if not wait, we are done!
+                    if not self.simulate:
+                        self.done()
         else:
             logger.error('Error. Could not determine the current altitude of the sun (%s).'%output)
             self.slackalert('Error. Could not determine the current altitude of the sun.')
@@ -221,7 +245,7 @@ class Telescope():
                     logger.error('Cloud command failed (%s).'%output)            
         return True
 
-    def pinpoint(self, observation):
+    def pinpoint(self, observation, point = True):
         name = observation.target.name
         ra = observation.target.getRa().replace(' ', ':')
         dec = observation.target.getDec().replace(' ', ':')
@@ -230,50 +254,78 @@ class Telescope():
         
         #point the telescope
         start_point = datetime.datetime.utcnow()
-        (output, error, pid) = self.runSubprocess(['pinpoint','%s'%ra, '%s'%dec], self.simulate)
+        if point == True: #point and refine
+            (output, error, pid) = self.runSubprocess(['pinpoint','%s'%ra, '%s'%dec], self.simulate)
+        else: #just refine
+            (output, error, pid) = self.runSubprocess([python_path, pinpoint_path, '%s'%ra, '%s'%dec], self.simulate)        
         end_point = datetime.datetime.utcnow()
         
         #calculate pointing time in seconds
         dt_point = (end_point-start_point).total_seconds()
-        logger.debug('Pinpointing telescope required %d seconds.'%dt_point)
+        logger.debug('Pinpointing telescope required %d seconds to complete.'%dt_point)
+
+        #if refining takes more than max_pinpoint_time_s, send an alert to Slack
+        if point == False and dt_point > max_pinpoint_time_s:
+            self.slackalert('Warning! Pinpointing telescope required %d seconds to complete. Check clouds, tracking, etc.'%dt_point)
         
         #check the current telescope position
         (output, error, pid) = self.runSubprocess(['tx','where'])    
         
-    def getImage(self, observation, do_pinpoint=True):
-        for repeat in range(0, observation.sequence.repeat): #how many times does this imaging sequence get repeated?
-            for stack in observation.sequence.stacks: #iterate thru the image sets
-                for count in range(0, stack.count): #how many times does this stack get repeated?
-                    name = observation.target.name
-                    filter = stack.filter
-                    exposure = stack.exposure
-                    binning = stack.binning
-                    user = observation.observer
-                    #get image
-                    fits = '%s_%s_%dsec_bin%d_%s_%s_num%d_seo.fits'%(name, filter, exposure, binning, user, datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss'), count)
-                    fits = fits.replace(' ', '_')
-                    fits = fits.replace('(', '')    
-                    fits = fits.replace(')', '')
-                    self.slackdebug('Taking image (%s)...'%(fits))
-                    if self.simulate:
-                        #(output, error, pid) = runSubprocess(['image','dark','time=%d'%t_exposure,'bin=%d'%bin, 'outfile=%s'%fits], simulate)
-                        time.sleep(exposure)
-                        error = 0
-                    else:
-                        (output, error, pid) = self.runSubprocess(['pfilter','%s'%filter])                          
-                        (output, error, pid) = self.runSubprocess(['image','time=%d'%exposure,'bin=%d'%binning, 'outfile=%s'%fits])    
-                    if not error:
-                        self.slackdebug('Got image (%s).'%fits)
-                        if not self.simulate:
-                            self.slackpreview(fits)
-                        #IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
-                        #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
-                        #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])         
-                    else:
-                        self.slackdebug('Error. Image command failed (%s).'%fits)
-                    if do_pinpoint:
-                        self.pinpoint(observation)
+    def getImage(self, observation, end_time=None):
+        if end_time == None: #no end time, just repeat stack(s) by count
+            if observation.sequence.repeat == Sequence.CONTINUOUS: #make double sure that this is not a continuous observation!
+                logger.error('Continuous observing sequence received without an end time. Aborting.')
+                return
+            for repeat in range(0, observation.sequence.repeat): #how many times does this imaging sequence get repeated?
+                self.getImageStacks(observation)
+        else: #end time specified, this must be a continuous observation
+            if observation.sequence.repeat != Sequence.CONTINUOUS: #make double sure that this is a continuous observation!
+                logger.error('Non-continuous observing sequence received with an end time. Aborting.')
+                return
+            logger.debug('Repeating background observation until %s...'%end_time.iso)
+            while Time.now() < end_time: #how many times does this imaging sequence get repeated?
+                self.getImageStacks(observation)
 
+    def getImageStacks(self, observation, end_time=None):
+        for stack in observation.sequence.stacks: #iterate thru the image sets
+            for count in range(0, stack.count): #how many times does this stack get repeated?
+                #check sun, clouds, slit, etc.
+                self.checkSun()
+                if self.is_cracked:
+                    self.checkSlit()
+                self.checkAlt()
+                self.checkClouds()
+
+                name = observation.target.name
+                filter = stack.filter
+                exposure = stack.exposure
+                binning = stack.binning
+                do_pinpoint = stack.do_pinpoint
+                user = observation.observer
+                #get image
+                fits = '%s_%s_%dsec_bin%d_%s_%s_num%d_seo.fits'%(name, filter, exposure, binning, user, datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss'), count)
+                fits = fits.replace(' ', '_')
+                fits = fits.replace('(', '')    
+                fits = fits.replace(')', '')
+                self.slackdebug('Taking image (%s)...'%(fits))
+                if self.simulate:
+                    #(output, error, pid) = runSubprocess(['image','dark','time=%d'%t_exposure,'bin=%d'%bin, 'outfile=%s'%fits], simulate)
+                    time.sleep(exposure)
+                    error = 0
+                else:
+                    (output, error, pid) = self.runSubprocess(['pfilter','%s'%filter])                          
+                    (output, error, pid) = self.runSubprocess(['image','time=%d'%exposure,'bin=%d'%binning, 'outfile=%s'%fits])    
+                if not error:
+                    self.slackdebug('Got image (%s).'%fits)
+                    if not self.simulate:
+                        self.slackpreview(fits)
+                    #IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
+                    #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
+                    #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])         
+                else:
+                    self.slackdebug('Error. Image command failed (%s).'%fits)
+                if do_pinpoint:
+                    self.pinpoint(observation, False)
 #
 #an astronomical observation
 #
@@ -282,13 +334,15 @@ class Observation():
     sequence = None #image sequence
     target = None #target
     observatory = None #observatory
-    min_obs_alt = 30 #min alt to start observations in deg
+    observer = None #who's observing?
+    min_obs_alt = None #min alt to start observations in deg
+    
+    #used by the Scheduler and others
     obs_start_time = None #when will target best be observable?
     min_obs_time = None #when is the target first observable?
     max_obs_time = None #when is the target last observable?
     active = True #is this observation (still) active?
     id = -1 #id
-    observer = None
     
     #init
     def __init__(self, observatory, target, sequence, min_obs_alt, observer):
@@ -299,16 +353,7 @@ class Observation():
         self.observer = observer
     
     def toString(self):
-        return '%s\n%s\n%smin_alt=%f deg\nobs_time=%s\nid=%d\nactive=%d\nmin_obs_time=%s\nmax_obs_time=%s'%(self.observatory.toString(), self.target.toString(), self.sequence.toString(), self.min_obs_alt, self.obs_start_time, self.id, self.active, self.min_obs_time, self.max_obs_time)
-        
-    def setObservationStartTime(self, start_time):
-        self.obs_start_time = start_time
-
-    def setObservationMinTime(self, min_time):
-        self.min_obs_time = min_time        
-
-    def setObservationMaxTime(self, max_time):
-        self.max_obs_time = max_time  
+        return '%s\n%s\n%smin_alt=%f deg\nobs_time=%s\nid=%d\nactive=%d\nmin_obs_time=%s\nmax_obs_time=%s'%(self.observatory.toString(), self.target.toString(), self.sequence.toString(), self.min_obs_alt, self.obs_start_time, self.id, self.active, self.min_obs_time, self.max_obs_time) 
         
 #
 #the astronomical target
@@ -356,9 +401,10 @@ class Stack():
     filter = 'clear' #filter, e.g., clear, h-alpha, u-band, g-band, r-band, i-band, z-band
     binning = 1 #binning, e.g. 1 or 2
     count = 1 #number of images in this stack
+    do_pinpoint = True #refine pointing in between imaging
    
     #init
-    def __init__(self, exposure, filter, binning, count):
+    def __init__(self, exposure, filter, binning, count, do_pinpoint = True):
         self.exposure = exposure
         self.filter = filter
         self.binning = binning
@@ -367,13 +413,17 @@ class Stack():
     def toString(self):
         return 'image stack: exposure=%d, filter=%s, binning=%d, count=%d'%(self.exposure, self.filter, self.binning, self.count)
 
+
 #
 #sequence of astronomical image stacks
 #
 class Sequence():
 
     stacks = [] #list of image stacks
-    repeat = 1 #number of times to repeat this sequence
+    repeat = None #number of times to repeat this sequence
+
+    #repeat as much as possible
+    CONTINUOUS = -1 
     
     #init
     def __init__(self, stacks, repeat):
@@ -440,7 +490,8 @@ class Scheduler():
     def __init__(self, observatory, observations):
         self.observatory = observatory
         self.observations = observations
-        #assign unique ids
+        
+        #assign unique ids to observations
         for observation in self.observations:
             observation.id = self.last_id
             self.last_id += 1
@@ -456,6 +507,7 @@ class Scheduler():
         self.sunrise_time = observatory_location_obsplan.twilight_morning_nautical(Time.now(), which="next") 
         logger.debug('The nearest sunset is %s. The next sunrise is %s.'%(self.sunset_time.iso, self.sunrise_time.iso))       
 
+    #mark this observation as complete
     def isDone(self, observation):
         for obs in self.observations:
             if obs.id == observation.id:
@@ -463,97 +515,142 @@ class Scheduler():
                 return
         logger.error('Matching observation (%d) not found.'%observation.id)
         
-    def whatsNext(self):   
-        obs_stats = {'target':[], 'altitude':[], 'time':[], 'wait':[], 'starttime':[], 'id':[]}   
+    #grab the next (best) observation from the list    
+    def whatsNext(self): 
+        #temp var to hold obs info
+        obs = {'time':[], 'id':[]}   
         
+        #init observatory location
         observatory_location = EarthLocation(lat=self.observatory.latitude*u.deg, lon=self.observatory.longitude*u.deg, height=self.observatory.altitude*u.m)            
         
-        #build alt-az coordinate frame for observatory over next 15 hours
-        #obs_time = Time.now()
-        obs_time = self.sunset_time
+        #build alt-az coordinate frame for observatory over next ? hours (e.g., nearest sunset to next sunrise)
+        #start time is sunset or current time, if later...
+        now = Time.now()
+        if (now > self.sunset_time):
+            obs_time = Time.now()
+        else:
+            obs_time = self.sunset_time
         delta_obs_time = np.linspace(0, (self.sunrise_time-obs_time).sec/3600., 1000)*u.hour
-        #the next 15 hours
-        times = obs_time+delta_obs_time
-        #build frame
+        #array of times between sunset and sunrise
+        times = obs_time + delta_obs_time
+        #celestial frame for this observatory over times
         frame = AltAz(obstime=times, location=observatory_location)
-        #print frame
                 
-        #loop thru observations, suggest the next best target
+        #loop thru observations, suggest the next best target based on time of max alt.
         for observation in self.observations:
                 
+            #skip obs that are complete/inactive    
             if observation.active == False:
-                logger.info('This observation (%s) is no (longer) active. Skipping...'%observation.target.getName())
+                logger.debug('Observation (%s) is not active. Skipping...'%observation.target.getName())
                 continue
-                
+ 
+            #skip background obs 
+            if observation.sequence.repeat == Sequence.CONTINUOUS:
+                logger.debug('Observation (%s) is not foreground type. Skipping...'%observation.target.getName())
+                continue
+
+            #build target altaz relative to observatory
             target_ra = observation.target.getRa()
             target_dec = observation.target.getDec()
-            input_coordinates = target_ra+" "+target_dec
-            
-            obs_stats['target'].append(observation.target.getName())
-
+            input_coordinates = target_ra + " " + target_dec
             try:
                 target_coordinates = SkyCoord(input_coordinates, unit=(u.hourangle, u.deg))
             except:
                 continue
-            
             target_altaz = target_coordinates.transform_to(frame)
-            
-            #if (np.max(target_altaz.alt)) > observation.min_obs_alt*u.degree:
-            #    #obs_stats['altitude'].append(np.max(target_altaz.alt))
-            #    #get time of min observable altitude
-            #    min_alt_time = times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)] 
-            #    observation.setObservationStartTime(min_alt_time[0])
-            ##else:
-            ##    obs_stats['altitude'].append(0*u.degree)
-                       
-            max_alt_time = times[np.argmax(target_altaz.alt)]
-            obs_stats['time'].append(max_alt_time)
-                       
-            #print max_alt_time.iso
-            
-            aux_delta_time = delta_obs_time[np.argmax(target_altaz.alt)]
-        
-            #print obs_stats['altitude'][i], times[np.argmax(target_altaz.alt)], sunset_time, sunrise_time
-            if ((times[np.argmax(target_altaz.alt)] >= self.sunset_time) & (times[np.argmax(target_altaz.alt)] < self.sunrise_time)):
-            #if (obs_stats['altitude'][observation.id]>0*u.degree) & (times[np.argmax(target_altaz.alt)] > sunset_time) & (times[np.argmax(target_altaz.alt)] < sunrise_time):
-                obs_stats['wait'].append(aux_delta_time.to(u.second))
-            else:
-                obs_stats['wait'].append(-1*u.s)
-             
-            #track id of this observation
-            obs_stats['id'].append(observation.id)
-            
-            #get min and max obs times
-            #obs_stats['min_obs_time'].append(np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
-            #obs_stats['max_obs_time'].append(np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
-            ##set min and max obs times
-            self.observations[observation.id].setObservationMinTime(Time(np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)])))
-            self.observations[observation.id].setObservationMaxTime(Time(np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)])))
-
-                
-        #print obs_stats['time']
-        #print obs_stats['target']        
-        #print obs_stats['wait'] 
-                
-        obs_stats['time']=np.array(obs_stats['time'])
-        #print obs_stats['wait']
-        #sys.exit(1)
-        good_object = np.array([obs_stats['wait'][itgt]>-1*u.s for itgt in range(len(obs_stats['wait']))]) 
-        
-        if np.count_nonzero(good_object)>0:
-            if np.count_nonzero(good_object)>1:
-                aux_id = np.argmin(Time(obs_stats['time'][good_object])-Time.now())
-                primary_target_id = np.where(good_object)[0][aux_id]
-                #print obs_stats['target'][primary_target_id]
-                primary_target = np.array(obs_stats['target'])[primary_target_id]
-                #print primary_target_id
-            else:
-                primary_target_id = np.where(good_object)[0][0] 
-                primary_target = np.array(obs_stats['target'])[primary_target_id]
-            #set start time
-            self.observations[obs_stats['id'][primary_target_id]].setObservationStartTime(Time(obs_stats['time'][primary_target_id]))
-            #logger.debug('target_id=%d'%obs_stats['id'][primary_target_id])            
+                 
+            #when is target highest *and* above minimum altitude?
+            #when is it above min_obs_alt?
+            valid_alt_times = times[np.where(target_altaz.alt >= observation.min_obs_alt*u.degree)]
+            #when does the max alt occur?
+            if len(valid_alt_times) > 0:
+                obs['id'].append(observation.id)    
+                #min time is the selection criteria
+                obs['time'].append(times[np.argmax(target_altaz.alt)])
+                #set min and max obs times
+                observation.min_obs_time = Time(np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                observation.max_obs_time = Time(np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                 
+        #get earliest max alt. from valid targets         
+        if len(obs['time']) > 0:   
+            #the winner!
+            id = np.argmin(obs['time'])
+            #set obs start time
+            self.observations[obs['id'][id]].obs_start_time = Time(obs['time'][id])            
         else:
+            logger.info("No active foreground observations exist.")
             return None
                   
-        return self.observations[obs_stats['id'][primary_target_id]]
+        logger.debug('Next foreground observation is %s.'%self.observations[obs['id'][id]].target.name)
+        return self.observations[obs['id'][id]]
+
+    #grab the next (best) background observation  
+    def whatsInBetween(self): 
+        #temp var to hold obs info
+        obs = {'time':[], 'id':[]}   
+        
+        #init observatory location
+        observatory_location = EarthLocation(lat=self.observatory.latitude*u.deg, lon=self.observatory.longitude*u.deg, height=self.observatory.altitude*u.m)            
+        
+        #build alt-az coordinate frame for observatory over next ? hours (e.g., nearest sunset to next sunrise)
+        #start time is sunset or current time, if later...
+        now = Time.now()
+        if (now > self.sunset_time):
+            obs_time = Time.now()
+        else:
+            obs_time = self.sunset_time
+        delta_obs_time = np.linspace(0, (self.sunrise_time-obs_time).sec/3600., 1000)*u.hour
+        #array of times between sunset and sunrise
+        times = obs_time + delta_obs_time
+        #celestial frame for this observatory over times
+        frame = AltAz(obstime=times, location=observatory_location)
+                
+        #loop thru observations, suggest the next best target based on time of max alt.
+        for observation in self.observations:
+                
+            #skip obs that are complete/inactive    
+            if observation.active == False:
+                logger.debug('Observation (%s) is not active. Skipping...'%observation.target.getName())
+                continue
+ 
+            #skip foreground obs 
+            if observation.sequence.repeat != Sequence.CONTINUOUS:
+                logger.debug('Observation (%s) is not background type. Skipping...'%observation.target.getName())
+                continue
+
+            #build target altaz relative to observatory
+            target_ra = observation.target.getRa()
+            target_dec = observation.target.getDec()
+            input_coordinates = target_ra + " " + target_dec
+            try:
+                target_coordinates = SkyCoord(input_coordinates, unit=(u.hourangle, u.deg))
+            except:
+                continue
+            target_altaz = target_coordinates.transform_to(frame)
+                 
+            #when is target above minimum altitude?
+            #when is it above min_obs_alt?
+            valid_alt_times = times[np.where(target_altaz.alt >= observation.min_obs_alt*u.degree)]
+            #when does the max alt occur?
+            if len(valid_alt_times) > 0:
+                #set min and max obs times
+                observation.min_obs_time = Time(np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                observation.max_obs_time = Time(np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                #if target is observable now, add it to the list
+                if observation.min_obs_time < Time.now():
+                    obs['id'].append(observation.id)
+                    #remember the end time too
+                    obs['time'].append(np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+
+        #get earliest max. time from valid targets         
+        if len(obs) > 0:   
+            #the winner!
+            id = np.argmin(obs['time'])
+            #set obs start time
+            self.observations[obs['id'][id]].obs_start_time = Time.now()           
+        else:
+            logger.info("No active background observations exist.")
+            return None
+                  
+        logger.debug('Next background observation is %s.'%self.observations[obs['id'][id]].target.name)          
+        return self.observations[obs['id'][id]]

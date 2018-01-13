@@ -28,6 +28,8 @@ NAME1=V552Cas
 WAIT4TIME=7:15
 DELAY_S=0
 
+sunset $MAX_SUN_ALT
+
 #wait for certain time
 #wait4time $WAIT4TIME
 wait4target $RA1 $DEC1 $MIN_ALT1
@@ -46,6 +48,10 @@ do
     #if there is a fatal error, shut this guy down
     RESULT=$?
     if [ $RESULT -eq 1 ]; then
+        squeezeit
+        exit 1
+    fi
+    if [ $RESULT -eq 2 ]; then
         squeezeit
         exit 1
     fi
