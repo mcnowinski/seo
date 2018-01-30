@@ -9,7 +9,8 @@ from decimal import Decimal
 from astropy.io import fits
 from astropy import wcs
 from dateutil import parser
-
+import matplotlib.pyplot as plt
+import numpy
 
 def logme(str):
     log.write(str + "\n")
@@ -100,7 +101,7 @@ for fits_file in sorted(fits_files):
         fits_file.replace('\\', '/').rsplit('/', 1)[1]
     output_file = '%s%s.txt' % (output_file, sex_output_suffix)
     # add filename, airmass, and jd to sex_file list
-    sex_files.append([output_file, airmass, JD])
+    sex_files.append([output_file, JD, airmass])
     # sextract this file
     (output, error, id) = runSubprocess([sextractor_bin_fname, fits_file, '-c', sextractor_cfg_fname, '-catalog_name',
                                          output_file, '-parameters_name', sextractor_param_fname, '-filter_name', sextractor_filter_fname])
@@ -114,6 +115,7 @@ sfile = file('%s' % stars_in_fname, 'rt')
 lines = [s for s in sfile if len(s) > 2]
 sfile.close()
 starslist = []
+count = 0
 for l in lines:
     spl = l.split()
     ra = float(spl[0])
@@ -132,9 +134,9 @@ for f in sex_files:
         spl = l.split()
         ra = float(spl[0])
         dec = float(spl[1])
-        for s in starslist:
+        for index, s in enumerate(starslist):
             if abs(ra-s[0]) < dRa and abs(dec-s[1]) < dDec:
-                outlist.append('%s %s %s %s' % (s[2], f[1], f[2], l))
+                outlist.append(['%d'%index, s[2], '%f'%f[1], '%f'%f[2], l])
                 found += 1
     if found != len(starslist):
         logme('Warning! Found %s of %s objects in %s.' %
@@ -145,7 +147,35 @@ logme('Found %d observations of %d objects in %d sextracted files.' %
 
 # save steller list in a new file
 ofile = file(stars_out_fname, 'wt')
-for s in outlist:
-    s = re.sub(r'\s+', r',', s.strip())
-    ofile.write(s+'\n')
+# sort by star desig, then JD
+outlist = sorted(outlist, key=lambda x: (x[1], x[2]))
+for o in outlist:
+    o_string = " ".join(o)
+    o_string = re.sub(r'\s+', r',', o_string.strip())
+    ofile.write(o_string +'\n')
 ofile.close()
+
+#grab aperture settings, hopefully it will match the magnitude array ;)
+apertures = []
+with open(sextractor_cfg_fname) as f:
+    lines = f.readlines()
+    for line in lines:
+        match = re.match(r'^PHOT_APERTURES([\s\.0-9\,]+)', line)
+        if match:
+            apertures = numpy.array(match.group(1).strip().split(','))
+            #print x   
+
+ofile = file(stars_out_fname, 'r')
+data = numpy.genfromtxt(ofile, delimiter=',')
+for index, s in enumerate(starslist):
+    filtered_array = numpy.array(filter(lambda row: row[0]==index, data))
+    magnitudes = numpy.mean(filtered_array, axis=0)[6:18]
+    #if len(x):
+    #    x = numpy.linspace(1,len(y),len(y))
+    plt.plot(apertures, magnitudes, marker='o', color='black', linestyle='None', markersize = 5)
+    plt.gca().invert_yaxis()
+    #plt.gca().axes.xaxis.set_ticklabels([])
+    plt.xlabel('D, Aperture Diameter (pixels)')
+    plt.ylabel('m, Instrumental Magnitude')
+    plt.title(s[2])
+    plt.show()
