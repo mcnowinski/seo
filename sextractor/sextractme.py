@@ -11,6 +11,7 @@ from astropy import wcs
 from dateutil import parser
 import matplotlib.pyplot as plt
 import numpy
+#from pyds9 import *
 
 def logme(str):
     log.write(str + "\n")
@@ -148,7 +149,7 @@ logme('Found %d observations of %d objects in %d sextracted files.' %
 # save steller list in a new file
 ofile = file(stars_out_fname, 'wt')
 # sort by star desig, then JD
-outlist = sorted(outlist, key=lambda x: (x[1], x[2]))
+outlist = sorted(outlist, key=lambda x: (x[2], x[3]))
 for o in outlist:
     o_string = " ".join(o)
     o_string = re.sub(r'\s+', r',', o_string.strip())
@@ -162,16 +163,14 @@ with open(sextractor_cfg_fname) as f:
     for line in lines:
         match = re.match(r'^PHOT_APERTURES([\s\.0-9\,]+)', line)
         if match:
-            apertures = numpy.array(match.group(1).strip().split(','))
-            #print x   
+            apertures = numpy.sort([int(aperture) for aperture in match.group(1).strip().split(',')])
 
 ofile = file(stars_out_fname, 'r')
 data = numpy.genfromtxt(ofile, delimiter=',')
 for index, s in enumerate(starslist):
     filtered_array = numpy.array(filter(lambda row: row[0]==index, data))
-    magnitudes = numpy.mean(filtered_array, axis=0)[6:18]
-    #if len(x):
-    #    x = numpy.linspace(1,len(y),len(y))
+    magnitudes = numpy.mean(filtered_array, axis=0)[6:6+len(apertures)]
+    #apertures = numpy.linspace(1,len(magnitudes),len(magnitudes)) 
     plt.plot(apertures, magnitudes, marker='o', color='black', linestyle='None', markersize = 5)
     plt.gca().invert_yaxis()
     #plt.gca().axes.xaxis.set_ticklabels([])
