@@ -15,6 +15,7 @@ import numpy.ma as ma
 from scipy.ndimage import median_filter
 from pyds9 import DS9
 import argparse
+import pandas as pd
 
 # logger
 
@@ -38,7 +39,7 @@ def runSubprocess(command_array):
     try:
         with open(os.devnull, 'w') as fp:
             sp = subprocess.Popen(command_array, stderr=fp, stdout=fp)
-        #logme('Running subprocess ("%s" %s)...'%(' '.join(command_array), sp.pid))
+        # logme('Running subprocess ("%s" %s)...'%(' '.join(command_array), sp.pid))
         sp.wait()
         output, error = sp.communicate()
         return (output, error, sp.pid)
@@ -231,13 +232,13 @@ for image in image_data:
                     sex_data_element['mag%02d' % apertures[i]] = spl[4+i]
                     sex_data_element['magerr%02d' %
                                      apertures[i]] = spl[4+len(apertures)+i]
-                #print sex_data_element
+                # print sex_data_element
                 sex_data.append(sex_data_element)
                 found += 1
     if found != len(object_data):
         logme('Warning! Found %s of %s objects in %s.' %
               (found, len(object_data), f[0]))
-#print sex_data
+# print sex_data
 logme('Found %d observations of %d objects in %d sextracted files.' %
       (len(sex_data), len(object_data), len(image_data)))
 
@@ -273,7 +274,7 @@ if args.plot_apd:
             mag_start_index:mag_start_index+len(apertures)]
         magnitude_stdevs = np.std(filtered_array, axis=0)[
             mag_start_index:mag_start_index+len(apertures)]
-        #apertures = np.linspace(1,len(magnitudes),len(magnitudes))
+        # apertures = np.linspace(1,len(magnitudes),len(magnitudes))
         # plt.errorbar(apertures, magnitudes, yerr=magnitude_stdevs, marker='o',
         #             color='black', elinewidth=0.5, linestyle='None', markersize=3)
         plt.errorbar(apertures, magnitudes, marker='o',
@@ -294,7 +295,7 @@ if args.plot_ds9:
         fname = os.path.abspath(fits_file).replace('\\', '/')
         ds.set('file %s' % fname)
         ds.set('zscale')
-        #ds.set('zoom to fit')
+        # ds.set('zoom to fit')
         w2 = WCS('%s' % fname)
         for s in object_data:
             # find a match in the sex data
@@ -302,7 +303,7 @@ if args.plot_ds9:
                 if o['image'] == fits_file and o['object_name'] == s['object_name']:
                     xp = int(float(o['x']))
                     yp = int(float(o['y']))
-                    #print o['object_name'].replace('-','')
+                    # print o['object_name'].replace('-','')
                     reg2 = 'regions command "point %s %s #color=lightgreen text=%s point=cross"' % (xp, yp, o['object_name'].replace(
                         '-', '').replace('.', ''))  # the times two because xvar is up and then again that value down
                     ds.set('%s' % (reg2))
@@ -323,7 +324,7 @@ if args.apd:
     data = np.genfromtxt(ofile, delimiter=',', skip_header=1)
     for index, s in enumerate(object_data):
         filtered_array = np.array(filter(lambda row: row[0] == index, data))
-        #print 'Target %s' % s['object_name']
+        # print 'Target %s' % s['object_name']
         jds = filtered_array[:, jd_index]
         magnitudes = filtered_array[:, apd_index]
         magnitude_errors = filtered_array[:, apd_index+len(apertures)]
@@ -334,3 +335,24 @@ if args.apd:
         plt.ylabel('Instrumental Magnitude, m')
         plt.title(s['object_name'])
         plt.show()
+
+    # get average of comps
+    filtered_array = np.array(filter(lambda row: row[0] != target_index, data))[
+        :, [jd_index, mag_start_index+apd_index]]
+    sorted_filtered_array = filtered_array[np.lexsort(
+        np.transpose(filtered_array)[::-1])]
+    #print sorted_filtered_array
+    #print len(sorted_filtered_array)
+    df = pd.DataFrame(sorted_filtered_array)
+    ave_comp_magnitudes = df.groupby(
+        np.arange(len(df))//(len(object_data)-1)).mean().values
+    #print ave_comp_magnitudes
+    #print len(ave_comp_magnitudes)
+    # print np.mean(np.array(filtered_array).reshape(-1, len(object_data)-1), axis=1)
+    plt.errorbar(ave_comp_magnitudes[:, 0], ave_comp_magnitudes[:, 1], marker='o',
+                 color='black', elinewidth=0.5, linestyle='None', markersize=3)
+    plt.gca().invert_yaxis()
+    plt.xlabel('Julian Date')
+    plt.ylabel('Instrumental Magnitude, m')
+    plt.title('Average Comparison Star')
+    plt.show()
