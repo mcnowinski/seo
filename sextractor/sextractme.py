@@ -89,8 +89,8 @@ parser.add_argument('--plot_apd', action='store_true',
                     help='Plot average object magnitude vs. aperture diameter for all images.')
 parser.add_argument('--plot_ds9', action='store_true',
                     help='Plot apertures for each image using DS9.')
-parser.add_argument("--apd", help="Perform analysis for this aperture diameter (pixels).",
-                    type=int)
+parser.add_argument("--apd", help="Perform analysis for one or more apertures (csv).",
+                    type=str)
 args = parser.parse_args()
 
 # make sure input files and folder exist
@@ -311,48 +311,80 @@ if args.plot_ds9:
     ds.set('frame first')
 
 if args.apd:
-    logme('Analyzing photometry for aperture diameter = %d pixels.' % args.apd)
-    # make sure this aperture is in our data set!
-    apd_index = -1
-    for index, aperture in enumerate(apertures):
-        if aperture == int(args.apd):
-            apd_index = mag_start_index + index
-    if apd_index == -1:
-        logme('Error! Could not find data for the aperture diameter = %s.' % args.apd)
+    logme('Analyzing photometry for aperture diameter(s) = %s pixels.' % args.apd)
+    apds = args.apd.split(',')
+    apd_idxs = []
+    for idx, apd in enumerate(apds):
+        # make sure this aperture is in our data set!
+        for index, aperture in enumerate(apertures):
+            if aperture == int(apds[idx]):
+                apd_idxs.append(index)
+    if len(apd_idxs) != len(apds):
+        logme('Error. Could not match all apertures provided: %s.' % args.apd)
         os.sys.exit(1)
+    # get color map
+    cmap = plt.get_cmap('viridis')
+    colors = cmap(np.linspace(0, 1, len(apd_idxs)))
     ofile = file(stars_out_fname, 'r')
     data = np.genfromtxt(ofile, delimiter=',', skip_header=1)
     for index, s in enumerate(object_data):
         filtered_array = np.array(filter(lambda row: row[0] == index, data))
         # print 'Target %s' % s['object_name']
         jds = filtered_array[:, jd_index]
-        magnitudes = filtered_array[:, apd_index]
-        magnitude_errors = filtered_array[:, apd_index+len(apertures)]
-        plt.errorbar(jds, magnitudes, yerr=magnitude_errors, marker='o',
-                     color='black', elinewidth=0.5, linestyle='None', markersize=3)
+        for idx, apd_index in enumerate(apd_idxs):
+            magnitudes = filtered_array[:, mag_start_index + apd_index]
+            magnitude_errors = filtered_array[:,
+                                              mag_start_index + apd_index + len(apertures)]
+            plt.errorbar(jds, magnitudes, yerr=magnitude_errors, marker='o',
+                         color=colors[idx], elinewidth=0.5, linestyle='None', markersize=3, label='%s px' % apds[idx])
+        # plt.errorbar(jds, magnitudes*1.1, yerr=magnitude_errors, marker='o',
+        #             color='red', elinewidth=0.5, linestyle='None', markersize=3)
         plt.gca().invert_yaxis()
         plt.xlabel('Julian Date')
         plt.ylabel('Instrumental Magnitude, m')
-        plt.title(s['object_name'])
+        plt.legend(loc='upper left')
+        object_name = s['object_name']
+        if index == target_index:
+            object_name = 'Target: ' + s['object_name']
+        else:
+            object_name = 'Comp Star: ' + s['object_name']
+        plt.title(object_name)
         plt.show()
 
     # get average of comps
-    filtered_array = np.array(filter(lambda row: row[0] != target_index, data))[
-        :, [jd_index, mag_start_index+apd_index]]
-    sorted_filtered_array = filtered_array[np.lexsort(
-        np.transpose(filtered_array)[::-1])]
-    #print sorted_filtered_array
-    #print len(sorted_filtered_array)
-    df = pd.DataFrame(sorted_filtered_array)
-    ave_comp_magnitudes = df.groupby(
-        np.arange(len(df))//(len(object_data)-1)).mean().values
-    #print ave_comp_magnitudes
-    #print len(ave_comp_magnitudes)
-    # print np.mean(np.array(filtered_array).reshape(-1, len(object_data)-1), axis=1)
-    plt.errorbar(ave_comp_magnitudes[:, 0], ave_comp_magnitudes[:, 1], marker='o',
-                 color='black', elinewidth=0.5, linestyle='None', markersize=3)
+    for idx, apd_index in enumerate(apd_idxs):
+        filtered_array = np.array(filter(lambda row: row[0] != target_index, data))[
+            :, [jd_index, mag_start_index + apd_index]]
+        sorted_filtered_array = filtered_array[np.lexsort(
+            np.transpose(filtered_array)[::-1])]
+        #print sorted_filtered_array
+        #print len(sorted_filtered_array)
+        df = pd.DataFrame(sorted_filtered_array)
+        ave_comp_magnitudes = df.groupby(
+            np.arange(len(df))//(len(object_data)-1)).mean().values
+        #print ave_comp_magnitudes
+        #print len(ave_comp_magnitudes)
+        # print np.mean(np.array(filtered_array).reshape(-1, len(object_data)-1), axis=1)
+        plt.errorbar(ave_comp_magnitudes[:, 0], ave_comp_magnitudes[:, 1], marker='o',
+                     color=colors[idx], elinewidth=0.5, linestyle='None', markersize=3, label='%s px' % apds[idx])
     plt.gca().invert_yaxis()
+    plt.legend(loc='upper left')
     plt.xlabel('Julian Date')
     plt.ylabel('Instrumental Magnitude, m')
-    plt.title('Average Comparison Star')
+    plt.title('Comp Star Average')
+    plt.show()
+
+    for idx, apd_index in enumerate(apd_idxs):
+        # plot target-comp ave instr magnitude
+        target_magnitudes = np.array(filter(lambda row: row[0] == target_index, data))[
+            :, [jd_index, mag_start_index + apd_index]]
+        target_magnitudes = target_magnitudes[np.lexsort(
+            np.transpose(target_magnitudes)[::-1])]
+        plt.errorbar(target_magnitudes[:, 0], target_magnitudes[:, 1] - ave_comp_magnitudes[:, 1], marker='o',
+                     color=colors[idx], elinewidth=0.5, linestyle='None', markersize=3, label='%s px' % apds[idx])
+    plt.gca().invert_yaxis()
+    plt.legend(loc='upper left')
+    plt.xlabel('Julian Date')
+    plt.ylabel('Instrumental Magnitude, m')
+    plt.title('Target Differential')
     plt.show()
