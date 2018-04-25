@@ -36,7 +36,7 @@ debug "Copying ${FILE_COUNT} image(s) to stars.uchicago.edu (${DEST})..."
 #ensure image target folder exists
 #IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
 ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p ${DEST}; exit"
-scp -q -i $STARS_PRIVATE_KEY_PATH ${SRC} $STARS_USERNAME@$STARS_SERVER:${DEST}/
+scp -r -q -i $STARS_PRIVATE_KEY_PATH ${SRC} $STARS_USERNAME@$STARS_SERVER:${DEST}/
 
 if [ $? -eq 0 ]; then
     debug "Image transfer to stars.uchicago.edu is complete."

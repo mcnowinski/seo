@@ -80,7 +80,7 @@ for input in inputs:
         stacks = []
         for filter in filters:
             filter = filter.strip()
-            #skip the darks for now
+            # skip the darks for now
             if filter.lower() != 'dark':
                 stacks.append(Stack(float(exposure), filter,
                                     int(binning), int(count)))
@@ -88,7 +88,7 @@ for input in inputs:
                                         Sequence(stacks, 1), min_obs_alt, user))
 
 print 'Successfully identified %d of %d targets.' % (
-    num_targets, len(observations))
+    num_targets, len(inputs))
 
 telescope.slackdebug('Starting observerizer...')
 

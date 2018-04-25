@@ -129,8 +129,8 @@ function checkAltTarget {
   fi 
 }
 
-MAXIMUM_CLOUDS_IMAGE=50
-MAXIMUM_CLOUDS_SLIT=80
+MAXIMUM_CLOUDS_IMAGE=75
+MAXIMUM_CLOUDS_SLIT=90
 #check to be sure cloud cover is not too thick
 function checkClouds {
   local CLOUDS=`tx taux | grep -o 'cloud=[0-9\.\+\-]\+' | cut -c7-`

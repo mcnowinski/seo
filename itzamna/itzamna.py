@@ -388,7 +388,7 @@ def toStars(command, user):
         ['tostars', '%s*.fits' % image_path, '%s' % dest_path])
     if error == '':
         send_message(
-            'Successfully uploaded %d image(s) to <http://stars.uchicago.edu/fitsview17/|stars>!' % len(fits))
+            'Successfully uploaded %d image(s) to <http://stars.uchicago.edu/fitsview18/|stars>!' % len(fits))
         # move images to archive
         files = glob.iglob(image_path+'*.fits')
         for file in files:
@@ -1329,6 +1329,22 @@ def getClearDarkSky(command, user):
                        dummy, "title": "Sonoma Clear Sky Chart"}])
     send_message("\n")
 
+def getSkyCam(command, user):
+    logme('Retrieving skycam images for sites near SEO...')
+
+    dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for _ in range(5))
+    send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/c/v/cvogeo/1/current.jpg?%s" %
+                       dummy, "title": "cvogeo's Webcam in Petaluma, CA"}])
+    send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/w/u/WU_3508672/2/current.jpg?%s" %
+                       dummy, "title": "WU_3508672's Webcam in Kenwood, CA"}])
+    send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/l/p/lparkerwu66/1/current.jpg?%s" %
+                       dummy, "title": "lparkerwu66's Webcam in Santa Rosa, CA"}])
+    send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/j/w/JWPAGE/1/current.jpg?%s" %
+                       dummy, "title": "JWPAGE's Webcam in Petaluma, CA"}])                       
+                       
+    send_message("\n")
+
 # get weather from Wunderground
 
 
@@ -1411,6 +1427,7 @@ def getHelp(command, user=None):
                  '>`\\focus <position>` sets the current focus position\n' + \
                  #'>`\\stats` shows the weekly telescope statistics\n' + \
                  '>`\\clearsky` shows the Clear Sky chart(s)\n' + \
+                 '>`\\skycam` shows nearby skycam images\n' + \
                  '>`\\find <object>` finds <object> position in sky (add wildcard `*` to widen search)\n' + \
                  '>`\\plot <object#>` shows if/when <object> is observable (run `\\find` first!)\n' + \
                  '>`\\lock` locks the telescope\n' + \
@@ -1657,6 +1674,7 @@ commands = [
     ['^\\\\(weather)', getWeather],
     ['^\\\\(forecast)', getForecast],
     ['^\\\\(clearsky)', getClearDarkSky],
+    ['^\\\\(skycam)', getSkyCam],
     ['^\\\\(where)', getWhere],
     ['^\\\\(sun)', getSun],
     ['^\\\\(moon)', getMoon],
@@ -1667,8 +1685,7 @@ commands = [
     ['^\\\\(stats)', getStats],
     ['^\\\\(point) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)', doPointByRaDec],
     ['^\\\\(point)\\s?([0-9]+)?', doPointByObjectNum],
-    ['^\\\\(pinpoint) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)',
-     doPinpointByRaDec],
+    ['^\\\\(pinpoint) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)', doPinpointByRaDec],
     ['^\\\\(pinpoint)\\s?([0-9]+)?', doPinpointByObjectNum],
     ['^\\\\(track) (on|off)', doTrack],
     ['^\\\\(crack)', doCrack],

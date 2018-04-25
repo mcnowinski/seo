@@ -79,6 +79,8 @@ bloop $NUMBIAS 1
 #dloop $NUMDARK $EXPDARK 1
 #dloop $NUMDARK $EXPDARK 2
 
+tx slit
+
 tx lock clear
 
 alert "Telescope diagnostic routine complete."
