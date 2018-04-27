@@ -25,6 +25,8 @@ import re
 from astroquery.simbad import Simbad
 import warnings
 import pathlib2
+import urllib2
+import callhorizons
 
 # set up logger
 logger = log.setup_custom_logger('chultun')
@@ -572,7 +574,10 @@ class Scheduler():
 
         # uncomment to download the latest for astroplan
         logger.debug('Updating Astroplan IERS Bulletin A...')
-        download_IERS_A()
+        try:
+            download_IERS_A()
+        except:
+            logger.error('Error. Could not update Astroplan IERS Bulletin A.')
 
         # get *nearest* sunset and *next* sunrise times
         # still not a big fan of this!
@@ -764,12 +769,218 @@ class Scheduler():
                      self.observations[obs['id'][id]].target.name)
         return self.observations[obs['id'][id]]
 
-    def findObjects(self, name):
-        results = Simbad.query_object(name)
+    def findObjects(self, keyword):
+        results = Simbad.query_object(keyword)
         if results == None:
             return []
         objects = []
         for result in results:
             objects.append({'type': 'Celestial', 'id': result['MAIN_ID'], 'name': result['MAIN_ID'].replace(' ', ''),
                             'RA': result['RA'], 'DEC': result['DEC']})
+        return objects
+
+    # search solar system small bodies using JPL HORIZONS
+    def findSolarSystemObjects(self, keyword):
+        # callhorizons constants
+        # max airmass
+        max_airmass = 2.0  # 30 deg elevation
+        objects = []
+        # list of matches
+        object_names = []
+        # set to * to make the searches wider by default
+        suffix = ''
+        # two passes, one for major (and maybe small) and one for (only) small bodies
+        lookups = [keyword + suffix, keyword + suffix + ';']
+        for repeat in range(0, 2):
+            # user JPL Horizons batch to find matches
+            f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
+                                urllib2.quote(lookups[repeat].upper()))
+            output = f.read()  # the whole enchilada
+            #print output
+            lines = output.splitlines()  # line by line
+            # no matches? go home
+            if re.search('No matches found', output):
+                logger.info('No matches found in JPL Horizons for %s.' %
+                            lookups[repeat].upper())
+            elif re.search('Target body name:', output):
+                logger.info('Single match found in JPL Horizons for %s.' %
+                            lookups[repeat].upper().replace(suffix, ''))
+                # just one match?
+                # if major body search (repeat = 0), ignore small body results
+                # if major body search, grab integer id
+                if repeat == 0:
+                    if re.search('Small-body perts:', output):
+                        continue
+                    match = re.search(
+                        'Target body name:\\s[a-zA-Z]+\\s\\((\\d+)\\)', output)
+                    if match:
+                        object_names.append(match.group(1))
+                    else:
+                        logger.error('Error. Could not parse id for single match major body (%s).' %
+                                     lookups[repeat].upper().replace(suffix, ''))
+                else:
+                    # user search term is unique, so use it!
+                    object_names.append(
+                        lookups[repeat].upper().replace(suffix, ''))
+            elif repeat == 1 and re.search('Matching small-bodies', output):
+                logger.info('Multiple small bodies found in JPL Horizons for %s.' %
+                            lookups[repeat].upper())
+                # Matching small-bodies:
+                #
+                #    Record #  Epoch-yr  Primary Desig  >MATCH NAME<
+                #    --------  --------  -------------  -------------------------
+                #          4             (undefined)     Vesta
+                #      34366             2000 RP36       Rosavestal
+                match_count = 0
+                for line in lines:
+                    search_string = line.strip()
+                    # look for small body list
+                    match = re.search('^-?\\d+', search_string)
+                    # parse out the small body parameters
+                    if match:
+                        match_count += 1
+                        record_number = line[0:12].strip()
+                        epoch_yr = line[12:22].strip()
+                        primary_desig = line[22:37].strip()
+                        match_name = line[37:len(line)].strip()
+                        #print record_number, epoch_yr, primary_desig, match_name
+                        # add semicolon for small body lookups
+                        object_names.append(record_number + ';')
+                # check our parse job
+                match = re.search('(\\d+) matches\\.', output)
+                if match:
+                    if int(match.group(1)) != match_count:
+                        logger.error('Multiple JPL small body parsing error!')
+                    else:
+                        logger.info(
+                            'Multiple JPL small body parsing successful!')
+            elif repeat == 0 and re.search('Multiple major-bodies', output):
+                logger.info('Multiple major bodies found in JPL Horizons for %s.' %
+                            lookups[repeat].upper())
+                # Multiple major-bodies match string "50*"
+                #
+                #  ID#      Name                               Designation  IAU/aliases/other
+                #  -------  ---------------------------------- -----------  -------------------
+                #      501  Io                                              JI
+                #      502  Europa                                          JII
+                match_count = 0
+                for line in lines:
+                    search_string = line.strip()
+                    # look for major body list
+                    match = re.search('^-?\\d+', search_string)
+                    # parse out the major body parameters
+                    if match:
+                        match_count += 1
+                        record_number = line[0:9].strip()
+                        # negative major bodies are spacecraft,etc. Skip those!
+                        if int(record_number) >= 0:
+                            name = line[9:45].strip()
+                            designation = line[45:57].strip()
+                            other = line[57:len(line)].strip()
+                            #print record_number, name, designation, other
+                            # NO semicolon for major body lookups
+                            object_names.append(record_number)
+                # check our parse job
+                match = re.search('Number of matches =([\\s\\d]+).', output)
+                if match:
+                    if int(match.group(1)) != match_count:
+                        logger.error('Multiple JPL major body parsing error!')
+                    else:
+                        logger.info(
+                            'Multiple JPL major body parsing successful!')
+        start = datetime.datetime.utcnow()
+        end = start+datetime.timedelta(hours=12)
+        logger.info('Found %d solar system match(es) for "%s".' %
+                    (len(object_names), keyword))
+        count = 0
+        for object_name in object_names:
+            count += 1
+            # get ephemerides for target in JPL Horizons from start to end times
+            # +------------------+-----------------------------------------------+
+            # | Property         | Definition                                    |
+            # +==================+===============================================+
+            # | targetname       | official number, name, designation [string]   |
+            # +------------------+-----------------------------------------------+
+            # | H                | absolute magnitude in V band (float, mag)     |
+            # +------------------+-----------------------------------------------+
+            # | G                | photometric slope parameter (float)           |
+            # +------------------+-----------------------------------------------+
+            # | datetime         | epoch date and time (str, YYYY-MM-DD HH:MM:SS)|
+            # +------------------+-----------------------------------------------+
+            # | datetime_jd      | epoch Julian Date (float)                     |
+            # +------------------+-----------------------------------------------+
+            # | solar_presence   | information on Sun's presence (str)           |
+            # +------------------+-----------------------------------------------+
+            # | lunar_presence   | information on Moon's presence (str)          |
+            # +------------------+-----------------------------------------------+
+            # | RA               | target RA (float, J2000.0)                    |
+            # +------------------+-----------------------------------------------+
+            # | DEC              | target DEC (float, J2000.0)                   |
+            # +------------------+-----------------------------------------------+
+            # | RA_rate          | target rate RA*cos(DEC) (float, arcsec/s)     |
+            # +------------------+-----------------------------------------------+
+            # | DEC_rate         | target rate DEC (float, arcsec/s)             |
+            # +------------------+-----------------------------------------------+
+            # | AZ               | Azimuth meas East(90) of North(0) (float, deg)|
+            # +------------------+-----------------------------------------------+
+            # | EL               | Elevation (float, deg)                        |
+            # +------------------+-----------------------------------------------+
+            # | airmass          | target optical airmass (float)                |
+            # +------------------+-----------------------------------------------+
+            # | magextinct       | V-mag extinction due airmass (float, mag)     |
+            # +------------------+-----------------------------------------------+
+            # | V                | V magnitude (comets: total mag) (float, mag)  |
+            # +------------------+-----------------------------------------------+
+            # | illumination     | fraction of illuminated disk (float)          |
+            # +------------------+-----------------------------------------------+
+            # | EclLon           | heliocentr. ecl. long. (float, deg, J2000.0)  |
+            # +------------------+-----------------------------------------------+
+            # | EclLat           | heliocentr. ecl. lat. (float, deg, J2000.0)   |
+            # +------------------+-----------------------------------------------+
+            # | ObsEclLon        | obscentr. ecl. long. (float, deg, J2000.0)    |
+            # +------------------+-----------------------------------------------+
+            # | ObsEclLat        | obscentr. ecl. lat. (float, deg, J2000.0)     |
+            # +------------------+-----------------------------------------------+
+            # | r                | heliocentric distance (float, au)             |
+            # +------------------+-----------------------------------------------+
+            # | r_rate           | heliocentric radial rate  (float, km/s)       |
+            # +------------------+-----------------------------------------------+
+            # | delta            | distance from the observer (float, au)        |
+            # +------------------+-----------------------------------------------+
+            # | delta_rate       | obs-centric radial rate (float, km/s)         |
+            # +------------------+-----------------------------------------------+
+            # | lighttime        | one-way light time (float, s)                 |
+            # +------------------+-----------------------------------------------+
+            # | elong            | solar elongation (float, deg)                 |
+            # +------------------+-----------------------------------------------+
+            # | elongFlag        | app. position relative to Sun (str)           |
+            # +------------------+-----------------------------------------------+
+            # | alpha            | solar phase angle (float, deg)                |
+            # +------------------+-----------------------------------------------+
+            # | sunTargetPA      | PA of Sun->target vector (float, deg, EoN)    |
+            # +------------------+-----------------------------------------------+
+            # | velocityPA       | PA of velocity vector (float, deg, EoN)       |
+            # +------------------+-----------------------------------------------+
+            # | GlxLon           | galactic longitude (float, deg)               |
+            # +------------------+-----------------------------------------------+
+            # | GlxLat           | galactic latitude  (float, deg)               |
+            # +------------------+-----------------------------------------------+
+            # | RA_3sigma        | 3sigma pos. unc. in RA (float, arcsec)        |
+            # +------------------+-----------------------------------------------+
+            # | DEC_3sigma       | 3sigma pos. unc. in DEC (float, arcsec)       |
+            # +------------------+-----------------------------------------------+
+            ch = callhorizons.query(object_name.upper(), smallbody=True)
+            ch.set_epochrange(start.strftime("%Y/%m/%d %H:%M:%S"),
+                              end.strftime("%Y/%m/%d %H:%M:%S"), '15m')
+            ch.get_ephemerides(self.observatory.code,
+                               skip_daylight=True, airmass_lessthan=max_airmass)
+            # return transit RA/DEC if available times exist
+            if len(ch):
+                imax = np.argmax(ch['EL'])
+                ra = Angle(float(ch['RA'][imax]) *
+                           u.deg).to_string(unit=u.hour, sep=':')
+                dec = Angle(float(ch['DEC'][imax]) *
+                            u.deg).to_string(unit=u.degree, sep=':')
+                objects.append({'type': 'Solar System', 'id': object_name.upper(
+                ), 'name': ch['targetname'][0], 'RA': ra, 'DEC': dec})
         return objects
