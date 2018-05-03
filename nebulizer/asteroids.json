@@ -1,0 +1,17 @@
+{
+    "targets": [
+        {
+            "name": "317",
+            "user": "nowinski",
+            "sequence": {
+                "count": 1,
+                "stacks": [
+                    {
+                        "exposure": 120,
+                        "binning": 2,
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+#user,object,exp,bin,filter(s),count
+nowinski,317,60,2,r-band,3
+nowinski,317,120,2,clear,1
+nowinski,317,30,2,r-band clear,4
+nowinski,317,120,2,clear,20
+nowinski,317,60,2,r-band,3
+nowinski,317,120,2,clear,1
+nowinski,317,30,2,r-band clear,4
+nowinski,317,120,2,clear,20
+nowinski,317,60,2,r-band,3
+nowinski,317,120,2,clear,1
+nowinski,317,30,2,r-band clear,4
+nowinski,317,120,2,clear,20
+nowinski,317,60,2,r-band,3
+nowinski,317,120,2,clear,1
+nowinski,317,30,2,r-band clear,4
+nowinski,317,120,2,clear,20
+nowinski,317,30,2,r-band clear,4
+nowinski,317,60,2,r-band,3

@@ -17,17 +17,17 @@ from astropy.time import Time
 import time
 
 # user, hardcode for now
-user = 'observerizer'
+user = 'asterizer'
 
 #
 # main
 #
 
 # set up logger
-logger = log.setup_custom_logger('uc')
+logger = log.setup_custom_logger('asterizer')
 
 # list of observations
-input_fname = '/home/mcnowinski/seo/nebulizer/observations.txt'
+input_fname = '/home/mcnowinski/seo/nebulizer/asteroids.txt'
 
 # simulate? set to True
 simulate = False
@@ -58,42 +58,38 @@ with open(input_fname) as f:
     inputs = f.readlines()
 inputs = [x.strip() for x in inputs if not x.startswith('#')]
 
-# jmartinez8@uchicago.edu	General	NGC 3941	240	1	clear, dark, u-band, g-band, r-band, i-band	2	No
+#user,object,exp,bin,filter,count
 num_targets = 0
 for input in inputs:
-    input = input.split('\t')
-    user = input[0].replace('@', '.')
-    obstype = input[1]
-    name = input[2]
-    exposure = input[3]
-    count = input[4]
-    filters = input[5].split(',')
-    binning = input[6]
-    if obstype == "Solar System":
-        objects = scheduler.findSolarSystemObjects(name.strip().upper())
-    else:
-        objects = scheduler.findObjects(name.strip().upper())
+    input = input.split(',')
+    user = input[0]
+    name = input[1]
+    exposure = input[2]
+    binning = input[3]
+    filters = input[4].split(' ')
+    count = int(input[5])
+    objects = scheduler.findSolarSystemObjects(name.strip().upper())
     if len(objects) == 0:
-        logger.error('Could not find matching object for %s.' % name)
+        print 'Error. Could not find matching object for %s.' % name
+    elif len(objects) > 1:
+        print 'Error. Found multiple matching objects for %s.' % name
     else:
-        if len(objects) > 1:
-            logger.error('Found multiple matching objects for %s.' % name)
-            logger.error('Will take the first in the list (%s).' % name)
         num_targets += 1
         target = Target(objects[0]['name'], objects[0]
                         ['RA'], objects[0]['DEC'])
         stacks = []
-        for filter in filters:
-            filter = filter.strip()
-            # skip the darks for now
-            if filter.lower() != 'dark':
-                stacks.append(Stack(float(exposure), filter,
-                                    int(binning), int(count)))
+        for i in range(0,count):
+            for filter in filters:
+                filter = filter.strip()
+                # skip the darks for now
+                if filter.lower() != 'dark':
+                    stacks.append(Stack(float(exposure), filter,
+                                        int(binning), 1))
         observations.append(Observation(observatory, target,
                                         Sequence(stacks, 1), min_obs_alt, user))
 
-logger.info('Successfully identified %d of %d targets.' % (
-    num_targets, len(inputs)))
+print 'Successfully identified %d of %d targets.' % (
+    num_targets, len(inputs))
 
 telescope.slackdebug('Starting observerizer...')
 
@@ -107,7 +103,7 @@ next_observation = scheduler.whatsNext()
 #    print obs.toString()
 
 if next_observation:
-    logger.debug(next_observation.toString())
+    print next_observation.toString()
 
 # wait for sun to set
 telescope.checkSun(True)

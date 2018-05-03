@@ -26,7 +26,7 @@ from astroquery.simbad import Simbad
 import warnings
 import pathlib2
 import urllib2
-import callhorizons
+import ch
 
 # set up logger
 logger = log.setup_custom_logger('chultun')
@@ -346,7 +346,7 @@ class Telescope():
                     self.checkAlt()
                     self.checkClouds()
 
-                name = observation.target.name
+                name = observation.target.name.strip().replace(' ', '_')
                 filter = stack.filter
                 exposure = stack.exposure
                 binning = stack.binning
@@ -368,7 +368,7 @@ class Telescope():
                     error = 0
                 else:
                     # make sure path exists!
-                    pathlib2.Path('%s/%s' % (image_path, user)
+                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
                                   ).mkdir(parents=True, exist_ok=True)
                     # get the image!
                     if filter == 'dark':
@@ -376,17 +376,17 @@ class Telescope():
                         (output, error, pid) = self.runSubprocess(
                             ['pfilter', 'h-alpha'])
                         (output, error, pid) = self.runSubprocess(
-                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s' % (image_path, user, fits)])
+                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                     else:
                         (output, error, pid) = self.runSubprocess(
                             ['pfilter', '%s' % filter])
                         (output, error, pid) = self.runSubprocess(
-                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s' % (image_path, user, fits)])
+                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                 if not error:
                     self.slackdebug('Got image (%s).' % fits)
                     if not self.simulate:
-                        self.slackpreview('%s/%s/%s' %
-                                          (image_path, user, fits))
+                        self.slackpreview('%s/%s/%s/%s' %
+                                          (image_path, user, name, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
                     #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
                     #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
@@ -781,7 +781,7 @@ class Scheduler():
 
     # search solar system small bodies using JPL HORIZONS
     def findSolarSystemObjects(self, keyword):
-        # callhorizons constants
+        # ch constants
         # max airmass
         max_airmass = 2.0  # 30 deg elevation
         objects = []
@@ -888,8 +888,18 @@ class Scheduler():
                     else:
                         logger.info(
                             'Multiple JPL major body parsing successful!')
-        start = datetime.datetime.utcnow()
-        end = start+datetime.timedelta(hours=12)
+        #start = datetime.datetime.utcnow()
+        #end = start+datetime.timedelta(hours=12)
+        # get *nearest* sunset and *next* sunrise times
+        # still not a big fan of this!
+        observatory_location_obsplan = Observer(longitude=self.observatory.longitude*u.deg, latitude=self.observatory.latitude *
+                                                u.deg, elevation=self.observatory.altitude*u.m, name=self.observatory.code, timezone=self.observatory.timezone)
+        start = observatory_location_obsplan.twilight_evening_nautical(
+            Time.now(), which="nearest")
+        end = observatory_location_obsplan.twilight_morning_nautical(
+            Time.now(), which="next")
+        logger.debug('The nearest sunset is %s. The next sunrise is %s.' %
+                     (start.iso, end.iso))
         logger.info('Found %d solar system match(es) for "%s".' %
                     (len(object_names), keyword))
         count = 0
@@ -969,18 +979,20 @@ class Scheduler():
             # +------------------+-----------------------------------------------+
             # | DEC_3sigma       | 3sigma pos. unc. in DEC (float, arcsec)       |
             # +------------------+-----------------------------------------------+
-            ch = callhorizons.query(object_name.upper(), smallbody=True)
-            ch.set_epochrange(start.strftime("%Y/%m/%d %H:%M:%S"),
-                              end.strftime("%Y/%m/%d %H:%M:%S"), '15m')
-            ch.get_ephemerides(self.observatory.code,
-                               skip_daylight=True, airmass_lessthan=max_airmass)
+            result = ch.query(object_name.upper(), smallbody=True)
+            result.set_epochrange(start.iso, end.iso, '15m')
+            # result.get_ephemerides(self.observatory.code,
+            #                   skip_daylight=True, airmass_lessthan=max_airmass)
+            result.get_ephemerides(self.observatory.code)
             # return transit RA/DEC if available times exist
-            if len(ch):
-                imax = np.argmax(ch['EL'])
-                ra = Angle(float(ch['RA'][imax]) *
+            if result and len(result['EL']):
+                imax = np.argmax(result['EL'])
+                ra = Angle(float(result['RA'][imax]) *
                            u.deg).to_string(unit=u.hour, sep=':')
-                dec = Angle(float(ch['DEC'][imax]) *
+                dec = Angle(float(result['DEC'][imax]) *
                             u.deg).to_string(unit=u.degree, sep=':')
                 objects.append({'type': 'Solar System', 'id': object_name.upper(
-                ), 'name': ch['targetname'][0], 'RA': ra, 'DEC': dec})
+                ), 'name': result['targetname'][0], 'RA': ra, 'DEC': dec})
+            else:
+                logger.debug('The object ('+object_name+') is not observable.')
         return objects
