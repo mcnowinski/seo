@@ -58,7 +58,7 @@ with open(input_fname) as f:
     inputs = f.readlines()
 inputs = [x.strip() for x in inputs if not x.startswith('#')]
 
-#user,object,exp,bin,filter,count
+# user,object,exp,bin,filter,count
 num_targets = 0
 for input in inputs:
     input = input.split(',')
@@ -78,7 +78,7 @@ for input in inputs:
         target = Target(objects[0]['name'], objects[0]
                         ['RA'], objects[0]['DEC'])
         stacks = []
-        for i in range(0,count):
+        for i in range(0, count):
             for filter in filters:
                 filter = filter.strip()
                 # skip the darks for now
@@ -126,7 +126,7 @@ while next_observation != None:
         telescope.slackdebug("Observations for %s are starting..." %
                              (next_observation.target.getName()))
         # point the scope
-        telescope.pinpoint(next_observation)
+        telescope.pinpointier(next_observation)
         # get the images
         telescope.getImage(next_observation)
         telescope.slackdebug("Observations for %s are complete." %
@@ -142,4 +142,4 @@ while next_observation != None:
     next_observation = scheduler.whatsNext()
 
 telescope.slackdebug(
-    'Observerization complete. Performed %d observations.' % count)
+    'Asterizer complete. Performed %d observations.' % count)

@@ -130,7 +130,7 @@ while next_observation != None:
         telescope.slackdebug("Observations for %s are starting..." %
                              (next_observation.target.getName()))
         # point the scope
-        telescope.pinpoint(next_observation)
+        telescope.pinpointier(next_observation)
         # get the images
         telescope.getImage(next_observation)
         telescope.slackdebug("Observations for %s are complete." %

@@ -10,3 +10,4 @@ Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No
 Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No	
 Cesmerian	General	Jupiter	0.1	1	dark	2	No	
 Norabailey	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No
+Nowinski	General	M67	10	1	clear	1	No

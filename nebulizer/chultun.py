@@ -8,12 +8,14 @@
 #
 
 import sys
+import os
 import numpy as np
 import astropy.units as u
 from astropy.time import Time
 from astroplan import Observer
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, Angle
 from astroplan import download_IERS_A
+from astropy.io.fits import getheader
 import matplotlib.pyplot as plt
 import datetime
 import log
@@ -39,6 +41,9 @@ pinpoint_path = '/home/mcnowinski/seo/bin/pinpoint.py'
 
 # image path
 image_path = '/home/mcnowinski/itzamna/images'
+
+# path to solve-field astrometry executable
+solve_field_path = '/home/mcnowinski/astrometry/bin/solve-field'
 
 # max time to allow for (just) pinpoint operation
 # report alert if exceeded
@@ -313,6 +318,144 @@ class Telescope():
         # check the current telescope position
         (output, error, pid) = self.runSubprocess(['tx', 'where'])
 
+    def pinpointier(self, observation, point=True):
+        # MODIFY THESE FIELDS AS NEEDED!
+        base_path = '/tmp/'+datetime.datetime.now().strftime("%Y%m%d.%H%M%S%f.pinpoint.")
+        # path to astrometry.net solve_field executable
+        # astrometry parameters
+        downsample = 2
+        # bin=1, 0.75 arsec/pixel
+        scale_low = 0.55
+        scale_high = 2.00
+        radius = 30.0  # up this to 30 deg, just in case scope is *way* off
+        cpu_limit = 30
+        # offset limits (deg)
+        max_ra_offset = 30.0
+        max_dec_offset = 30.0
+        min_ra_offset = 0.05
+        min_dec_offset = 0.05
+        # how many pointing iterations to allow?
+        max_tries = 5
+        # image command parameters
+        time = 10
+        bin = 2
+        fits_fname = base_path+'pointing.fits'
+
+        ra_target = Angle(observation.target.getRa().replace(
+            ' ', ':'), unit=u.hour).degree
+        dec_target = Angle(observation.target.getDec().replace(
+            ' ', ':'), unit=u.deg).degree
+
+        if point:
+            logger.info('Pointing to RA=%s, DEC=%s.' % (observation.target.getRa().replace(
+                ' ', ':'),  observation.target.getDec().replace(
+                ' ', ':')))
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'point', 'ra=%s' % observation.target.getRa().replace(
+                    ' ', ':'), 'dec=%s' % observation.target.getDec().replace(
+                    ' ', ':')])
+
+        current_filter = 'clear'
+        # ensure filter is clear!
+        # get current filter setting
+        (output, error, pid) = self.runSubprocess(['pfilter'])
+        match = re.search('([a-zA-Z0-1\\-]+)', output)
+        if match:
+            current_filter = match.group(1)
+            logger.debug('Current filter is %s.' % current_filter)
+            # set to clear (temporarily)
+            logger.debug('Changing filter setting to clear (temporarily).')
+            (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+        else:
+            logger.error('Unrecognized filter (%s).' % output)
+
+        ra_offset = 5.0
+        dec_offset = 5.0
+        iteration = 0
+        while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
+            iteration += 1
+
+            logger.debug('Performing adjustment #%d...' % (iteration))
+
+            # get pointing image
+            (output, error, pid) = self.runSubprocess(
+                ['image', 'time=%f' % time, 'bin=%d' % bin, 'outfile=%s' % fits_fname])
+
+            if not os.path.isfile(fits_fname):
+                logger.error('File (%s) not found.' % fits_fname)
+                return
+
+            # get FITS header, pull RA and DEC for cueing the plate solving
+            if(ra_target == None or dec_target == None):
+                header = getheader(fits_fname)
+                try:
+                    ra_target = header['RA']
+                    # create an Angle object
+                    ra_target = coord.Angle(ra_target, unit=u.hour).degree
+                    dec_target = header['DEC']
+                    dec_target = coord.Angle(dec_target, unit=u.deg).degree
+                except KeyError:
+                    logger.error(
+                        "RA/DEC not found in input FITS header (%s)." % fits_fname)
+                    return
+
+            # plate solve this image, using RA/DEC from FITS header
+            (output, error, pid) = self.runSubprocess([solve_field_path, '--no-verify', '--overwrite', '--no-remove-lines', '--downsample', '%d' % downsample, '--scale-units', 'arcsecperpix',
+                                                       '--scale-low',  '%f' % scale_low, '--scale-high',  '%f' % scale_high, '--ra',  '%s' % ra_target, '--dec', '%s' % dec_target, '--radius',  '%f' % radius, '--cpulimit', '%d' % cpu_limit, fits_fname])
+
+            logger.debug(output)
+
+            self.slackdebug('Got pinpoint image.')
+            self.slackpreview(fits_fname)
+
+            # remove astrometry.net temporary files
+            os.remove(fits_fname)
+            os.remove(base_path+'pointing-indx.xyls')
+            os.remove(base_path+'pointing.axy')
+            os.remove(base_path+'pointing.corr')
+            os.remove(base_path+'pointing.match')
+            os.remove(base_path+'pointing.rdls')
+            os.remove(base_path+'pointing.solved')
+            os.remove(base_path+'pointing.wcs')
+            os.remove(base_path+'pointing.new')
+
+            # look for field center in solve-field output
+            match = re.search(
+                'Field center\: \(RA,Dec\) \= \(([0-9\-\.\s]+)\,([0-9\-\.\s]+)\) deg\.', output)
+            if match:
+                RA_image = match.group(1).strip()
+                DEC_image = match.group(2).strip()
+            else:
+                logger.error(
+                    "Field center RA/DEC not found in solve-field output!")
+                return
+
+            ra_offset = float(ra_target)-float(RA_image)
+            if ra_offset > 350:
+                ra_offset -= 360.0
+            dec_offset = float(dec_target)-float(DEC_image)
+
+            if(abs(ra_offset) <= max_ra_offset and abs(dec_offset) <= max_dec_offset):
+                (output, error, pid) = self.runSubprocess(
+                    ['tx', 'offset', 'ra=%f' % ra_offset, 'dec=%f' % dec_offset])
+                logger.debug("...complete (dRA=%f deg, dDEC=%f deg)." %
+                             (ra_offset, dec_offset))
+                self.slackdebug("Telescope offset complete (dRA=%f deg, dDEC=%f deg)." % (
+                    ra_offset, dec_offset))
+            else:
+                logger.error("Calculated offsets too large (tx offset ra=%f dec=%f)! Pinpoint aborted." % (
+                    ra_offset, dec_offset))
+                return
+
+        if(iteration < max_tries):
+            logger.info('BAM! Your target has been pinpoint-ed!')
+            self.slackdebug('Your target has been pinpoint-ed!')
+            return
+
+        logger.error(
+            'Exceeded maximum number of adjustments (%d).' % max_tries)
+        return
+
     def getImage(self, observation, end_time=None):
         if end_time == None:  # no end time, just repeat stack(s) by count
             # make double sure that this is not a continuous observation!
@@ -356,14 +499,13 @@ class Telescope():
                 # M42_clear_100s_bin1_180210_043012_seo_epjmm_003_RAW.fits
                 # fits = '%s_%s_%dsec_bin%d_%s_%s_num%d_seo.fits' % (
                 #    name, filter, exposure, binning, user, datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss'), count)
-                fits = '%s_%s_%.1fs_bin%d_%s_seo_%s_%03d_RAW.fits' % (
+                fits = '%s_%s_%.2fs_bin%d_%s_seo_%s_%03d_RAW.fits' % (
                     name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), user, count)
                 fits = fits.replace(' ', '_')
                 fits = fits.replace('(', '')
                 fits = fits.replace(')', '')
                 self.slackdebug('Taking image (%s)...' % (fits))
                 if self.simulate:
-                    #(output, error, pid) = runSubprocess(['image','dark','time=%d'%t_exposure,'bin=%d'%bin, 'outfile=%s'%fits], simulate)
                     time.sleep(exposure)
                     error = 0
                 else:
@@ -393,7 +535,7 @@ class Telescope():
                 else:
                     self.slackdebug('Error. Image command failed (%s).' % fits)
                 if do_pinpoint:
-                    self.pinpoint(observation, False)
+                    self.pinpointier(observation, False)
 #
 # an astronomical observation
 #
