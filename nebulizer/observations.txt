@@ -1,13 +1,13 @@
-Rich	General	Jupiter	0.01	1	z-band	2	No	
+Nowinski	General	SA103626	60	1	g-band, r-band	2	No
+Nowinski	Solar System	317	120	1	g-band, r-band	2	No
+Rich	Solar System	Jupiter	0.01	1	z-band	2	No	
 Panfichialdo	General	NGC 6992	60	1	dark, g-band, r-band, i-band	2	No	
 Panfichialdo	General	M83	60	1	dark, r-band, i-band	2	No	
 Maxgoldberg	General	M 16	60	12	h-alpha	1	No	
-Cesmerian	Solar System	Jupiter	0.01	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	Solar System	Jupiter	0.15	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No	
-Cesmerian	General	Jupiter	0.1	1	dark	2	No	
-Norabailey	Solar System	Jupiter	0.1	1	clear, g-band, r-band, i-band	2	No
-Nowinski	General	M67	10	1	clear	1	No
+Cesmerian	Solar System	Jupiter	0.01	1	clear,g-band,r-band,i-band	2	No
+Cesmerian	Solar System	Jupiter	0.1	1	clear,u-band,g-band,r-band,i-band,dark	2	No
+Cesmerian	Solar System	Jupiter	0.15	1	clear,g-band,r-band,i-band	2	No
+Cesmerian	Solar System	Jupiter	0.25	5	clear,dark,h-alpha	5	No
+Cesmerian	Solar System	Jupiter	0.5	1	dark,g-band,r-band,i-band,clear	2	No
+Maxgoldberg	General	M 86	60	1	clear	1	No
+Norabailey	Solar System	Jupiter	0.1	1	clear,g-band,r-band,i-band	2	No

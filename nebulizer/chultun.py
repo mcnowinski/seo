@@ -16,7 +16,6 @@ from astroplan import Observer
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_sun, Angle
 from astroplan import download_IERS_A
 from astropy.io.fits import getheader
-import matplotlib.pyplot as plt
 import datetime
 import log
 import traceback
@@ -140,6 +139,18 @@ class Telescope():
         (output, error, pid) = self.runSubprocess(
             ['rm', 'image.jpg', 'image.tif'])
 
+    # send preview of fits image to Slack
+    def slackimage(self, image):
+        if self.simulate:
+            self.slackdev('Placeholder for image (%s).' % image)
+            return
+        (output, error, pid) = self.runSubprocess(
+            ['convert', '-resize', '100%', '-normalize', '-quality', '75', image, 'image.jpg'])
+        (output, error, pid) = self.runSubprocess(
+            ['slackpreview', 'image.jpg', image])
+        (output, error, pid) = self.runSubprocess(
+            ['rm', 'image.jpg'])
+
     def squeezeit(self):
         logger.info('Closing the observatory...')
         (output, error, pid) = self.runSubprocess(['squeezeit'], self.simulate)
@@ -167,6 +178,31 @@ class Telescope():
         else:
             logger.error('Observatory could not be opened.')
         # sys.exit(1)
+
+    def setFocus(self, position):
+        if not self.simulate:
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'focus', 'pos=%d' % position])
+
+            # done focus pos=4854
+            if not re.search('done focus pos\\=([0-9]+)', output):
+                logger.error('Could not set focus to %d.' % position)
+                return False
+
+        logger.info('Focus position is %s.' % position)
+        return True
+
+    def getFocus(self):
+        focus_position = ''
+        (output, error, pid) = self.runSubprocess(['tx', 'focus'])
+        # done focus pos=4854
+        match = re.search('pos=(\S+)', output)
+        if(match):
+            focus_position = match.group(1)
+            logger.info('Focus position is %s.' % focus_position)
+        else:
+            logger.error('Focus command failed (%s).' % output)
+        return focus_position
 
     # check slit
     # if the slit is closed, alert the observer via Slack
@@ -295,6 +331,10 @@ class Telescope():
         self.slackdebug(
             'Pointing telescope to %s (RA=%s, DEC=%s)...' % (name, ra, dec))
 
+        # turn tracking on (just in case)
+        (output, error, pid) = self.runSubprocess(
+            ['tx', 'track', 'on'], self.simulate)
+
         # point the telescope
         start_point = datetime.datetime.utcnow()
         if point == True:  # point and refine
@@ -346,6 +386,10 @@ class Telescope():
         dec_target = Angle(observation.target.getDec().replace(
             ' ', ':'), unit=u.deg).degree
 
+        # turn tracking on (just in case)
+        (output, error, pid) = self.runSubprocess(
+            ['tx', 'track', 'on'], self.simulate)
+
         if point:
             logger.info('Pointing to RA=%s, DEC=%s.' % (observation.target.getRa().replace(
                 ' ', ':'),  observation.target.getDec().replace(
@@ -385,6 +429,9 @@ class Telescope():
                 logger.error('File (%s) not found.' % fits_fname)
                 return
 
+            self.slackdebug('Got pinpoint image.')
+            self.slackpreview(fits_fname)
+
             # get FITS header, pull RA and DEC for cueing the plate solving
             if(ra_target == None or dec_target == None):
                 header = getheader(fits_fname)
@@ -405,19 +452,19 @@ class Telescope():
 
             logger.debug(output)
 
-            self.slackdebug('Got pinpoint image.')
-            self.slackpreview(fits_fname)
-
             # remove astrometry.net temporary files
-            os.remove(fits_fname)
-            os.remove(base_path+'pointing-indx.xyls')
-            os.remove(base_path+'pointing.axy')
-            os.remove(base_path+'pointing.corr')
-            os.remove(base_path+'pointing.match')
-            os.remove(base_path+'pointing.rdls')
-            os.remove(base_path+'pointing.solved')
-            os.remove(base_path+'pointing.wcs')
-            os.remove(base_path+'pointing.new')
+            try:
+                os.remove(fits_fname)
+                os.remove(base_path+'pointing-indx.xyls')
+                os.remove(base_path+'pointing.axy')
+                os.remove(base_path+'pointing.corr')
+                os.remove(base_path+'pointing.match')
+                os.remove(base_path+'pointing.rdls')
+                os.remove(base_path+'pointing.solved')
+                os.remove(base_path+'pointing.wcs')
+                os.remove(base_path+'pointing.new')
+            except:
+                continue
 
             # look for field center in solve-field output
             match = re.search(
@@ -477,6 +524,22 @@ class Telescope():
             while Time.now() < end_time:  # how many times does this imaging sequence get repeated?
                 self.getImageStacks(observation)
 
+    def image(self, exposure, filter, binning, path, filename):
+        # make sure path exists!
+        pathlib2.Path('%s' % (path)).mkdir(parents=True, exist_ok=True)
+        # get the image!
+        if filter == 'dark':
+            # use h-alpha filter to reduce any ambient light
+            (output, error, pid) = self.runSubprocess(
+                ['pfilter', 'h-alpha'])
+            (output, error, pid) = self.runSubprocess(
+                ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
+        else:
+            (output, error, pid) = self.runSubprocess(
+                ['pfilter', '%s' % filter])
+            (output, error, pid) = self.runSubprocess(
+                ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
+
     def getImageStacks(self, observation, end_time=None, doChecks=True):
         for stack in observation.sequence.stacks:  # iterate thru the image sets
             # how many times does this stack get repeated?
@@ -509,38 +572,38 @@ class Telescope():
                     time.sleep(exposure)
                     error = 0
                 else:
-                    # make sure path exists!
-                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
-                                  ).mkdir(parents=True, exist_ok=True)
-                    # get the image!
-                    if filter == 'dark':
-                        # use h-alpha filter to reduce any ambient light
-                        (output, error, pid) = self.runSubprocess(
-                            ['pfilter', 'h-alpha'])
-                        (output, error, pid) = self.runSubprocess(
-                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
-                    else:
-                        (output, error, pid) = self.runSubprocess(
-                            ['pfilter', '%s' % filter])
-                        (output, error, pid) = self.runSubprocess(
-                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
-                if not error:
-                    self.slackdebug('Got image (%s).' % fits)
-                    if not self.simulate:
-                        self.slackpreview('%s/%s/%s/%s' %
-                                          (image_path, user, name, fits))
+                    self.image(exposure, filter, binning,
+                               image_path+'/'+user+'/'+name, fits)
+#                    # make sure path exists!
+#                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
+#                                  ).mkdir(parents=True, exist_ok=True)
+#                    # get the image!
+#                    if filter == 'dark':
+#                        # use h-alpha filter to reduce any ambient light
+#                        (output, error, pid) = self.runSubprocess(
+#                            ['pfilter', 'h-alpha'])
+#                        (output, error, pid) = self.runSubprocess(
+#                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
+#                    else:
+#                        (output, error, pid) = self.runSubprocess(
+#                            ['pfilter', '%s' % filter])
+#                        (output, error, pid) = self.runSubprocess(
+#                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
+                # if not error:
+                self.slackdebug('Got image (%s/%s/%s/%s).' % (image_path, user, name, fits))
+                if not self.simulate:
+                    self.slackpreview('%s/%s/%s/%s' %
+                                      (image_path, user, name, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
                     #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
                     #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
                 else:
-                    self.slackdebug('Error. Image command failed (%s).' % fits)
+                    self.slackdebug('Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
                     self.pinpointier(observation, False)
 #
 # an astronomical observation
 #
-
-
 class Observation():
 
     sequence = None  # image sequence
@@ -628,7 +691,7 @@ class Stack():
         self.do_pinpoint = do_pinpoint
 
     def toString(self):
-        return 'image stack: exposure=%d, filter=%s, binning=%d, count=%d' % (self.exposure, self.filter, self.binning, self.count)
+        return 'image stack: exposure=%f, filter=%s, binning=%d, count=%d' % (self.exposure, self.filter, self.binning, self.count)
 
 
 #
@@ -819,6 +882,88 @@ class Scheduler():
         if len(obs['time']) > 0:
             # the winner!
             id = np.argmin(obs['time'])
+            # set obs start time
+            self.observations[obs['id'][id]
+                              ].obs_start_time = Time(obs['time'][id])
+        else:
+            logger.info("No active foreground observations exist.")
+            return None
+
+        logger.debug('Next foreground observation is %s.' %
+                     self.observations[obs['id'][id]].target.name)
+        return self.observations[obs['id'][id]]
+
+    # grab the highest observation from the list
+    def whatsHighest(self):
+        # temp var to hold obs info
+        obs = {'time': [], 'delta_time': [], 'id': []}
+
+        # init observatory location
+        observatory_location = EarthLocation(
+            lat=self.observatory.latitude*u.deg, lon=self.observatory.longitude*u.deg, height=self.observatory.altitude*u.m)
+
+        # build alt-az coordinate frame for observatory over next ? hours (e.g., nearest sunset to next sunrise)
+        # start time is sunset or current time, if later...
+        now = Time.now()
+        if (now > self.sunset_time):
+            obs_time = Time.now()
+        else:
+            obs_time = self.sunset_time
+        delta_obs_time = np.linspace(
+            0, (self.sunrise_time-obs_time).sec/3600., 1000)*u.hour
+        # array of times between sunset and sunrise
+        times = obs_time + delta_obs_time
+        # celestial frame for this observatory over times
+        frame = AltAz(obstime=times, location=observatory_location)
+
+        # loop thru observations, suggest the next best target based on time of max alt.
+        for observation in self.observations:
+
+            # skip obs that are complete/inactive
+            if observation.active == False:
+                logger.debug('Observation (%s) is not active. Skipping...' %
+                             observation.target.getName())
+                continue
+
+            # skip background obs
+            if observation.sequence.repeat == Sequence.CONTINUOUS:
+                logger.debug('Observation (%s) is not foreground type. Skipping...' %
+                             observation.target.getName())
+                continue
+
+            # build target altaz relative to observatory
+            target_ra = observation.target.getRa()
+            target_dec = observation.target.getDec()
+            input_coordinates = target_ra + " " + target_dec
+            try:
+                target_coordinates = SkyCoord(
+                    input_coordinates, unit=(u.hourangle, u.deg))
+            except:
+                continue
+            target_altaz = target_coordinates.transform_to(frame)
+
+            # when is target highest *and* above minimum altitude?
+            # when is it above min_obs_alt?
+            valid_alt_times = times[np.where(
+                target_altaz.alt >= observation.min_obs_alt*u.degree)]
+            # when does the max alt occur?
+            if len(valid_alt_times) > 0:
+                obs['id'].append(observation.id)
+                # min time is the selection criteria
+                obs['time'].append(times[np.argmax(target_altaz.alt)])
+                delta_time = times[np.argmax(target_altaz.alt)]-Time.now()
+                delta_time = abs(delta_time.sec)
+                obs['delta_time'].append(delta_time)
+                # set min and max obs times
+                observation.min_obs_time = Time(
+                    np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                observation.max_obs_time = Time(
+                    np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+
+        # get earliest max alt. from valid targets
+        if len(obs['time']) > 0:
+            # the winner!
+            id = np.argmin(obs['delta_time'])
             # set obs start time
             self.observations[obs['id'][id]
                               ].obs_start_time = Time(obs['time'][id])
