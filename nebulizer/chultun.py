@@ -30,7 +30,10 @@ import urllib2
 import ch
 
 # set up logger
-logger = log.setup_custom_logger('chultun')
+logger = log.get_logger('chultun.log')
+
+# set up dumper
+dumper = log.get_dumper('chultun.dmp')
 
 # python path
 python_path = '/home/mcnowinski/anaconda2/bin/python'
@@ -49,7 +52,7 @@ solve_field_path = '/home/mcnowinski/astrometry/bin/solve-field'
 max_pinpoint_time_s = 60
 
 #
-# the SEO elescope
+# the SEO telescope
 #
 
 
@@ -74,7 +77,7 @@ class Telescope():
     def __init__(self, simulate):
         self.simulate = simulate
 
-    def done():
+    def done(self):
         self.squeezeit()
         is_cracked = False
         sys.exit(1)
@@ -106,8 +109,8 @@ class Telescope():
         if self.simulate:
             self.slackdev(msg)
             return
-        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         logger.info(msg)
+        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         (output, error, pid) = self.runSubprocess(['slackalert', msg])
 
     # send debug message to slack
@@ -115,14 +118,14 @@ class Telescope():
         if self.simulate:
             self.slackdev(msg)
             return
-        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         logger.debug(msg)
+        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         (output, error, pid) = self.runSubprocess(['slackdebug', msg])
 
     # send dev message to slack
     def slackdev(self, msg):
-        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         logger.debug(msg)
+        msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
         (output, error, pid) = self.runSubprocess(['slackdev', msg])
 
     # send preview of fits image to Slack
@@ -307,6 +310,7 @@ class Telescope():
                     'Too many clouds (%d%%). Pausing image sequence...' % int(clouds*100))
                 self.checkSun()
                 self.checkSlit()
+                self.checkAlt()
                 if self.simulate:
                     break
                 time.sleep(30)
@@ -317,7 +321,7 @@ class Telescope():
                         logger.error(
                             'Too many clouds (%d%%). Aborting image sequence...' % int(clouds*100))
                         if not self.simulate:
-                            self.squeezeit()
+                            self.done()
                     logger.debug('Cloud cover is %d%%.' % int(clouds*100))
                 else:
                     logger.error('Cloud command failed (%s).' % output)
@@ -450,7 +454,7 @@ class Telescope():
             (output, error, pid) = self.runSubprocess([solve_field_path, '--no-verify', '--overwrite', '--no-remove-lines', '--downsample', '%d' % downsample, '--scale-units', 'arcsecperpix',
                                                        '--scale-low',  '%f' % scale_low, '--scale-high',  '%f' % scale_high, '--ra',  '%s' % ra_target, '--dec', '%s' % dec_target, '--radius',  '%f' % radius, '--cpulimit', '%d' % cpu_limit, fits_fname])
 
-            logger.debug(output)
+            dumper.info(output)
 
             # remove astrometry.net temporary files
             try:
@@ -590,7 +594,8 @@ class Telescope():
 #                        (output, error, pid) = self.runSubprocess(
 #                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                 # if not error:
-                self.slackdebug('Got image (%s/%s/%s/%s).' % (image_path, user, name, fits))
+                self.slackdebug('Got image (%s/%s/%s/%s).' %
+                                (image_path, user, name, fits))
                 if not self.simulate:
                     self.slackpreview('%s/%s/%s/%s' %
                                       (image_path, user, name, fits))
@@ -598,12 +603,15 @@ class Telescope():
                     #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
                     #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
                 else:
-                    self.slackdebug('Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
+                    self.slackdebug(
+                        'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
                     self.pinpointier(observation, False)
 #
 # an astronomical observation
 #
+
+
 class Observation():
 
     sequence = None  # image sequence

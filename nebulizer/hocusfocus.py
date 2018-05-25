@@ -58,15 +58,15 @@ ref_stars_fname = '/home/mcnowinski/seo/nebulizer/SDSS_Standard_Stars'
 
 # path to sextractor executable, configuration, and output files
 sextractor_bin_path = '/home/mcnowinski/sex/sextractor/bin/sex'
-sextractor_sex_path = '/home/mcnowinski/seo/nebulizer/hp.sex'
-sextractor_param_path = '/home/mcnowinski/seo/nebulizer/hp.param'
-sextractor_conv_path = '/home/mcnowinski/seo/nebulizer/hp.conv'
-sextractor_cat_path = '/home/mcnowinski/seo/nebulizer/hp.cat'
+sextractor_sex_path = '/home/mcnowinski/seo/nebulizer/hf.sex'
+sextractor_param_path = '/home/mcnowinski/seo/nebulizer/hf.param'
+sextractor_conv_path = '/home/mcnowinski/seo/nebulizer/hf.conv'
+sextractor_cat_path = '/home/mcnowinski/seo/nebulizer/hf.cat'
 
 # path to psfex executable, configuration, and output file
 psfex_bin_path = '/home/mcnowinski/psfex/bin/psfex'
-psfex_cfg_path = '/home/mcnowinski/seo/nebulizer/hp.psfex'
-psfex_psf_path = '/home/mcnowinski/seo/nebulizer/hp.psf'
+psfex_cfg_path = '/home/mcnowinski/seo/nebulizer/hf.psfex'
+psfex_psf_path = '/home/mcnowinski/seo/nebulizer/hf.psf'
 
 # focus plot
 plt_path = '/tmp/hocusfocus.png'
@@ -92,7 +92,6 @@ stacks = []
 # initialize array covering a range of focus positions
 pass1_array = [4650, 4675, 4700, 4725, 4750, 4775, 4800,
                4825, 4850, 4875, 4900, 4925, 4950, 4975, 5000]
-#pass1_array = [4650, 4800, 5000]
 pass1_array_focus = np.zeros((len(pass1_array), 2))
 
 # read in reference stars from file
@@ -146,12 +145,13 @@ telescope.slackdebug('Pointing telescope to %s...' %
 telescope.pinpointier(target_observation)
 
 # get current focus position in case something goes awry
+telescope.slackdebug('Original focus position is %s.' % telescope.getFocus())
 focus_position_default = int(telescope.getFocus())
 
 # calculate PSF for pass1_array focus positions
 for i, focus_position in enumerate(pass1_array):
     # set focus to ith position of pass1_array
-    telescope.slackdebug('Setting focus to %s...' % focus_position)
+    telescope.slackdebug('Setting focus position to %s...' % focus_position)
     telescope.setFocus(focus_position)
 
     # take image
@@ -182,9 +182,6 @@ for i, focus_position in enumerate(pass1_array):
 pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
 pass1_fit_focus_pos = int(-pass1_fit[1]/(2*pass1_fit[0]))
 
-# set focus to minimum
-telescope.setFocus(pass1_fit_focus_pos)
-
 # save focus pos array
 #np.savetxt("/home/sirius/focus/"+folder+"/"+folder+".dat", pass1_array_focus, fmt='%.5f', header='focus_pos PSF')
 
@@ -202,7 +199,9 @@ plt.close()
 
 telescope.slackimage(plt_path)
 
-telescope.setFocus(focus_position_default)
+# set focus to minimum
+telescope.slackdebug('Setting final focus position to %s...' % focus_position)
+telescope.setFocus(pass1_fit_focus_pos)
 
 telescope.squeezeit()
 
