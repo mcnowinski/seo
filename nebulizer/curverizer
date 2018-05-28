@@ -1,0 +1,88 @@
+2018-05-27 01:51:04,192 INFO	Successfully identified 1 of 1 targets.
+2018-05-27 01:54:10,057 INFO	Successfully identified 1 of 1 targets.
+2018-05-27 01:58:04,708 INFO	Successfully identified 1 of 1 targets.
+2018-05-27 01:58:05,751 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 01:58:05.750555
+id=0
+active=1
+min_obs_time=2458265.68905
+max_obs_time=2458265.81446
+user=mcnowinski
+2018-05-27 03:11:30,270 INFO	Successfully identified 1 of 1 targets.
+2018-05-27 03:13:54,735 INFO	Successfully identified 1 of 1 targets.
+2018-05-27 03:13:55,763 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 03:13:55.763423
+id=0
+active=1
+min_obs_time=2458265.68906
+max_obs_time=2458265.81446
+max_alt_time=2458265.73624
+user=mcnowinski
+2018-05-27 03:50:27,808 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 03:50:27.807633
+id=0
+active=1
+min_obs_time=2458265.68907
+max_obs_time=2458265.81447
+max_alt_time=2458265.73595
+user=mcnowinski
+2018-05-27 04:39:24,486 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 04:39:24.486017
+id=0
+active=1
+min_obs_time=2018-05-27 04:39:23.672649
+max_obs_time=2018-05-27 07:32:44.652768
+max_alt_time=2018-05-27 05:39:51.331569
+user=mcnowinski
+2018-05-27 04:42:41,282 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 04:42:41.281345
+id=0
+active=1
+min_obs_time=2018-05-27 04:42:40.569318
+max_obs_time=2018-05-27 07:32:34.814291
+max_alt_time=2018-05-27 05:40:08.992926
+user=mcnowinski
+2018-05-27 04:49:37,930 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:53.4336, dec=-15:25:55.092
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-27 04:49:37.929965
+id=0
+active=1
+min_obs_time=2018-05-27 04:49:37.220054
+max_obs_time=2018-05-27 07:32:35.021939
+max_alt_time=2018-05-27 05:39:57.199370
+user=mcnowinski
+2018-05-28 04:43:48,869 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=3982 Kastel' (1984 JP1), ra=13:47:26.9904, dec=-15:18:58.932
+sequence: repeat=-1
+  image stack: exposure=120.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-05-28 04:43:48.868473
+id=0
+active=1
+min_obs_time=2018-05-28 04:43:48.125634
+max_obs_time=2018-05-28 07:29:12.507201
+max_alt_time=2018-05-28 05:35:35.760266
+user=mcnowinski

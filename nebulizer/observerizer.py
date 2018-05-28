@@ -24,13 +24,13 @@ user = 'observerizer'
 #
 
 # set up logger
-logger = log.setup_custom_logger('uc')
+logger = log.get_logger('uc')
 
 # list of observations
 input_fname = '/home/mcnowinski/seo/nebulizer/observations.txt'
 
 # simulate? set to True
-simulate = False
+simulate = True
 
 # time between checks for object observability in seconds
 delay_time = 30

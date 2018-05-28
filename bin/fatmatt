@@ -55,6 +55,8 @@ sunset $sunalt
 #prepare the observatory for observations
 openup nocloud logid=$logid
 if ($status)  exit 1
+keepopen maxtime=36000 slit
+if ($status)  exit 1
 
 #stop any scheduled jobs
 tin interrupt
@@ -73,7 +75,7 @@ while (1)
 	endif	 
 	@ count++
 	echo sleeping while CCD cools tchip=$tchip
-	tx slit keepopen | grep ERROR
+	#tx slit keepopen | grep ERROR
 	sleep 60
 end
 
@@ -83,11 +85,11 @@ sleep 2
 set lat=`tx tel_status | getkey lat`
 tx point ha=$ha dec=$lat decimal nodome | grep -w ERROR
 tx dome put=$daz | grep -w ERROR
-tx slit keepopen | grep -w ERROR
-if ($status == 0 ) then
-	set msg='skyflat: slit error'
-	goto die
-endif
+#tx slit keepopen | grep -w ERROR
+#if ($status == 0 ) then
+#	set msg='skyflat: slit error'
+#	goto die
+#endif
 
 #generate the sky flats
 set index = 0
@@ -126,11 +128,11 @@ foreach picid ($picids)
 		set newtime=`echo "scale=2; $factor*$exptime*$fudge" | bc`
 		echo mean=$mean factor=$factor newtime=$newtime
 		tx dome center > /dev/null
-		tx slit keepopen | grep ERROR
-		if ($status == 0 ) then
-			set msg="skyflat: slit error"
-			goto die
-		endif 
+		#tx slit keepopen | grep ERROR
+		#if ($status == 0 ) then
+		#	set msg="skyflat: slit error"
+		#	goto die
+		#endif 
 		if ( `echo "($newtime) < $MINTIME" | bc` ) then
 			set msg='skyflat: exposure time too short'
 			if ($dusk) then

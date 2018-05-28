@@ -24,7 +24,7 @@ def get_dumper(name):
     dumper = logging.getLogger(name)
     logging.Formatter.converter = time.gmtime
     dumper.setLevel(logging.DEBUG)
-    handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=10)
+    handler = logging.handlers.RotatingFileHandler(dump_file, maxBytes=5*1024*1024, backupCount=10)
     handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s\t%(message)s'))
     dumper.addHandler(handler)
 

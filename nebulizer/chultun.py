@@ -28,6 +28,8 @@ import warnings
 import pathlib2
 import urllib2
 import ch
+import glob2
+import json
 
 # set up logger
 logger = log.get_logger('chultun.log')
@@ -44,8 +46,20 @@ pinpoint_path = '/home/mcnowinski/seo/bin/pinpoint.py'
 # image path
 image_path = '/home/mcnowinski/itzamna/images'
 
+# image archive path
+image_archive_path = '/home/mcnowinski/itzamna/archive'
+
 # path to solve-field astrometry executable
 solve_field_path = '/home/mcnowinski/astrometry/bin/solve-field'
+
+# path to secret json config file
+secret_json_field_path = '/home/mcnowinski/seo/nebulizer/secret.json'
+
+# path to ssh
+ssh_path = 'ssh'
+
+# path to scp
+scp_path = 'scp'
 
 # max time to allow for (just) pinpoint operation
 # report alert if exceeded
@@ -74,13 +88,18 @@ class Telescope():
     # min target elevation
     min_alt = 25.0  # no pointing below this elevation
 
+    # secrets
+    secrets = []
+
     def __init__(self, simulate):
         self.simulate = simulate
+        with open(secret_json_field_path, "r") as f:
+            self.secrets = json.load(f)
 
     def done(self):
         self.squeezeit()
         is_cracked = False
-        sys.exit(1)
+        sys.exit(0)
 
     def runSubprocess(self, command_array, simulate=False, communicate=True):
         # command array is array with command and all required parameters
@@ -96,7 +115,9 @@ class Telescope():
             if communicate:
                 output, error = sp.communicate(b'\n\n')
                 if error:
-                    logger.error(error)
+                    logger.error('Process (%s) reported error.' %
+                                 (command_array))
+                    dumper.error(error)
                 return (output, error, sp.pid)
             else:  # some processes, like keepopen, hang forever with .communicate()
                 return ('', '', 0)
@@ -242,10 +263,8 @@ class Telescope():
             alt = float(match.group(1))
             logger.debug('Sun altitude is %s deg.' % alt)
             if alt > self.max_sun_alt:
-                logger.error('Sun is too high (%s > %s deg).' %
-                             (alt, self.max_sun_alt))
-                self.slackalert('Sun is too high (%s > %s deg).' %
-                                (alt, self.max_sun_alt))
+                logger.warn('Sun is too high (%s > %s deg).' %
+                            (alt, self.max_sun_alt))
                 # if wait is True, wait until sun rises
                 if wait == True:
                     while alt > self.max_sun_alt:
@@ -253,7 +272,8 @@ class Telescope():
                         match = re.search('alt=([\\-\\+\\.0-9]+)', output)
                         if match:
                             alt = float(match.group(1))
-                            logger.debug('Sun altitude is %s deg.' % alt)
+                            self.slackdebug('Sun is too high (%s > %s deg).' %
+                                            (alt, self.max_sun_alt))
                         else:
                             logger.error(
                                 'Error. Could not determine the current altitude of the sun (%s).' % output)
@@ -398,6 +418,9 @@ class Telescope():
             logger.info('Pointing to RA=%s, DEC=%s.' % (observation.target.getRa().replace(
                 ' ', ':'),  observation.target.getDec().replace(
                 ' ', ':')))
+            self.slackdebug('Pointing to RA=%s, DEC=%s.' % (observation.target.getRa().replace(
+                ' ', ':'),  observation.target.getDec().replace(
+                ' ', ':')))
             (output, error, pid) = self.runSubprocess(
                 ['tx', 'point', 'ra=%s' % observation.target.getRa().replace(
                     ' ', ':'), 'dec=%s' % observation.target.getDec().replace(
@@ -451,10 +474,9 @@ class Telescope():
                     return
 
             # plate solve this image, using RA/DEC from FITS header
-            (output, error, pid) = self.runSubprocess([solve_field_path, '--no-verify', '--overwrite', '--no-remove-lines', '--downsample', '%d' % downsample, '--scale-units', 'arcsecperpix',
+            (output, error, pid) = self.runSubprocess([solve_field_path, '--no-verify', '--overwrite', '--no-remove-lines', '--downsample', '%d' % downsample, '--scale-units', 'arcsecperpix', '--no-plots',
                                                        '--scale-low',  '%f' % scale_low, '--scale-high',  '%f' % scale_high, '--ra',  '%s' % ra_target, '--dec', '%s' % dec_target, '--radius',  '%f' % radius, '--cpulimit', '%d' % cpu_limit, fits_fname])
-
-            dumper.info(output)
+            dumper.debug(output)
 
             # remove astrometry.net temporary files
             try:
@@ -556,7 +578,11 @@ class Telescope():
                     self.checkAlt()
                     self.checkClouds()
 
-                name = observation.target.name.strip().replace(' ', '_')
+                name = observation.target.name.strip()
+                name = name.replace(' ', '_')
+                name = name.replace('(', '')
+                name = name.replace(')', '')
+                name = name.replace("'", '')
                 filter = stack.filter
                 exposure = stack.exposure
                 binning = stack.binning
@@ -571,6 +597,7 @@ class Telescope():
                 fits = fits.replace(' ', '_')
                 fits = fits.replace('(', '')
                 fits = fits.replace(')', '')
+                fits = fits.replace("'", '')
                 self.slackdebug('Taking image (%s)...' % (fits))
                 if self.simulate:
                     time.sleep(exposure)
@@ -607,6 +634,33 @@ class Telescope():
                         'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
                     self.pinpointier(observation, False)
+
+    # ssh -q -i /home/mcnowinski/.ssh/id_rsa_stars dmcginnis427@stars.uchicago.edu "mkdir -p /data/images/StoneEdge/0.5meter/2018/2018-05-26/ exit"
+    # scp -q -r -i /home/mcnowinski/.ssh/id_rsa_stars * dmcginnis427@stars.uchicago.edu:/data/images/StoneEdge/0.5meter/2018/2018-05-26/
+    def toStars(self):
+        # are there any .fits images to send?
+        fits = glob2.glob(image_path+'/**/*.fits')
+        if(len(fits) <= 0):
+            logger.info('No fits files found in %s.' % image_path)
+            return
+        # we are going to put these in a folder corresponding to the datetime this command was run!
+        # a bit different from how this usually works...
+        dest_path = '%s%s/%s' % (stars_image_path, datetime.datetime.utcnow().strftime(
+            '%Y'), datetime.datetime.utcnow().strftime('%Y-%m-%d'))
+        # off they go!
+        # create new directory if required
+        #(output, error, pid) = runSubprocess(
+        #    ['ssh', '-q', '-i', %s*.fits' % image_path, '%s' % dest_path])
+        # if error == '':
+        #    logger.info('Successfully uploaded %d image(s) to stars (%s).' % (
+        #        len(fits), dest_path))
+        #    # move images to archive
+        #    files = glob.iglob(image_path+'*.fits')
+        #    for file in files:
+        #        if os.path.isfile(file):
+        #            shutil.move(file, image_archive_path)
+        # else:
+        #    send_message('Error. Image uploaded failed!')
 #
 # an astronomical observation
 #
@@ -624,6 +678,7 @@ class Observation():
     obs_start_time = None  # when will target best be observable?
     min_obs_time = None  # when is the target first observable?
     max_obs_time = None  # when is the target last observable?
+    max_alt_time = None  # when is the
     active = True  # is this observation (still) active?
     id = -1  # id
 
@@ -636,7 +691,7 @@ class Observation():
         self.observer = observer
 
     def toString(self):
-        return '%s\n%s\n%smin_alt=%f deg\nobs_time=%s\nid=%d\nactive=%d\nmin_obs_time=%s\nmax_obs_time=%s\nuser=%s' % (self.observatory.toString(), self.target.toString(), self.sequence.toString(), self.min_obs_alt, self.obs_start_time, self.id, self.active, self.min_obs_time, self.max_obs_time, self.observer)
+        return '%s\n%s\n%smin_alt=%f deg\nobs_time=%s\nid=%d\nactive=%d\nmin_obs_time=%s\nmax_obs_time=%s\nmax_alt_time=%s\nuser=%s' % (self.observatory.toString(), self.target.toString(), self.sequence.toString(), self.min_obs_alt, self.obs_start_time, self.id, self.active, self.min_obs_time, self.max_obs_time, self.max_alt_time, self.observer)
 
 #
 # the astronomical target
@@ -1043,12 +1098,12 @@ class Scheduler():
                     np.min(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
                 observation.max_obs_time = Time(
                     np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
-                # if target is observable now, add it to the list
-                if observation.min_obs_time < Time.now():
-                    obs['id'].append(observation.id)
-                    # remember the end time too
-                    obs['time'].append(
-                        np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
+                observation.max_alt_time = Time(
+                    times[np.argmax(target_altaz.alt)])
+                obs['id'].append(observation.id)
+                # remember the end time too
+                obs['time'].append(
+                    np.max(times[np.where(target_altaz.alt > observation.min_obs_alt*u.degree)]))
 
         # get earliest max. time from valid targets
         if len(obs) > 0:

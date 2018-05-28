@@ -26,14 +26,14 @@ plt.style.use(astropy_mpl_style)
 plt.ioff()
 
 # user, hardcode for now
-user = 'chutlun'
+user = 'hocusfocus'
 
 #
 # main
 #
 
 # set up logger
-logger = log.setup_custom_logger('hocusfocus')
+logger = log.get_logger('hocusfocus')
 
 # simulate? set to True
 simulate = False
@@ -114,6 +114,9 @@ for ref_star in ref_stars:
 
 telescope.slackdebug('Starting hocusfocus...')
 
+# wait for sun to set
+telescope.checkSun(True)
+
 # find the best target (currently highest in the sky)
 # this is overly complicated, but I know it works ;)
 # start up the scheduler
@@ -129,9 +132,6 @@ else:
 
 telescope.slackdebug('Calibration star is %s.' %
                      target_observation.target.getName())
-
-# wait for sun to set
-telescope.checkSun(True)
 
 # check clouds
 telescope.checkClouds()
@@ -178,6 +178,8 @@ for i, focus_position in enumerate(pass1_array):
         'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
     logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
 
+    telescope.pinpointier(target_observation, False)
+
 # fit data points to a 2nd-deg polynomial
 pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
 pass1_fit_focus_pos = int(-pass1_fit[1]/(2*pass1_fit[0]))
@@ -200,7 +202,8 @@ plt.close()
 telescope.slackimage(plt_path)
 
 # set focus to minimum
-telescope.slackdebug('Setting final focus position to %s...' % focus_position)
+telescope.slackdebug('Setting final focus position to %d...' %
+                     pass1_fit_focus_pos)
 telescope.setFocus(pass1_fit_focus_pos)
 
 telescope.squeezeit()

@@ -1,0 +1,54 @@
+2018-05-27 04:21:31,819 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458265.68907
+id=86
+active=1
+min_obs_time=2458265.68907
+max_obs_time=2458265.77536
+max_alt_time=None
+user=hocusfocus
+2018-05-27 04:24:20,414 INFO	focus_position=4650, fwhm=4.68052483
+2018-05-27 04:25:08,542 INFO	focus_position=4675, fwhm=3.33449745
+2018-05-27 04:25:58,883 INFO	focus_position=4700, fwhm=3.34181428
+2018-05-27 04:26:43,967 INFO	focus_position=4725, fwhm=3.64174485
+2018-05-27 04:27:32,612 INFO	focus_position=4750, fwhm=2.91307116
+2018-05-27 04:28:21,959 INFO	focus_position=4775, fwhm=2.7813828
+2018-05-27 04:29:09,280 INFO	focus_position=4800, fwhm=2.53047943
+2018-05-27 04:29:55,626 INFO	focus_position=4825, fwhm=2.53475952
+2018-05-27 04:30:45,396 INFO	focus_position=4850, fwhm=2.47322798
+2018-05-27 04:31:36,094 INFO	focus_position=4875, fwhm=2.45953989
+2018-05-27 04:32:28,136 INFO	focus_position=4900, fwhm=2.55074811
+2018-05-27 04:34:03,160 INFO	focus_position=4925, fwhm=2.87164354
+2018-05-27 04:34:54,784 INFO	focus_position=4950, fwhm=3.55882502
+2018-05-27 04:35:42,569 INFO	focus_position=4975, fwhm=4.43126583
+2018-05-27 04:36:24,880 INFO	focus_position=5000, fwhm=3.51701236
+2018-05-28 04:22:11,049 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458266.68973
+id=86
+active=1
+min_obs_time=2458266.68973
+max_obs_time=2458266.77241
+max_alt_time=None
+user=hocusfocus
+2018-05-28 04:25:14,400 INFO	focus_position=4650, fwhm=4.68358612
+2018-05-28 04:26:23,639 INFO	focus_position=4675, fwhm=4.49386978
+2018-05-28 04:27:33,118 INFO	focus_position=4700, fwhm=4.78649044
+2018-05-28 04:28:44,410 INFO	focus_position=4725, fwhm=4.0569005
+2018-05-28 04:29:51,430 INFO	focus_position=4750, fwhm=3.83509302
+2018-05-28 04:31:00,360 INFO	focus_position=4775, fwhm=3.65963078
+2018-05-28 04:32:08,000 INFO	focus_position=4800, fwhm=3.46826911
+2018-05-28 04:33:24,116 INFO	focus_position=4825, fwhm=3.23772907
+2018-05-28 04:34:32,198 INFO	focus_position=4850, fwhm=3.40806961
+2018-05-28 04:35:46,839 INFO	focus_position=4875, fwhm=2.80874467
+2018-05-28 04:36:53,070 INFO	focus_position=4900, fwhm=3.44743443
+2018-05-28 04:38:01,409 INFO	focus_position=4925, fwhm=2.97629452
+2018-05-28 04:39:10,862 INFO	focus_position=4950, fwhm=3.64964366
+2018-05-28 04:40:20,266 INFO	focus_position=4975, fwhm=3.77543473
+2018-05-28 04:41:28,296 INFO	focus_position=5000, fwhm=3.51230192
