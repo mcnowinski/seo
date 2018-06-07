@@ -10,3 +10,55 @@ active=1
 min_obs_time=2458265.68907
 max_obs_time=2458265.9572
 user=Pagul
+2018-06-05 02:39:21,455 INFO	Successfully identified 10 of 10 targets.
+2018-06-05 02:39:28,087 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=M86, ra=12 26 11.814, dec=+12 56 45.49
+sequence: repeat=1
+  image stack: exposure=60.000000, filter=clear, binning=1, count=1
+min_alt=30.000000 deg
+obs_time=2458274.69449
+id=1
+active=1
+min_obs_time=2458274.69449
+max_obs_time=2458274.82569
+max_alt_time=None
+user=Maxgoldberg
+2018-06-05 02:50:55,230 INFO	Successfully identified 11 of 11 targets.
+2018-06-05 02:51:01,998 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=M81, ra=09 55 33.1730, dec=+69 03 55.061
+sequence: repeat=1
+  image stack: exposure=60.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2458274.69449
+id=0
+active=1
+min_obs_time=2458274.69449
+max_obs_time=2458274.8448
+max_alt_time=None
+user=Nowinski
+2018-06-05 03:02:02,625 INFO	Successfully identified 12 of 12 targets.
+2018-06-05 03:02:10,409 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=M81, ra=09 55 33.1730, dec=+69 03 55.061
+sequence: repeat=1
+  image stack: exposure=60.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2458274.69448
+id=0
+active=1
+min_obs_time=2458274.69448
+max_obs_time=2458274.8448
+max_alt_time=None
+user=Nowinski
+2018-06-05 04:53:52,474 INFO	Successfully identified 6 of 6 targets.
+2018-06-05 04:53:56,737 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=M81, ra=09 55 33.1730, dec=+69 03 55.061
+sequence: repeat=1
+  image stack: exposure=60.000000, filter=clear, binning=2, count=1
+min_alt=30.000000 deg
+obs_time=2018-06-05 04:53:52.954294
+id=0
+active=1
+min_obs_time=2018-06-05 04:53:52.954294
+max_obs_time=2018-06-05 08:16:42.298071
+max_alt_time=None
+user=Nowinski

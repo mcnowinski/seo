@@ -30,7 +30,7 @@ logger = log.get_logger('uc')
 input_fname = '/home/mcnowinski/seo/nebulizer/observations.txt'
 
 # simulate? set to True
-simulate = True
+simulate = False
 
 # time between checks for object observability in seconds
 delay_time = 30
@@ -147,3 +147,5 @@ while next_observation != None:
 
 telescope.slackdebug(
     'Observerization complete. Performed %d observations.' % count)
+
+telescope.done()

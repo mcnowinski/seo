@@ -1,1 +1,6 @@
-Pagul	General	CRTS CSS100407 J145502+143815	600	60	r-band	2	No
+Nowinski	General	M81	60	1	clear	2	No	
+Nowinski	General	M101	60	1	clear	2	No	
+Panfichialdo	General	M83	60	1	dark, r-band, i-band	2	No	
+Maxgoldberg	General	M 86	60	1	clear	1	No	
+Esisco	General	NGC 7662	150	1	dark, g-band, r-band, i-band, h-alpha	2	No	
+Esisco	General	NGC 7129	150	1	dark, g-band, r-band, i-band, h-alpha	2	No	

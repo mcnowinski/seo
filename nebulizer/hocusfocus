@@ -52,3 +52,246 @@ user=hocusfocus
 2018-05-28 04:39:10,862 INFO	focus_position=4950, fwhm=3.64964366
 2018-05-28 04:40:20,266 INFO	focus_position=4975, fwhm=3.77543473
 2018-05-28 04:41:28,296 INFO	focus_position=5000, fwhm=3.51230192
+2018-05-29 04:31:28,873 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458267.69038
+id=86
+active=1
+min_obs_time=2458267.69038
+max_obs_time=2458267.76979
+max_alt_time=2458267.69038
+user=hocusfocus
+2018-05-29 04:35:02,853 INFO	focus_position=4650, fwhm=5.04972315
+2018-05-29 04:36:14,946 INFO	focus_position=4675, fwhm=4.62685156
+2018-05-29 04:37:24,867 INFO	focus_position=4700, fwhm=4.67921925
+2018-05-29 04:38:34,325 INFO	focus_position=4725, fwhm=3.64710236
+2018-05-29 04:39:42,661 INFO	focus_position=4750, fwhm=3.23708534
+2018-05-29 04:40:50,917 INFO	focus_position=4775, fwhm=3.22762179
+2018-05-29 04:41:59,757 INFO	focus_position=4800, fwhm=3.42999744
+2018-05-29 04:43:09,547 INFO	focus_position=4825, fwhm=3.12182212
+2018-05-29 04:44:21,029 INFO	focus_position=4850, fwhm=2.9319663
+2018-05-29 04:45:29,881 INFO	focus_position=4875, fwhm=2.75406027
+2018-05-29 04:46:35,735 INFO	focus_position=4900, fwhm=3.00883675
+2018-05-29 04:47:43,824 INFO	focus_position=4925, fwhm=3.0674324
+2018-05-29 04:48:53,191 INFO	focus_position=4950, fwhm=3.16502857
+2018-05-29 04:50:01,267 INFO	focus_position=4975, fwhm=3.0902133
+2018-05-29 04:51:11,257 INFO	focus_position=5000, fwhm=3.45173144
+2018-05-30 04:31:48,494 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458268.69102
+id=86
+active=1
+min_obs_time=2458268.69102
+max_obs_time=2458268.76718
+max_alt_time=None
+user=hocusfocus
+2018-05-30 04:35:11,435 INFO	focus_position=4650, fwhm=5.77120399
+2018-05-30 04:36:19,513 INFO	focus_position=4675, fwhm=6.45013046
+2018-05-30 04:37:26,327 INFO	focus_position=4700, fwhm=6.22684526
+2018-05-30 04:38:34,851 INFO	focus_position=4725, fwhm=5.68038607
+2018-05-30 04:39:43,039 INFO	focus_position=4750, fwhm=5.40550995
+2018-05-30 04:40:51,766 INFO	focus_position=4775, fwhm=5.50003815
+2018-05-30 04:41:58,189 INFO	focus_position=4800, fwhm=5.73297977
+2018-05-30 04:43:09,485 INFO	focus_position=4825, fwhm=5.56995583
+2018-05-30 04:44:18,220 INFO	focus_position=4850, fwhm=5.85795784
+2018-05-30 04:45:25,699 INFO	focus_position=4875, fwhm=5.30298853
+2018-05-30 04:46:31,788 INFO	focus_position=4900, fwhm=6.13876724
+2018-05-30 04:47:40,384 INFO	focus_position=4925, fwhm=6.07427359
+2018-05-30 04:48:50,183 INFO	focus_position=4950, fwhm=6.34004021
+2018-05-30 04:50:01,031 INFO	focus_position=4975, fwhm=5.82938862
+2018-05-30 04:51:10,963 INFO	focus_position=5000, fwhm=6.45222473
+2018-05-30 05:02:21,141 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2018-05-30 05:00:49.906685
+id=86
+active=1
+min_obs_time=2018-05-30 05:00:49.906685
+max_obs_time=2018-05-30 06:24:41.460607
+max_alt_time=None
+user=hocusfocus
+2018-05-30 05:05:41,147 INFO	focus_position=4650, fwhm=5.84798431
+2018-05-30 05:06:53,208 INFO	focus_position=4675, fwhm=4.85417843
+2018-05-30 05:08:02,142 INFO	focus_position=4700, fwhm=4.74973106
+2018-05-30 05:09:11,114 INFO	focus_position=4725, fwhm=4.46477509
+2018-05-30 05:10:17,745 INFO	focus_position=4750, fwhm=4.10550833
+2018-05-30 05:11:27,243 INFO	focus_position=4775, fwhm=4.45845127
+2018-05-30 05:12:35,350 INFO	focus_position=4800, fwhm=5.1431427
+2018-05-30 05:13:43,213 INFO	focus_position=4825, fwhm=5.09871864
+2018-05-30 05:14:53,286 INFO	focus_position=4850, fwhm=4.82364464
+2018-05-30 05:16:01,291 INFO	focus_position=4875, fwhm=5.77784204
+2018-05-30 05:17:10,189 INFO	focus_position=4900, fwhm=4.67710352
+2018-05-30 05:18:18,913 INFO	focus_position=4925, fwhm=4.30446005
+2018-05-30 05:19:25,647 INFO	focus_position=4950, fwhm=4.15840435
+2018-05-30 05:20:35,094 INFO	focus_position=4975, fwhm=4.70073891
+2018-05-30 05:21:44,841 INFO	focus_position=5000, fwhm=5.70028877
+2018-05-31 04:24:53,000 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458269.69163
+id=86
+active=1
+min_obs_time=2458269.69163
+max_obs_time=2458269.7643
+max_alt_time=None
+user=hocusfocus
+2018-05-31 04:27:40,165 INFO	focus_position=4650, fwhm=5.03258896
+2018-05-31 04:28:50,342 INFO	focus_position=4675, fwhm=4.5636816
+2018-05-31 04:29:59,122 INFO	focus_position=4700, fwhm=5.08289957
+2018-05-31 04:31:09,654 INFO	focus_position=4725, fwhm=4.75863361
+2018-05-31 04:32:19,197 INFO	focus_position=4750, fwhm=4.66390848
+2018-05-31 04:33:31,025 INFO	focus_position=4775, fwhm=4.85041428
+2018-05-31 04:34:41,167 INFO	focus_position=4800, fwhm=5.39034843
+2018-05-31 04:35:48,136 INFO	focus_position=4825, fwhm=3.88006926
+2018-05-31 04:36:55,958 INFO	focus_position=4850, fwhm=4.93847179
+2018-05-31 04:38:04,823 INFO	focus_position=4875, fwhm=4.50289631
+2018-05-31 04:39:12,627 INFO	focus_position=4900, fwhm=4.50939512
+2018-05-31 04:40:20,012 INFO	focus_position=4925, fwhm=5.35478115
+2018-05-31 04:41:27,889 INFO	focus_position=4950, fwhm=5.37563705
+2018-05-31 04:42:35,639 INFO	focus_position=4975, fwhm=5.02401066
+2018-05-31 04:43:44,223 INFO	focus_position=5000, fwhm=5.44915771
+2018-06-02 04:26:28,155 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458271.69283
+id=86
+active=1
+min_obs_time=2458271.69283
+max_obs_time=2458271.75887
+max_alt_time=None
+user=hocusfocus
+2018-06-02 04:29:10,586 INFO	focus_position=4650, fwhm=4.5797081
+2018-06-02 04:30:23,398 INFO	focus_position=4675, fwhm=4.85093307
+2018-06-02 04:31:33,069 INFO	focus_position=4700, fwhm=4.06256104
+2018-06-02 04:32:44,703 INFO	focus_position=4725, fwhm=3.48211002
+2018-06-02 04:34:01,233 INFO	focus_position=4750, fwhm=3.26266766
+2018-06-02 04:35:12,130 INFO	focus_position=4775, fwhm=3.75287247
+2018-06-02 04:36:20,199 INFO	focus_position=4800, fwhm=3.21902823
+2018-06-02 04:37:29,727 INFO	focus_position=4825, fwhm=3.61706305
+2018-06-02 04:38:50,651 INFO	focus_position=4850, fwhm=3.07369399
+2018-06-02 04:40:02,866 INFO	focus_position=4875, fwhm=2.85962653
+2018-06-02 04:41:14,923 INFO	focus_position=4900, fwhm=2.70775604
+2018-06-02 04:42:22,155 INFO	focus_position=4925, fwhm=3.03366017
+2018-06-02 04:43:33,395 INFO	focus_position=4950, fwhm=3.3594842
+2018-06-02 04:44:40,951 INFO	focus_position=4975, fwhm=3.38676262
+2018-06-02 04:45:47,003 INFO	focus_position=5000, fwhm=3.7808404
+2018-06-03 04:42:41,880 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_34, ra=10:39:36.73, dec=+43:06:09.2
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2018-06-03 04:41:10.960998
+id=73
+active=1
+min_obs_time=2018-06-03 04:41:10.960998
+max_obs_time=2018-06-03 04:41:35.970602
+max_alt_time=None
+user=hocusfocus
+2018-06-03 04:46:22,956 INFO	focus_position=4650, fwhm=4.97618818
+2018-06-03 04:47:32,946 INFO	focus_position=4675, fwhm=4.90063667
+2018-06-03 04:48:41,408 INFO	focus_position=4700, fwhm=5.1625824
+2018-06-03 04:49:53,852 INFO	focus_position=4725, fwhm=3.93927622
+2018-06-03 04:51:06,914 INFO	focus_position=4750, fwhm=3.72521639
+2018-06-03 04:52:16,365 INFO	focus_position=4775, fwhm=3.62421227
+2018-06-03 04:53:25,799 INFO	focus_position=4800, fwhm=3.87661552
+2018-06-03 04:54:33,950 INFO	focus_position=4825, fwhm=3.41408944
+2018-06-03 04:55:40,364 INFO	focus_position=4850, fwhm=3.86153603
+2018-06-03 04:56:48,098 INFO	focus_position=4875, fwhm=3.80777407
+2018-06-03 04:57:58,876 INFO	focus_position=4900, fwhm=2.72818017
+2018-06-03 04:59:10,267 INFO	focus_position=4925, fwhm=3.27118444
+2018-06-03 05:00:26,238 INFO	focus_position=4950, fwhm=2.89647055
+2018-06-03 05:01:33,137 INFO	focus_position=4975, fwhm=3.25206041
+2018-06-03 05:02:46,938 INFO	focus_position=5000, fwhm=2.84251714
+2018-06-03 05:09:13,256 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2018-06-03 05:07:42.045280
+id=86
+active=1
+min_obs_time=2018-06-03 05:07:42.045280
+max_obs_time=2018-06-03 06:08:58.323836
+max_alt_time=None
+user=hocusfocus
+2018-06-03 05:11:54,071 INFO	focus_position=4650, fwhm=5.15992737
+2018-06-03 05:13:03,279 INFO	focus_position=4675, fwhm=5.27059174
+2018-06-03 05:14:13,540 INFO	focus_position=4700, fwhm=4.01519299
+2018-06-03 05:15:21,931 INFO	focus_position=4725, fwhm=4.07757521
+2018-06-03 05:16:30,404 INFO	focus_position=4750, fwhm=3.05368066
+2018-06-03 05:17:41,254 INFO	focus_position=4775, fwhm=2.96126556
+2018-06-03 05:18:51,940 INFO	focus_position=4800, fwhm=2.7104733
+2018-06-03 05:20:00,947 INFO	focus_position=4825, fwhm=2.60750818
+2018-06-03 05:21:12,382 INFO	focus_position=4850, fwhm=2.74508739
+2018-06-03 05:22:22,769 INFO	focus_position=4875, fwhm=2.43808389
+2018-06-03 05:23:33,585 INFO	focus_position=4900, fwhm=2.59050512
+2018-06-03 05:24:41,146 INFO	focus_position=4925, fwhm=4.08947372
+2018-06-03 05:25:46,168 INFO	focus_position=4950, fwhm=3.86706305
+2018-06-03 05:26:53,906 INFO	focus_position=4975, fwhm=3.10343742
+2018-06-03 05:28:04,882 INFO	focus_position=5000, fwhm=3.3844254
+2018-06-05 04:30:21,778 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458274.69448
+id=86
+active=1
+min_obs_time=2458274.69448
+max_obs_time=2458274.75067
+max_alt_time=None
+user=hocusfocus
+2018-06-05 04:33:52,866 INFO	focus_position=4650, fwhm=3.78132296
+2018-06-05 04:35:09,102 INFO	focus_position=4675, fwhm=3.41190743
+2018-06-05 04:37:26,590 INFO	focus_position=4700, fwhm=3.99480629
+2018-06-05 04:38:35,565 INFO	focus_position=4725, fwhm=3.223454
+2018-06-05 04:39:43,233 INFO	focus_position=4750, fwhm=3.00228906
+2018-06-05 04:40:50,444 INFO	focus_position=4775, fwhm=3.08146429
+2018-06-05 04:41:59,032 INFO	focus_position=4800, fwhm=3.08102679
+2018-06-05 04:43:12,368 INFO	focus_position=4825, fwhm=3.53991032
+2018-06-05 04:44:19,057 INFO	focus_position=4850, fwhm=3.64147186
+2018-06-05 04:45:25,171 INFO	focus_position=4875, fwhm=3.80389714
+2018-06-05 04:46:31,806 INFO	focus_position=4900, fwhm=4.38367558
+2018-06-05 04:47:39,604 INFO	focus_position=4925, fwhm=3.90479374
+2018-06-05 04:48:46,842 INFO	focus_position=4950, fwhm=3.92803645
+2018-06-05 04:50:01,577 INFO	focus_position=4975, fwhm=4.75726128
+2018-06-05 04:51:19,077 INFO	focus_position=5000, fwhm=5.2699604
+2018-06-06 04:29:23,324 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000
+target: name=Feige_66, ra=12:37:23.52, dec=+25:03:59.9
+sequence: repeat=1
+  image stack: exposure=30.000000, filter=clear, binning=2, count=1
+min_alt=60.000000 deg
+obs_time=2458275.69501
+id=86
+active=1
+min_obs_time=2458275.69501
+max_obs_time=2458275.74787
+max_alt_time=None
+user=hocusfocus
+2018-06-06 04:32:33,430 INFO	focus_position=4650, fwhm=4.49135923
+2018-06-06 04:33:52,261 INFO	focus_position=4675, fwhm=3.7204814
+2018-06-06 04:35:02,631 INFO	focus_position=4700, fwhm=3.97067595
+2018-06-06 04:36:11,048 INFO	focus_position=4725, fwhm=3.6953001
+2018-06-06 04:37:21,545 INFO	focus_position=4750, fwhm=3.72030926
+2018-06-06 04:38:33,416 INFO	focus_position=4775, fwhm=2.90063858
+2018-06-06 04:39:39,976 INFO	focus_position=4800, fwhm=3.12593079
+2018-06-06 04:40:46,325 INFO	focus_position=4825, fwhm=3.30011749
+2018-06-06 04:42:00,709 INFO	focus_position=4850, fwhm=2.73860979
+2018-06-06 04:43:08,897 INFO	focus_position=4875, fwhm=3.09180975
+2018-06-06 04:44:16,553 INFO	focus_position=4900, fwhm=3.15022302
+2018-06-06 04:45:23,785 INFO	focus_position=4925, fwhm=3.33263922
+2018-06-06 04:46:32,108 INFO	focus_position=4950, fwhm=3.60685253
+2018-06-06 04:47:41,721 INFO	focus_position=4975, fwhm=3.91792226
+2018-06-06 04:48:53,299 INFO	focus_position=5000, fwhm=4.19760036

@@ -192,7 +192,7 @@ array = np.array(pass1_array_focus)
 plt.scatter(array[:, 0], array[:, 1])
 x = np.arange(4000, 5100)
 y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
-plt.ylim(2, 5.5)
+plt.ylim(1, 8)
 plt.xlim(4550, 5100)
 plt.xlabel('Focus Position')
 plt.ylabel('FWHM')

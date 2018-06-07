@@ -1,0 +1,74 @@
+{
+    "user": "mcnowinski",
+    "simulate": false,
+    "observatory": {
+        "code": "G52",
+        "latitude": 38.2886,
+        "longitude": -122.50400,
+        "altitude": 8,
+        "timezone": "US/Pacific"
+    },
+    "min_obs_alt": 30,
+    "wait_time_s": 30,
+    "observations": {
+        "main": {
+            "target": {
+                "name": "25916",
+                "type": "asteroid"
+            },
+            "sequence": {
+                "repeat": -1,
+                "stacks": [
+                    {
+                        "exposure": 120,
+                        "binning": 2,
+                        "filters": "clear",
+                        "count": 1
+                    }
+                ]
+            }
+        },
+        "comparisons": [
+            {
+                "target": {
+                    "name": "25916",
+                    "type": "asteroid"
+                },
+                "sequence": {
+                    "repeat": 3,
+                    "stacks": [
+                        {
+                            "exposure": 60,
+                            "binning": 2,
+                            "filters": "r-band",
+                            "count": 1
+                        },
+                        {
+                            "exposure": 60,
+                            "binning": 2,
+                            "filters": "clear",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            {
+                "target": {
+                    "name": "BD-003152",
+                    "type": "star"
+                },
+                "sequence": {
+                    "repeat": 1,
+                    "stacks": [
+                        {
+                            "exposure": 30,
+                            "binning": 2,
+                            "filters": "r-band",
+                            "count": 5
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

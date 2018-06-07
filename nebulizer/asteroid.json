@@ -1,0 +1,63 @@
+{
+    "user": "mcnowinski",
+    "observatory": {
+        "code": "G52",
+        "latitude": 38.2886,
+        "longitude": -122.50400,
+        "altitude": 8,
+        "timezone": "US/Pacific"
+    },
+    "target": {
+        "name": "3982",
+        "type": "asteroid",
+        "sequence": {
+            "repeat": -1,
+            "stacks": [
+                {
+                    "exposure": 120,
+                    "binning": 2,
+                    "filters": "clear",
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "calibrations": [
+        {
+            "name": "3982",
+            "type": "asteroid",
+            "sequence": {
+                "repeat": 3,
+                "stacks": [
+                    {
+                        "exposure": 60,
+                        "binning": 2,
+                        "filters": "r-band",
+                        "count": 1
+                    },
+                    {
+                        "exposure": 60,
+                        "binning": 2,
+                        "filters": "clear",
+                        "count": 1
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Ross 106",
+            "type": "star",
+            "sequence": {
+                "repeat": 1,
+                "stacks": [
+                    {
+                        "exposure": 30,
+                        "binning": 2,
+                        "filters": "r-band",
+                        "count": 5
+                    }
+                ]
+            }
+        }
+    ]
+}
