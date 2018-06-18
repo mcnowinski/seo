@@ -311,7 +311,7 @@ def doCrack(command, user):
     (output, error, pid) = runSubprocess(['openup_nolock', 'nocloud'])
     logme(output)
 
-    subprocess.call(['keepopen', 'maxtime=36000', 'slit'])
+    (output, error, pid) = runSubprocess(['keepopen', 'maxtime=36000', 'slit'], True)
     logme(output)
 
     send_message("The observatory was successfully opened ('cracked')!")
