@@ -18,7 +18,6 @@ import subprocess
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Angle, get_sun
 import astropy.units as u
 from astropy.time import Time
-#import callhorizons
 # use custom callhorizons
 import ch  # callhorizons module edited by me
 import numpy
@@ -34,6 +33,31 @@ plt.style.use(astropy_mpl_style)
 import pytz
 import glob
 import shutil
+
+
+def runSubprocess(command_array, communicate=True):
+    # command array is array with command and all required parameters
+    if simulate:
+        logme('Simulating subprocess "%s".' % (command_array))
+        return ('', 0, 0)
+    try:
+        sp = subprocess.Popen(
+            command_array, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        logme('Running subprocess ("%s" %s)...' %
+              (' '.join(command_array), sp.pid))
+        sp.wait()
+        if communicate:
+            output, error = sp.communicate(b'\n\n')
+            if error:
+                logme('Error. Process (%s) reported error.' %
+                      (command_array))
+                dumper.error(error)
+            return (output, error, sp.pid)
+        else:  # some processes, like keepopen, hang forever with .communicate()
+            return ('', '', 0)
+    except Exception as e:
+        logme(traceback.format_exception(*sys.exc_info()))
+        return ('', 'Unknown error.', 0)
 
 
 def getStats(command, user):
@@ -53,44 +77,6 @@ def getStats(command, user):
     send_file('/home/mcnowinski/giterdone/seo/itzamna/stats.txt', 'Metric')
     send_file('/home/mcnowinski/giterdone/seo/itzamna/cloud.png', 'Clouds')
     send_file('/home/mcnowinski/giterdone/seo/itzamna/pointing.png', 'Pointing')
-
-
-def runSubprocess(command_array):
-    # command array is array with command and all required parameters
-    try:
-        sp = subprocess.Popen(
-            command_array, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        sp.wait()
-        logme('Running subprocess ("%s" %s)...' %
-              (' '.join(command_array), sp.pid))
-        output, error = sp.communicate()
-        return (output, error, sp.pid)
-    except:
-        logme('Error. Subprocess ("%s" %d) failed.' %
-              (' '.join(command_array), sp.pid))
-        return ('', '', 0)
-
-
-def doTest(command, user):
-    (output, error, pid) = runSubprocess(['date', '-u'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'taux'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'slit'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'lock'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'lamps'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['who'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'dome'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'track'])
-    send_message(output)
-    (output, error, pid) = runSubprocess(['tx', 'mets'])
-    send_message(output)
-    #send_message("", [{"fields": [{"title": "Priority","value": "<http://i.imgur.com/nwo13SM.png|test>","short": True},{"title": "Priority","value": "Low","short": True}]}])
 
 
 def getObservability(command, user):
@@ -322,15 +308,9 @@ def doCrack(command, user):
     (output, error, pid) = runSubprocess(['tin', 'interrupt'])
     logme(output)
 
-    #(output, error, pid) = runSubprocess(['openup','nocloud'])
     (output, error, pid) = runSubprocess(['openup_nolock', 'nocloud'])
     logme(output)
 
-    #(output, error, pid) = runSubprocess(['tx','slit', 'open'])
-    # logme(output)
-
-    #(output, error, pid) = runSubprocess(['killall','keepopen'])
-    # logme(output)
     subprocess.call(['keepopen', 'maxtime=36000', 'slit'])
     logme(output)
 
@@ -345,9 +325,6 @@ def doSqueeze(command, user):
 
     send_message(
         "Itzamna is closing ('squeezing') the observatory. Please wait...")
-
-    #(output, error, pid) = runSubprocess(['tin','interrupt'])
-    # logme(output)
 
     # reset the target name
     global target_name
@@ -422,7 +399,6 @@ def doImage(command, user):
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
     (output, error, pid) = runSubprocess(['pfilter', '%s' % filter])
-    #(output, error, pid) = runSubprocess(['image','dark','time=%d'%t_exposure,'bin=%d'%bin, 'outfile=%s'%fits])
     (output, error, pid) = runSubprocess(
         ['image', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits])
     if not error:
@@ -550,8 +526,6 @@ def doOffset(command, user):
         offset_dec_deg = offset_dec/60.0
         (output, error, pid) = runSubprocess(
             ['tx', 'offset', 'ra=%f' % offset_ra_deg, 'dec=%f' % offset_dec_deg])
-        #send_message("tx offset ra=%f' dec=%f'"%(offset_ra, offset_dec))
-        #send_message("tx offset ra=%f deg dec=%f deg"%(offset_ra_deg, offset_dec_deg))
         if not re.search('done offset', output):
             send_message("Error. Could not set offset to dRA=%.2f', dDEC=%.2f'." % (
                 offset_ra, offset_dec))
@@ -697,7 +671,6 @@ def doPinpointByRaDec(command, user):
     try:
         ra_decimal = Angle(ra + '  hours')
         dec_decimal = Angle(dec + '  degrees')
-        #print ra_decimal, dec_decimal
     except:
         send_message('Invalid RA/DEC coordinates.')
         return
@@ -785,7 +758,6 @@ def doPointByObjectNum(command, user):
     target_name = re.sub('[^A-Za-z0-9]', '_', object['name'])
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
-    # send_message(output)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
             'Error. Could not enable telescope tracking (%s).' % output)
@@ -796,7 +768,6 @@ def doPointByObjectNum(command, user):
     (output, error, pid) = runSubprocess(
         ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec])
     # done point move=62.455 dist=0.0031
-    # send_message(output)
     if not re.search('done point move\\=[0-9\\+\\-\\.]+\\sdist\\=[0-9\\+\\-\\.]+', output):
         send_message('Error. Could not point the telescope (%s).' % output)
         return
@@ -824,7 +795,6 @@ def doPointByRaDec(command, user):
     try:
         ra_decimal = Angle(ra + '  hours')
         dec_decimal = Angle(dec + '  degrees')
-        #print ra_decimal, dec_decimal
     except:
         send_message('Invalid RA/DEC coordinates.')
         return
@@ -836,7 +806,6 @@ def doPointByRaDec(command, user):
     target_name = "unknown"
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
-    # send_message(output)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
             'Error. Could not enable telescope tracking (%s).' % output)
@@ -844,8 +813,7 @@ def doPointByRaDec(command, user):
 
     (output, error, pid) = runSubprocess(
         ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec])
-    # done point move=62.455 dist=0.0031
-    # send_message(output)
+    # returns done point move=62.455 dist=0.0031
     if not re.search('done point move\\=[0-9\\+\\-\\.]+\\sdist\\=[0-9\\+\\-\\.]+', output):
         send_message('Error. Could not point the telescope (%s).' % output)
         return
@@ -873,11 +841,7 @@ def getObject(command, user):
     #
     #found_celestial_object = False
     try:
-        #result = SkyCoord.from_name(lookup)
-        #objects.append({'type':'Celestial', 'name':lookup, 'RA':result.ra.degree, 'DEC':result.dec.degree})
         result_table = Simbad.query_object(lookup.upper().replace('*', ''))
-        #print len(result_table), result_table
-        #send_message('Found %d celestial match(es) for "%s".'%(len(result_table),lookup))
         if len(result_table) > max_results:
             send_message(
                 'Exceeded maximum celestial matches. Will only return %d celestial results.' % (max_results))
@@ -886,7 +850,6 @@ def getObject(command, user):
             if count >= max_results:
                 break
             count += 1
-            #print result_table['MAIN_ID'][row], result_table['RA'][row], result_table['DEC'][row]
             objects.append({'type': 'Celestial', 'id': result_table['MAIN_ID'][row], 'name': result_table['MAIN_ID'][row].replace(' ', ''), 'RA': Angle(
                 result_table['RA'][row].replace(' ', ':') + ' hours').degree, 'DEC': Angle(result_table['DEC'][row].replace(' ', ':') + ' degrees').degree})
     except:
@@ -907,7 +870,6 @@ def getObject(command, user):
         f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
                             urllib2.quote(lookups[repeat].upper()))
         output = f.read()  # the whole enchilada
-        #print output
         lines = output.splitlines()  # line by line
         # no matches? go home
         if re.search('No matches found', output):
@@ -954,7 +916,6 @@ def getObject(command, user):
                     epoch_yr = line[12:22].strip()
                     primary_desig = line[22:37].strip()
                     match_name = line[37:len(line)].strip()
-                    #print record_number, epoch_yr, primary_desig, match_name
                     # add semicolon for small body lookups
                     object_names.append(record_number + ';')
             # check our parse job
@@ -987,7 +948,6 @@ def getObject(command, user):
                         name = line[9:45].strip()
                         designation = line[45:57].strip()
                         other = line[57:len(line)].strip()
-                        #print record_number, name, designation, other
                         # NO semicolon for major body lookups
                         object_names.append(record_number)
             # check our parse job
@@ -1013,15 +973,12 @@ def getObject(command, user):
             break
         count += 1
         try:
-            #print object_name.upper()
             result = ch.query(object_name.upper(), smallbody=False)
             result.set_epochrange(start.strftime(
                 "%Y/%m/%d %H:%M"), end.strftime("%Y/%m/%d %H:%M"), '1m')
             result.get_ephemerides(observatory_code)
             objects.append({'type': 'Solar System', 'id': object_name.upper(
             ), 'name': result['targetname'][0], 'RA': result['RA'][0], 'DEC': result['DEC'][0]})
-            #print 'targetid=%s'%result['targetid'][12]
-            #found_object = True
         except:
             pass
     #
@@ -1034,7 +991,6 @@ def getObject(command, user):
             got_match = (sat[0].find(lookup.upper().replace('*', '')) >= 0)
         else:
             got_match = (sat[0] == lookup.upper())
-        #print got_match
         if got_match:
             if num_sat_matches >= max_results:
                 break
@@ -1050,11 +1006,7 @@ def getObject(command, user):
                                   sat_ephem.dec, unit=(u.hour, u.deg))
             objects.append({'type': 'Satellite', 'tle_line1': sat_tle_line1, 'tle_line2': sat_tle_line2, 'id': sat_name,
                             'name': sat_name, 'RA': math.degrees(float(repr(sat_ephem.ra))), 'DEC': math.degrees(float(repr(sat_ephem.dec)))})
-            #alt = math.degrees(float(repr(sat_ephem.alt)))
-            #lat = math.degrees(float(repr(sat_ephem.sublat)))
-            #lon = math.degrees(float(repr(sat_ephem.sublong)))
-            # if(alt > 5):
-            #    print '%s: %s %s %f %s %f %f'%(name, sat_ephem.ra, sat_ephem.dec, alt, sat_ephem.az, lat, lon)
+
     send_message('Found %d satellite match(es) for "%s".' %
                  (num_sat_matches, lookup))
     if num_sat_matches > max_results:
@@ -1067,18 +1019,14 @@ def getObject(command, user):
         report = ''
         index = 1
         # calculate local time of observatory
-        #object_observer_utc_offset = int(datetime.datetime.now(pytz.timezone(observatory_tz)).strftime('%z'))/100.0*u.hour
-        # + object_observer_utc_offset
         object_observer_now = Time(datetime.datetime.utcnow(), scale='utc')
         #print object_observer_now
         for object in objects:
             # create SkyCoord instance from RA and DEC
             c = SkyCoord(object['RA'], object['DEC'], unit="deg")
-            #print object, c
             # transform RA,DEC to alt, az for this object from the observatory
             altaz = c.transform_to(
                 AltAz(obstime=object_observer_now, location=object_observer))
-            #print altaz.az.degree, altaz.alt.degree
             ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
             dec = Angle('%fd' % object['DEC']).to_string(
                 unit=u.degree, sep=':')
@@ -1096,7 +1044,6 @@ def lockedBy():
 
     locked_by = (None, None)
     (output, error, pid) = runSubprocess(['tx', 'lock'])
-    #print output
     # done lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=slac timestamp=2017-02-10T20:32:03Z
     match = re.search('^done lock user=(\S+) email=(\S+)', output)
     if(match):
@@ -1114,8 +1061,6 @@ def lockedByYou(user):
     else:
         return True
 
-# tx lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=slack
-
 
 def doLock(command, user):
     logme('Locking the telescope...')
@@ -1126,8 +1071,6 @@ def doLock(command, user):
         send_message('The telescope is already locked by %s (%s)!' %
                      (username, email))
         return False
-
-    #print user['profile']
 
     username = user['name']
     email = user['profile']['email']
@@ -1148,8 +1091,6 @@ def doLock(command, user):
     else:
         logme('Error. Telescope could not be locked (%s)' % output)
         send_message('Telescope could *not* be locked!')
-
-# tx lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=slack
 
 
 def doUnLock(command, user):
@@ -1191,8 +1132,6 @@ def getSlit(command, user):
     # done slit slit=closed
     match = re.search('^done slit slit=([a-zA-Z]+)', output)
     if(match):
-        #send_message('Slit is %s.'%(match.group(1)))
-        # send_message('\n')
         status = match.group(1)
     else:
         send_message(
@@ -1291,8 +1230,6 @@ def getWhere(command, user):
             send_message('>Slewing? Yes')
         ra_decimal = Angle(match.group(1) + '  hours')
         dec_decimal = Angle(match.group(2) + '  degrees')
-        # skymap_dot_org_image_url='http://server3.sky-map.org/imgcut?survey=SDSS&img_id=all&angle=0.9375&ra=%f&de=%f&width=400&height=400&projection=tan&interpolation=bicubic&jpeg_quality=0.8&output_type=jpeg'%(ra_decimal.hour,dec_decimal.degree)
-        # url='http://server3.wikisky.org/map?custom=1&language=EN&type=PART&w=500&h=500&angle=5.0&ra=%f&de=%f&rotation=0.0&mag=8&max_stars=100000&zoom=10&borders=1&border_color=400000&show_grid=0&grid_color=404040&grid_color_zero=808080&grid_lines_width=1.0&grid_ra_step=1.0&grid_de_step=15.0&show_const_lines=0&constellation_lines_color=006000&constellation_lines_width=1.0&show_const_names=&constellation_names_color=006000&const_name_font_type=PLAIN&const_name_font_name=SanSerif&const_name_font_size=15&show_const_boundaries=&constellation_boundaries_color=000060&constellation_boundaries_width=1.0&background_color=000000&output=PNG'%(ra_decimal.hour,dec_decimal.degree)
         url = 'http://server3.sky-map.org/imgcut?survey=DSS2&img_id=all&angle=0.5&ra=%f&de=%f&width=400&height=400&projection=tan&interpolation=bicubic&jpeg_quality=0.8&output_type=jpeg' % (
             ra_decimal.hour, dec_decimal.degree)
         send_message("", [{"image_url": "%s" %
@@ -1316,8 +1253,6 @@ def doWelcome():
     lockedBy()
 
 # get ClearDarkSky chart
-
-
 def getClearDarkSky(command, user):
     logme('Retrieving the current Clear Sky charts for SEO...')
 
@@ -1328,6 +1263,7 @@ def getClearDarkSky(command, user):
     send_message("", [{"image_url": "http://www.cleardarksky.com/c/SmnCAcsk.gif?dummy=%s" %
                        dummy, "title": "Sonoma Clear Sky Chart"}])
     send_message("\n")
+
 
 def getSkyCam(command, user):
     logme('Retrieving skycam images for sites near SEO...')
@@ -1341,13 +1277,10 @@ def getSkyCam(command, user):
     send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/l/p/lparkerwu66/1/current.jpg?%s" %
                        dummy, "title": "lparkerwu66's Webcam in Santa Rosa, CA"}])
     send_message("", [{"image_url": "http://icons.wunderground.com/webcamramdisk/j/w/JWPAGE/1/current.jpg?%s" %
-                       dummy, "title": "JWPAGE's Webcam in Petaluma, CA"}])                       
-                       
+                       dummy, "title": "JWPAGE's Webcam in Petaluma, CA"}])
+
     send_message("\n")
-
 # get weather from Wunderground
-
-
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
 
@@ -1355,7 +1288,6 @@ def getForecast(command, user):
                         (wunderground_token, wunderground_station))
     json_string = f.read()
     parsed_json = json.loads(json_string)
-    #print json_string
     hourly_forecasts = parsed_json['hourly_forecast']
     count = 0
     send_message("Weather Forecast:")
@@ -1374,7 +1306,6 @@ def getForecast(command, user):
 def getWeather(command, user):
     logme('Retrieving the current weather conditions from wunderground.com...')
 
-    #match = re.search('^\\\\(weather)\s(hourly)', command)
     # just in case wunderground is down...
     try:
         f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/conditions/q/pws:%s.json' %
@@ -1383,7 +1314,6 @@ def getWeather(command, user):
         send_message("Weather forecast failed.")
         return
     json_string = f.read()
-    #print json_string
     parsed_json = json.loads(json_string)
     location = parsed_json['current_observation']['observation_location']['city']
     station = parsed_json['current_observation']['station_id']
@@ -1396,7 +1326,6 @@ def getWeather(command, user):
     dewpoint = parsed_json['current_observation']['dewpoint_string']
     icon_url = parsed_json['current_observation']['icon_url']
     last_update = parsed_json['current_observation']['observation_time']
-    #send_message("", [{"image_url":"%s"%icon_url, "title":"Weather at SEO (%s):"%station}])
     send_message("", [{"image_url": "%s" %
                        icon_url, "title": "Current Weather:"}])
     send_message(">%s" % (last_update))
@@ -1581,9 +1510,7 @@ def process_messages(msgs):
                     slack_users = latest_slack_users
                 for slack_user in slack_users:
                     if(slack_user['id'] == msg['user']):
-                        #print user
                         user = slack_user
-                        #user_name = user['profile']['display_name']
                         break
                 if user == None:  # make a fake one
                     logme('User not found, using default values...')
@@ -1619,7 +1546,6 @@ def parse_command(text, user, dt):
             # call associated function
             command[1](text, user)
             break
-        #index += 1
     if not match:  # did not recognize this command
         logme('%s sent unrecognized command (%s) on %s.' % (
             user['profile']['display_name'], text, dt.strftime("%Y/%m/%d @ %H:%M:%S")))
@@ -1630,6 +1556,8 @@ def parse_command(text, user, dt):
 ###############################
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
+# run in simulate mode? restrict telescope commands
+simulate = True
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1685,7 +1613,8 @@ commands = [
     ['^\\\\(stats)', getStats],
     ['^\\\\(point) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)', doPointByRaDec],
     ['^\\\\(point)\\s?([0-9]+)?', doPointByObjectNum],
-    ['^\\\\(pinpoint) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)', doPinpointByRaDec],
+    ['^\\\\(pinpoint) ([0-9\\:\\-\\+\\.]+) ([0-9\\:\\-\\+\\.]+)',
+     doPinpointByRaDec],
     ['^\\\\(pinpoint)\\s?([0-9]+)?', doPinpointByObjectNum],
     ['^\\\\(track) (on|off)', doTrack],
     ['^\\\\(crack)', doCrack],
@@ -1780,21 +1709,15 @@ while True:
                 msgs = sc.rtm_read()  # returns array of json objects, e.g. return of json.loads()
             except:
                 logme('Error! Connection with Slack was lost. Retrying...')
-                # time.sleep(read_delay_s)
                 sc.rtm_connect()
             # process incoming messages
             process_messages(msgs)
-            #print msgs
             # ping to ensure connection is intact
             if (datetime.datetime.now() - dt_last_activity).total_seconds() > 60:
                 logme('Pinging Slack server...')
                 if not ping():
                     logme('Error! Connection with Slack was lost. Retrying...')
-                    # time.sleep(read_delay_s)
                     sc.rtm_connect()
-                    #logme('Error! Connection with Slack was lost. Reconnecting...')
-                    #slack_connected = False
-                    # break
                 logme('Received pong...still connected to Slack!')
                 dt_last_activity = datetime.datetime.now()
             # wait
@@ -1804,5 +1727,3 @@ while True:
               (slack_token, reconnect_delay_s))
     time.sleep(reconnect_delay_s)
 
-# clean up
-# log.close()
