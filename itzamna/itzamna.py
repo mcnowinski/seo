@@ -1607,7 +1607,7 @@ commands = [
     ['^\\\\(sun)', getSun],
     ['^\\\\(moon)', getMoon],
     ['^\\\\(slit)', getSlit],
-    ['^\\\\(test)', doTest],
+    #['^\\\\(test)', doTest],
     ['^\\\\(find) ([a-zA-Z0-9\\s\\-\\+\\*]+)', getObject],
     ['^\\\\(plot)\\s?([0-9]+)?', getObservability],
     ['^\\\\(stats)', getStats],
