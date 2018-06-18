@@ -11,30 +11,24 @@
     "min_obs_alt": 30,
     "wait_time_s": 30,
     "observations": {
-        "main": {
+        "asteroid": {
             "target": {
                 "name": "25916",
                 "type": "asteroid"
             },
-            "sequence": {
-                "repeat": -1,
-                "stacks": [
-                    {
-                        "exposure": 120,
-                        "binning": 2,
-                        "filters": "clear",
-                        "count": 1
-                    }
-                ]
-            }
-        },
-        "comparisons": [
-            {
-                "target": {
-                    "name": "25916",
-                    "type": "asteroid"
+            "sequences": {
+                "main": {
+                    "repeat": -1,
+                    "stacks": [
+                        {
+                            "exposure": 120,
+                            "binning": 2,
+                            "filters": "clear",
+                            "count": 1
+                        }
+                    ]
                 },
-                "sequence": {
+                "bracket": {
                     "repeat": 3,
                     "stacks": [
                         {
@@ -51,13 +45,15 @@
                         }
                     ]
                 }
+            }
+        },
+        "reference": {
+            "target": {
+                "name": "BD-003152",
+                "type": "star"
             },
-            {
-                "target": {
-                    "name": "BD-003152",
-                    "type": "star"
-                },
-                "sequence": {
+            "sequences": {
+                "main": {
                     "repeat": 1,
                     "stacks": [
                         {
@@ -69,6 +65,6 @@
                     ]
                 }
             }
-        ]
+        }
     }
 }
