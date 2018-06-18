@@ -1253,6 +1253,8 @@ def doWelcome():
     lockedBy()
 
 # get ClearDarkSky chart
+
+
 def getClearDarkSky(command, user):
     logme('Retrieving the current Clear Sky charts for SEO...')
 
@@ -1281,6 +1283,8 @@ def getSkyCam(command, user):
 
     send_message("\n")
 # get weather from Wunderground
+
+
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
 
@@ -1557,7 +1561,7 @@ def parse_command(text, user, dt):
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = True
+simulate = False
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1726,4 +1730,3 @@ while True:
         logme("Error! Slack connection failed. Retrying in %d seconds..." %
               (slack_token, reconnect_delay_s))
     time.sleep(reconnect_delay_s)
-
