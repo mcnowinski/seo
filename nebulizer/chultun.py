@@ -524,6 +524,10 @@ class Telescope():
                     ra_offset, dec_offset))
                 return
 
+            # turn tracking on (just in case)
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'track', 'on'], self.simulate)
+
         if(iteration < max_tries):
             logger.info('BAM! Your target has been pinpoint-ed!')
             self.slackdebug('Your target has been pinpoint-ed!')

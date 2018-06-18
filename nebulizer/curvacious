@@ -265,3 +265,76 @@ user=mcnowinski
 2018-06-01 04:28:01,089 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
 2018-06-01 04:28:01,089 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
 2018-06-01 04:28:02,316 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458270.7022; max_obs_time=2458270.9781; max_alt_time=2458270.84; user=mcnowinski
+2018-06-07 03:31:17,157 DEBUG	target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7
+2018-06-07 03:31:17,176 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-07 03:31:17,176 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-07 03:31:18,596 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458276.69579; max_obs_time=2458276.96028; max_alt_time=2458276.82804; user=mcnowinski
+2018-06-07 03:56:27,762 DEBUG	target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7
+2018-06-07 03:56:27,762 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-07 03:56:27,762 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-07 03:56:29,157 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458276.6958; max_obs_time=2458276.96027; max_alt_time=2458276.82804; user=mcnowinski
+2018-06-07 03:56:29,157 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-07 03:56:29,157 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-07 03:56:29,157 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-07 03:56:29,158 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-07 03:56:29,158 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-07 03:56:29,158 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-07 03:56:29,158 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-07 04:20:18,941 DEBUG	target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.664
+2018-06-07 04:20:18,942 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-07 04:20:18,942 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-07 04:20:20,318 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.664; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458276.69579; max_obs_time=2458276.96029; max_alt_time=2458276.82804; user=mcnowinski
+2018-06-07 04:20:20,318 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-07 04:20:20,318 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-07 04:20:20,318 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-07 04:20:20,319 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.664; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-07 04:20:20,319 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-07 04:20:20,319 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-07 04:20:20,319 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.664; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-07 04:28:52,645 DEBUG	target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7
+2018-06-07 04:28:52,645 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-07 04:28:52,645 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-07 04:28:53,965 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458276.6958; max_obs_time=2458276.96028; max_alt_time=2458276.82804; user=mcnowinski
+2018-06-07 04:28:53,965 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-07 04:28:53,965 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-07 04:28:53,965 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-07 04:28:53,965 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-07 04:28:53,965 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-07 04:28:53,966 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-07 04:28:53,966 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:43:57.8208, dec=-2:25:41.7; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-09 04:54:40,242 DEBUG	target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584
+2018-06-09 04:54:40,263 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-09 04:54:40,263 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-09 04:54:41,684 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-06-09 04:54:40.931594; max_obs_time=2018-06-09 10:49:17.435221; max_alt_time=2018-06-09 07:43:09.677661; user=mcnowinski
+2018-06-09 04:54:41,684 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-09 04:54:41,684 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-09 04:54:41,684 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-09 04:54:41,685 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-09 04:54:42,017 DEBUG	target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141
+2018-06-09 04:54:42,017 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-09 04:54:42,017 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-09 04:54:42,018 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-09 04:58:41,261 DEBUG	target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584
+2018-06-09 04:58:41,261 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-09 04:58:41,262 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-09 04:58:42,604 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-06-09 04:58:41.934465; max_obs_time=2018-06-09 10:49:22.794996; max_alt_time=2018-06-09 07:43:07.071792; user=mcnowinski
+2018-06-09 04:58:42,605 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-09 04:58:42,605 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-09 04:58:42,605 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-09 04:58:42,605 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-09 04:58:42,778 DEBUG	target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141
+2018-06-09 04:58:42,778 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-09 04:58:42,778 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-09 04:58:44,007 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-06-09 04:58:43.386419; max_obs_time=2018-06-09 10:56:55.700063; max_alt_time=2018-06-09 07:38:22.000704; user=mcnowinski
+2018-06-09 05:23:20,354 DEBUG	target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584
+2018-06-09 05:23:20,354 DEBUG	image stack: exposure=120.000000, filter=clear, binning=2, count=1
+2018-06-09 05:23:20,354 DEBUG	sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; 
+2018-06-09 05:23:21,758 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=-1;   image stack: exposure=120.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-06-09 05:23:21.016367; max_obs_time=2018-06-09 10:49:14.314863; max_alt_time=2018-06-09 07:43:01.001437; user=mcnowinski
+2018-06-09 05:23:21,758 DEBUG	image stack: exposure=60.000000, filter=r-band, binning=2, count=1
+2018-06-09 05:23:21,758 DEBUG	image stack: exposure=60.000000, filter=clear, binning=2, count=1
+2018-06-09 05:23:21,758 DEBUG	sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; 
+2018-06-09 05:23:21,758 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=25916 (2001 CP44), ra=16:42:38.628, dec=-3:23:34.584; sequence: repeat=3;   image stack: exposure=60.000000, filter=r-band, binning=2, count=1;   image stack: exposure=60.000000, filter=clear, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=None; max_obs_time=None; max_alt_time=None; user=mcnowinski
+2018-06-09 05:23:22,075 DEBUG	target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141
+2018-06-09 05:23:22,076 DEBUG	image stack: exposure=30.000000, filter=r-band, binning=2, count=5
+2018-06-09 05:23:22,076 DEBUG	sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; 
+2018-06-09 05:23:23,303 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=BD-003152, ra=16 37 47.7872, dec=-00 33 05.141; sequence: repeat=1;   image stack: exposure=30.000000, filter=r-band, binning=2, count=5; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-06-09 05:23:22.681042; max_obs_time=2018-06-09 10:56:41.420988; max_alt_time=2018-06-09 07:38:11.556864; user=mcnowinski
