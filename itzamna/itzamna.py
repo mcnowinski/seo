@@ -35,7 +35,7 @@ import glob
 import shutil
 
 
-def runSubprocess(command_array, communicate=True):
+def runSubprocess(command_array, simulate=False, communicate=True):
     # command array is array with command and all required parameters
     if simulate:
         logme('Simulating subprocess "%s".' % (command_array))
@@ -68,7 +68,7 @@ def getStats(command, user):
         'This may take several minutes. Remember, Tikal was not built in a day!')
 
     (output, error, pid) = runSubprocess(
-        ['/home/mcnowinski/anaconda2/bin/python', '/home/mcnowinski/giterdone/seo/itzamna/unlogger.py'])
+        ['/home/mcnowinski/anaconda2/bin/python', '/home/mcnowinski/giterdone/seo/itzamna/unlogger.py'], simulate)
 
     stats = open('/home/mcnowinski/giterdone/seo/itzamna/stats.txt', 'w')
     stats.write(output)
@@ -305,13 +305,15 @@ def doCrack(command, user):
     global target_name
     target_name = "unknown"
 
-    (output, error, pid) = runSubprocess(['tin', 'interrupt'])
+    (output, error, pid) = runSubprocess(['tin', 'interrupt'], simulate)
     logme(output)
 
-    (output, error, pid) = runSubprocess(['openup_nolock', 'nocloud'])
+    (output, error, pid) = runSubprocess(
+        ['openup_nolock', 'nocloud'], simulate)
     logme(output)
 
-    (output, error, pid) = runSubprocess(['keepopen', 'maxtime=36000', 'slit'], True)
+    (output, error, pid) = runSubprocess(
+        ['keepopen', 'maxtime=36000', 'slit'], simulate, True)
     logme(output)
 
     send_message("The observatory was successfully opened ('cracked')!")
@@ -330,19 +332,19 @@ def doSqueeze(command, user):
     global target_name
     target_name = "unknown"
 
-    (output, error, pid) = runSubprocess(['closedown_nolock'])
+    (output, error, pid) = runSubprocess(['closedown_nolock'], simulate)
     if re.search('ERROR', output):
         send_message("Error! The observatory could not be closed!")
         # at least try to get slit closed!
-        (output, error, pid) = runSubprocess(['tx', 'slit', 'close'])
+        (output, error, pid) = runSubprocess(['tx', 'slit', 'close'], simulate)
         return
     logme(output)
 
-    (output, error, pid) = runSubprocess(['tx', 'lock', 'clear'])
+    (output, error, pid) = runSubprocess(['tx', 'lock', 'clear'], simulate)
     if not re.search('done lock', output):
         logme('Error. Could not clear lock')
 
-    (output, error, pid) = runSubprocess(['tin', 'resume'])
+    (output, error, pid) = runSubprocess(['tin', 'resume'], simulate)
     logme(output)
 
     send_message("The observatory was successfully closed ('squoze')!")
@@ -362,7 +364,7 @@ def toStars(command, user):
     # send_message(dest_path)
     # off they go!
     (output, error, pid) = runSubprocess(
-        ['tostars', '%s*.fits' % image_path, '%s' % dest_path])
+        ['tostars', '%s*.fits' % image_path, '%s' % dest_path], simulate)
     if error == '':
         send_message(
             'Successfully uploaded %d image(s) to <http://stars.uchicago.edu/fitsview18/|stars>!' % len(fits))
@@ -398,16 +400,16 @@ def doImage(command, user):
         target_name, filter, exposure, binning, 'mcnowinski', datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss.%f'), 0)
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
-    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter])
+    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
     (output, error, pid) = runSubprocess(
-        ['image', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits])
+        ['image', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
     if not error:
         send_message('Got image (%s).' % fits)
         slackpreview(fits)
     else:
         send_message('Error. Image command failed (%s).' % fits)
 
-    (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
+    (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     # done track ha=15.0410 dec=0.0000
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message('Error. Could not turn telescope tracking ON.')
@@ -417,25 +419,27 @@ def doImage(command, user):
 
 def slackdebugalert(msg):
     msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
-    (output, error, pid) = runSubprocess(['slackalert', msg])
+    (output, error, pid) = runSubprocess(['slackalert', msg], simulate)
 
 # send debug message to slack
 
 
 def slackdebug(msg):
     msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
-    (output, error, pid) = runSubprocess(['slackdebug', msg])
+    (output, error, pid) = runSubprocess(['slackdebug', msg], simulate)
 
 # send preview of fits image to Slack
 
 
 def slackpreview(fits):
-    (output, error, pid) = runSubprocess(['stiffy', fits, 'image.tif'])
     (output, error, pid) = runSubprocess(
-        ['convert', '-resize', '50%', '-normalize', '-quality', '75', 'image.tif', 'image.jpg'])
+        ['stiffy', fits, 'image.tif'], simulate)
     (output, error, pid) = runSubprocess(
-        ['slackpreview_itzamna', 'image.jpg', fits])
-    (output, error, pid) = runSubprocess(['rm', 'image.jpg', 'image.tif'])
+        ['convert', '-resize', '50%', '-normalize', '-quality', '75', 'image.tif', 'image.jpg'], simulate)
+    (output, error, pid) = runSubprocess(
+        ['slackpreview_itzamna', 'image.jpg', fits], simulate)
+    (output, error, pid) = runSubprocess(
+        ['rm', 'image.jpg', 'image.tif'], simulate)
 
 
 def doShare(command, user):
@@ -471,7 +475,7 @@ def doTrack(command, user):
     match = re.search('^\\\\(track) (on|off)', command, re.IGNORECASE)
     if(match):
         toggle = match.group(2).lower()
-        (output, error, pid) = runSubprocess(['tx', 'track', toggle])
+        (output, error, pid) = runSubprocess(['tx', 'track', toggle], simulate)
         # send_message(output)
         # done track ha=15.0410 dec=0.0000
         if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
@@ -494,7 +498,7 @@ def doFocus(command, user):
     if(match):
         position = match.group(2)
         (output, error, pid) = runSubprocess(
-            ['tx', 'focus', 'pos=%s' % position])
+            ['tx', 'focus', 'pos=%s' % position], simulate)
         # send_message(output)
         # done focus pos=4854
         if not re.search('done focus pos\\=([0-9]+)', output):
@@ -525,7 +529,7 @@ def doOffset(command, user):
         offset_ra_deg = (offset_ra/60.0)*(360.0/24.0)
         offset_dec_deg = offset_dec/60.0
         (output, error, pid) = runSubprocess(
-            ['tx', 'offset', 'ra=%f' % offset_ra_deg, 'dec=%f' % offset_dec_deg])
+            ['tx', 'offset', 'ra=%f' % offset_ra_deg, 'dec=%f' % offset_dec_deg], simulate)
         if not re.search('done offset', output):
             send_message("Error. Could not set offset to dRA=%.2f', dDEC=%.2f'." % (
                 offset_ra, offset_dec))
@@ -549,14 +553,14 @@ def doHomer(command, user):
     send_message('Telescope control system calibration started.')
 
     send_message('Homing HA drive...')
-    (output, error, pid) = runSubprocess(['tx', 'home', 'ha'])
+    (output, error, pid) = runSubprocess(['tx', 'home', 'ha'], simulate)
 
     send_message('Homing DEC drive...')
-    (output, error, pid) = runSubprocess(['tx', 'home', 'dec'])
+    (output, error, pid) = runSubprocess(['tx', 'home', 'dec'], simulate)
 
     send_message('Homing DOME drive...')
-    (output, error, pid) = runSubprocess(['tx', 'home', 'domer'])
-    (output, error, pid) = runSubprocess(['tx', 'home', 'domel'])
+    (output, error, pid) = runSubprocess(['tx', 'home', 'domer'], simulate)
+    (output, error, pid) = runSubprocess(['tx', 'home', 'domel'], simulate)
 
     send_message('Telescope control system calibration complete.')
 
@@ -626,7 +630,7 @@ def doPinpointByObjectNum(command, user):
     global target_name
     target_name = re.sub('[^A-Za-z0-9]', '_', object['name'])
 
-    (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
+    (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     # send_message(output)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
@@ -635,7 +639,8 @@ def doPinpointByObjectNum(command, user):
 
     ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
     dec = Angle('%fd' % object['DEC']).to_string(unit=u.degree, sep=':')
-    (output, error, pid) = runSubprocess(['pinpoint', '%s' % ra, '%s' % dec])
+    (output, error, pid) = runSubprocess(
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -681,14 +686,15 @@ def doPinpointByRaDec(command, user):
     global target_name
     target_name = "unknown"
 
-    (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
+    (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     # send_message(output)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
             'Error. Could not enable telescope tracking (%s).' % output)
         return
 
-    (output, error, pid) = runSubprocess(['pinpoint', '%s' % ra, '%s' % dec])
+    (output, error, pid) = runSubprocess(
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -757,7 +763,7 @@ def doPointByObjectNum(command, user):
     global target_name
     target_name = re.sub('[^A-Za-z0-9]', '_', object['name'])
 
-    (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
+    (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
             'Error. Could not enable telescope tracking (%s).' % output)
@@ -766,7 +772,7 @@ def doPointByObjectNum(command, user):
     ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
     dec = Angle('%fd' % object['DEC']).to_string(unit=u.degree, sep=':')
     (output, error, pid) = runSubprocess(
-        ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec])
+        ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec], simulate)
     # done point move=62.455 dist=0.0031
     if not re.search('done point move\\=[0-9\\+\\-\\.]+\\sdist\\=[0-9\\+\\-\\.]+', output):
         send_message('Error. Could not point the telescope (%s).' % output)
@@ -805,14 +811,14 @@ def doPointByRaDec(command, user):
     global target_name
     target_name = "unknown"
 
-    (output, error, pid) = runSubprocess(['tx', 'track', 'on'])
+    (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
         send_message(
             'Error. Could not enable telescope tracking (%s).' % output)
         return
 
     (output, error, pid) = runSubprocess(
-        ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec])
+        ['tx', 'point', 'ra=%s' % ra, 'dec=%s' % dec], simulate)
     # returns done point move=62.455 dist=0.0031
     if not re.search('done point move\\=[0-9\\+\\-\\.]+\\sdist\\=[0-9\\+\\-\\.]+', output):
         send_message('Error. Could not point the telescope (%s).' % output)
@@ -1043,7 +1049,7 @@ def lockedBy():
     logme('Checking to see if the telescope is locked...')
 
     locked_by = (None, None)
-    (output, error, pid) = runSubprocess(['tx', 'lock'])
+    (output, error, pid) = runSubprocess(['tx', 'lock'], simulate)
     # done lock user=mcnowinski email=mcnowinski@gmail.com phone=7032869140 comment=slac timestamp=2017-02-10T20:32:03Z
     match = re.search('^done lock user=(\S+) email=(\S+)', output)
     if(match):
@@ -1054,6 +1060,8 @@ def lockedBy():
 
 
 def lockedByYou(user):
+    if simulate:
+        return True
     # check to make sure the telescope is locked by us!
     (username, email) = lockedBy()
     if username != user['name'] and share == False:
@@ -1084,7 +1092,7 @@ def doLock(command, user):
     timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
     (output, error, pid) = runSubprocess(
-        ['tx', 'lock', 'user=%s' % username, 'email=%s' % email, 'phone=%s' % phone, 'comment=%s' % comment])
+        ['tx', 'lock', 'user=%s' % username, 'email=%s' % email, 'phone=%s' % phone, 'comment=%s' % comment], simulate)
     match = re.search('^done lock user=(\S+) email=(\S+)', output)
     if(match):
         send_message('Telescope successfully locked!')
@@ -1113,7 +1121,7 @@ def doUnLock(command, user):
         return False
 
     # clear the lock
-    (output, error, pid) = runSubprocess(['tx', 'lock', 'clear'])
+    (output, error, pid) = runSubprocess(['tx', 'lock', 'clear'], simulate)
     match = re.search('^done lock$', output)
     if(match):
         send_message('Telescope successfully unlocked!')
@@ -1128,7 +1136,7 @@ def getSlit(command, user):
 
     status = 'unknown'
 
-    (output, error, pid) = runSubprocess(['tx', 'slit'])
+    (output, error, pid) = runSubprocess(['tx', 'slit'], simulate)
     # done slit slit=closed
     match = re.search('^done slit slit=([a-zA-Z]+)', output)
     if(match):
@@ -1145,7 +1153,7 @@ def getSlit(command, user):
 def getSun(command, user):
     logme('Retrieving current sun information...')
 
-    (output, error, pid) = runSubprocess(['sun'])
+    (output, error, pid) = runSubprocess(['sun'], simulate)
     # 21:30:51.07 -14:42:54.0 2017.107 sun alt=35.8
     match = re.search(
         '^([\\-\\+0-9\\:\\.]+) ([\\-\\+0-9\\:\\.]+) ([\\-\\+0-9\\.]+) sun alt=([\\-\\+0-9\\.]+)', output)
@@ -1163,7 +1171,7 @@ def getSun(command, user):
 def getClouds(command, user):
     logme('Retrieving current cloud cover...')
 
-    (output, error, pid) = runSubprocess(['tx', 'taux'])
+    (output, error, pid) = runSubprocess(['tx', 'taux'], simulate)
     # done taux ovolts=3.048 irvolts=0.199 cloud=0.26 rain=0 dew=2.97
     match = re.search('cloud=(\S+)', output)
     if(match):
@@ -1179,7 +1187,7 @@ def getClouds(command, user):
 def getFocus(command, user):
     logme('Retrieving current focus...')
 
-    (output, error, pid) = runSubprocess(['tx', 'focus'])
+    (output, error, pid) = runSubprocess(['tx', 'focus'], simulate)
     # done focus pos=4854
     match = re.search('pos=(\S+)', output)
     if(match):
@@ -1195,7 +1203,7 @@ def getFocus(command, user):
 def getMoon(command, user):
     logme('Retrieving current moon information...')
 
-    (output, error, pid) = runSubprocess(['moon'])
+    (output, error, pid) = runSubprocess(['moon'], simulate)
     # 07:38:11.68 +17:30:06.9 2017.107 moon alt=-21.1 phase=0.85 lunation=1164
     match = re.search(
         '^([\\-\\+0-9\\:\\.]+) ([\\-\\+0-9\\:\\.]+) ([\\-\\+0-9\\.]+) moon alt=([\\-\\+0-9\\.]+) phase=([\\-\\+0-9\\.]+) lunation=([\\-\\+0-9]+)', output)
@@ -1213,7 +1221,7 @@ def getMoon(command, user):
 def getWhere(command, user):
     logme('Retrieving the current telescope pointing information...')
 
-    (output, error, pid) = runSubprocess(['tx', 'where'])
+    (output, error, pid) = runSubprocess(['tx', 'where'], simulate)
     # done where ra=05:25:25.11 dec=+38:17:17.0 equinox=2017.105 ha=0.010 secz=1.00 alt=90.0 az=265.1 slewing=0
     match = re.search(
         '^done where ra=([\\-\\+0-9\\:\\.]+) dec=([\\-\\+0-9\\:\\.]+) equinox=([\\-\\+0-9\\.]+) ha=([\\-\\+0-9\\.]+) secz=([\\-\\+0-9\\.]+) alt=([\\-\\+0-9\\.]+) az=([\\-\\+0-9\\.]+) slewing=([\\-\\+0-9\\.]+)', output)
@@ -1350,7 +1358,7 @@ def getHelp(command, user=None):
     if user != None:
         user_name = user['profile']['display_name']
     send_message(user_name + ', here are some helpful tips:\n' +
-                 '>Please report #itzamna issues here: https://github.com/mcnowinski/seo/issues/new\n' +
+                 '>Please report itzamna issues here: https://github.com/mcnowinski/seo/issues/new\n' +
                  '>`\\help` shows this message\n' +
                  '>`\\where` shows where the telescope is pointing\n' +
                  '>`\\weather` shows the current weather conditions\n' +
@@ -1358,7 +1366,7 @@ def getHelp(command, user=None):
                  '>`\\clouds` shows the current cloud cover\n' +
                  '>`\\focus` shows the current focus position\n' +
                  '>`\\focus <position>` sets the current focus position\n' + \
-                 #'>`\\stats` shows the weekly telescope statistics\n' + \
+                 # '>`\\stats` shows the weekly telescope statistics\n' + \
                  '>`\\clearsky` shows the Clear Sky chart(s)\n' + \
                  '>`\\skycam` shows nearby skycam images\n' + \
                  '>`\\find <object>` finds <object> position in sky (add wildcard `*` to widen search)\n' + \
@@ -1371,8 +1379,8 @@ def getHelp(command, user=None):
                  #'>`\\homer` re-homes the scope and dome (this will `\squeeze` the observatory!)\n'
                  '>`\\point <RA (hh:mm:ss.s)> <DEC (dd:mm:ss.s)>` or `\\point <object#>` points the telescope\n' + \
                  '>`\\pinpoint <RA (hh:mm:ss.s)> <DEC (dd:mm:ss.s)>` or `\\pinpoint <object#>` pinpoints the telescope\n' + \
-                 #'>`\\track <on/off>` toggles telescope tracking\n' + \
-                 #'>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
+                 # '>`\\track <on/off>` toggles telescope tracking\n' + \
+                 # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
                  '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview17/|stars> (run this command at the end of your session)\n'
                  )
@@ -1557,11 +1565,18 @@ def parse_command(text, user, dt):
             user['profile']['display_name'], text))
 
 
+def doSimulate():
+    logme('Configuring simulate mode...')
+    # use #dev for testing
+    global slack_channel_name
+    slack_channel_name = 'dev'
+
+
 ###############################
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = False
+simulate = True
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1678,7 +1693,10 @@ target_name = "unknown"
 # lock sharing
 share = False
 
-logme('Starting #itzamna Slack bot service...')
+if simulate:
+    doSimulate()  # adjust configuration for simulated mode
+
+logme('Starting itzamna Slack bot service...')
 
 # build up a database of satellites from NORAD TLEs
 buildSatDatabase()
