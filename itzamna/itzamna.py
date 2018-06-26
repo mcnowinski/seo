@@ -1577,7 +1577,7 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = True
+simulate = False 
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
