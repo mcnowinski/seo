@@ -1359,6 +1359,7 @@ def getHelp(command, user=None):
         user_name = user['profile']['display_name']
     send_message(user_name + ', here are some helpful tips:\n' +
                  '>Please report itzamna issues here: https://github.com/mcnowinski/seo/issues/new\n' +
+                 '>A more detailed itzamna tutorial can be found here: https://stoneedgeobservatory.com/guide-to-using-itzamna/\n' +
                  '>`\\help` shows this message\n' +
                  '>`\\where` shows where the telescope is pointing\n' +
                  '>`\\weather` shows the current weather conditions\n' +
@@ -1382,7 +1383,7 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview17/|stars> (run this command at the end of your session)\n'
+                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview18/|stars> (run this command at the end of your session)\n'
                  )
     send_message('\n')
 
