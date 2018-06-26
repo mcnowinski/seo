@@ -1603,7 +1603,7 @@ norad_sats_urls = [
     'https://www.prismnet.com/~mmccants/tles/inttles.zip'
 ]
 # make sure these folders exist!
-image_path = '/user/mcnowinski/itzamna/images/'
+image_path = '/home/mcnowinski/itzamna/images/'
 image_archive_path = '/home/mcnowinski/itzamna/images/archive/'
 # stars.uchicago.edu
 stars_image_path = '/data/images/StoneEdge/0.5meter/'
