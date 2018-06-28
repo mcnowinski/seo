@@ -395,9 +395,9 @@ def doImage(command, user):
         logme('Error. Unexpected command format (%s).' % command)
         return
 
-    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_${UNIQUE_HASH}_seo.fits
-    fits = image_path + '%s_%s_%ssec_bin%s_%s_%s_num%d_seo.fits' % (
-        target_name, filter, exposure, binning, 'mcnowinski', datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss.%f'), 0)
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        target_name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
     (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
