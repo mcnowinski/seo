@@ -355,7 +355,7 @@ def toStars(command, user):
         send_message('Itzamna does not have any recent images to send!')
         return
     else:
-        send_message('Uploading %d image(s) to %s. Itzamna is ready for your next command.' % (len(fits), stars))
+        send_message('Uploading %d image(s) to <%s|stars>. Itzamna is ready for your next command.' % (len(fits), stars_url))
     # we are going to put these in a folder corresponding to the datetime this command was run!
     # a bit different from how this usually works...
 
@@ -367,7 +367,7 @@ def toStars(command, user):
         ['tostars', '%s*.fits' % image_path, '%s' % dest_path], simulate)
     if error == '':
         send_message(
-            'Successfully uploaded %d image(s) to %s!' % (len(fits), stars))
+            'Successfully uploaded %d image(s) to <%s|stars>!' % (len(fits), stars_url))
         # move images to archive
         files = glob.iglob(image_path+'*.fits')
         for file in files:
@@ -1383,7 +1383,7 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to %s (run this command at the end of your session)\n' %stars
+                 '>`\\tostars` uploads recent images to <%s|stars> (run this command at the end of your session)\n' % stars_url
                  )
     send_message('\n')
 
@@ -1660,7 +1660,7 @@ slack_token = sys.argv[1]
 # the Slack url for file uploads
 slack_file_upload_url = "https://slack.com/api/files.upload"
 # the stars server URL (2018)
-stars = '<http://stars.uchicago.edu/fitsview18/|stars>'
+stars_url = 'http://stars.uchicago.edu/fitsview18/'
 # the Wunderground api token
 wunderground_token = sys.argv[2]
 # track if slack client is connected
