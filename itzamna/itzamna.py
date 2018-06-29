@@ -356,6 +356,8 @@ def toStars(command, user):
     if(len(fits) <= 0):
         send_message('Itzamna does not have any recent images to send!')
         return
+    else:
+        send_message('Uploading %d image(s) to <http://stars.uchicago.edu/fitsview18/|stars>. Itzamna is ready for your next command.' % len(fits))
     # we are going to put these in a folder corresponding to the datetime this command was run!
     # a bit different from how this usually works...
 
