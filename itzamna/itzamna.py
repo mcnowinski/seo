@@ -1383,7 +1383,7 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview18/|stars> (run this command at the end of your session)\n'
+                 '>`\\tostars` uploads recent images to %s (run this command at the end of your session)\n' %stars
                  )
     send_message('\n')
 
