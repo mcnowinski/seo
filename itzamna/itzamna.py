@@ -1,6 +1,7 @@
 # Web and Real-Time Messaging interface to Slack for use with the SEO telescope, a.k.a. itzamna
 
 from slackclient import SlackClient
+import traceback
 import time
 import random
 import string
@@ -51,7 +52,6 @@ def runSubprocess(command_array, simulate=False, communicate=True):
             if error:
                 logme('Error. Process (%s) reported error.' %
                       (command_array))
-                dumper.error(error)
             return (output, error, sp.pid)
         else:  # some processes, like keepopen, hang forever with .communicate()
             return ('', '', 0)
