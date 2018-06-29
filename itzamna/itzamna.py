@@ -1,6 +1,7 @@
 # Web and Real-Time Messaging interface to Slack for use with the SEO telescope, a.k.a. itzamna
 
 from slackclient import SlackClient
+import traceback
 import time
 import random
 import string
@@ -50,7 +51,6 @@ def runSubprocess(command_array, simulate=False, communicate=True):
             if error:
                 logme('Error. Process (%s) reported error.' %
                       (command_array))
-                dumper.error(error)
             return (output, error, sp.pid)
         else:  # some processes, like keepopen, hang forever with .communicate()
             return ('', '', 0)
@@ -312,7 +312,7 @@ def doCrack(command, user):
     logme(output)
 
     (output, error, pid) = runSubprocess(
-        ['keepopen', 'maxtime=36000', 'slit'], simulate, True)
+        ['keepopen', 'maxtime=36000', 'slit'], simulate, False)
     logme(output)
 
     send_message("The observatory was successfully opened ('cracked')!")
@@ -1359,6 +1359,7 @@ def getHelp(command, user=None):
         user_name = user['profile']['display_name']
     send_message(user_name + ', here are some helpful tips:\n' +
                  '>Please report itzamna issues here: https://github.com/mcnowinski/seo/issues/new\n' +
+                 '>A more detailed itzamna tutorial can be found here: https://stoneedgeobservatory.com/guide-to-using-itzamna/\n' +
                  '>`\\help` shows this message\n' +
                  '>`\\where` shows where the telescope is pointing\n' +
                  '>`\\weather` shows the current weather conditions\n' +
@@ -1382,7 +1383,7 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to %s (run this command at the end of your session)\n' % stars
+                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview18/|stars> (run this command at the end of your session)\n'
                  )
     send_message('\n')
 
@@ -1576,7 +1577,7 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = True
+simulate = False 
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1604,7 +1605,7 @@ norad_sats_urls = [
 ]
 # make sure these folders exist!
 image_path = '/home/mcnowinski/itzamna/images/'
-image_archive_path = '/home/mcnowinski/itzamna/images/archive/'
+image_archive_path = '/home/mcnowinski/itzamna/archive/'
 # stars.uchicago.edu
 stars_image_path = '/data/images/StoneEdge/0.5meter/'
 ###############################
