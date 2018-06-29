@@ -313,7 +313,7 @@ def doCrack(command, user):
     logme(output)
 
     (output, error, pid) = runSubprocess(
-        ['keepopen', 'maxtime=36000', 'slit'], simulate, True)
+        ['keepopen', 'maxtime=36000', 'slit'], simulate, False)
     logme(output)
 
     send_message("The observatory was successfully opened ('cracked')!")
@@ -395,9 +395,9 @@ def doImage(command, user):
         logme('Error. Unexpected command format (%s).' % command)
         return
 
-    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_${UNIQUE_HASH}_seo.fits
-    fits = image_path + '%s_%s_%ssec_bin%s_%s_%s_num%d_seo.fits' % (
-        target_name, filter, exposure, binning, 'mcnowinski', datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss.%f'), 0)
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        target_name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
     (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
@@ -1359,6 +1359,7 @@ def getHelp(command, user=None):
         user_name = user['profile']['display_name']
     send_message(user_name + ', here are some helpful tips:\n' +
                  '>Please report itzamna issues here: https://github.com/mcnowinski/seo/issues/new\n' +
+                 '>A more detailed itzamna tutorial can be found here: https://stoneedgeobservatory.com/guide-to-using-itzamna/\n' +
                  '>`\\help` shows this message\n' +
                  '>`\\where` shows where the telescope is pointing\n' +
                  '>`\\weather` shows the current weather conditions\n' +
@@ -1382,7 +1383,7 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview17/|stars> (run this command at the end of your session)\n'
+                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview18/|stars> (run this command at the end of your session)\n'
                  )
     send_message('\n')
 
@@ -1576,7 +1577,7 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = True
+simulate = False 
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1604,7 +1605,7 @@ norad_sats_urls = [
 ]
 # make sure these folders exist!
 image_path = '/home/mcnowinski/itzamna/images/'
-image_archive_path = '/home/mcnowinski/itzamna/images/archive/'
+image_archive_path = '/home/mcnowinski/itzamna/archive/'
 # stars.uchicago.edu
 stars_image_path = '/data/images/StoneEdge/0.5meter/'
 ###############################
