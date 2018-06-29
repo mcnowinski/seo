@@ -1,6 +1,7 @@
 # Web and Real-Time Messaging interface to Slack for use with the SEO telescope, a.k.a. itzamna
 
 from slackclient import SlackClient
+import paramiko
 import traceback
 import time
 import random
@@ -37,6 +38,13 @@ import shutil
 
 
 def runSubprocess(command_array, simulate=False, communicate=True):
+    if useSSH:
+        return runSubprocessSSH(command_array, simulate, communicate)
+    else:
+        return runSubprocessLocal(command_array, simulate, communicate)
+
+
+def runSubprocessLocal(command_array, simulate, communicate):
     # command array is array with command and all required parameters
     if simulate:
         logme('Simulating subprocess "%s".' % (command_array))
@@ -58,6 +66,61 @@ def runSubprocess(command_array, simulate=False, communicate=True):
     except Exception as e:
         logme(traceback.format_exception(*sys.exc_info()))
         return ('', 'Unknown error.', 0)
+
+
+def runSubprocessSSH(command_array, simulate, communicate):
+
+    if ssh == None:
+        logme('SSH is not connected. Please reconnect to the telescope server.')
+        return ('', 'SSH not connected!.', 0)
+
+    # make sure the connection hasn't timed out due to sleep
+    # if it has, reconnect
+    try:
+        ssh.exec_command('echo its alive')
+    except Exception as e:
+        logme('SSH connection dropped. Reconnecting...')
+        ssh.connect(ssh_hostname, username=ssh_username,
+                    key_filename=ssh_private_key_path)
+
+    command = ' '.join(command_array).strip()
+
+    # try and execute command 5 times if it fails
+    numtries = 0
+    exit_code = 1
+    while numtries < 5 and exit_code != 0:
+        try:
+            logme('Executing: %s' % command)
+            # deal with weird keepopen behavior
+            if re.search('keepopen*', command):
+                try:
+                    ssh.exec_command(command, timeout=10)
+                    return None
+                except Exception as e:
+                    pass
+            else:
+                stdin, stdout, stderr = ssh.exec_command(command)
+                numtries += 1
+                result = stdout.readlines()
+
+                # check exit code
+                exit_code = stdout.channel.recv_exit_status()
+                if exit_code != 0:
+                    logme(
+                        'Command returned {exit_code}. Retrying in 3 seconds...')
+                    time.sleep(3)
+                    continue
+
+                if result:
+                    # valid result received
+                    if len(result) > 0:
+                        result = ' '.join(result).strip()
+                        logme('Result: %s'%result)
+                        return (result, '', 0)
+        except Exception as e:
+            return ('', 'Unknown error.', 0)
+
+    return ('', 'Unknown error.', 0)
 
 
 def getStats(command, user):
@@ -1577,7 +1640,9 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = False 
+simulate = True
+# use SSH ro send commands to telescope server remotely
+useSSH = True
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
@@ -1652,8 +1717,8 @@ commands = [
 ]
 
 # ensure slack token has been provided
-if(len(sys.argv) < 3):
-    abort('Error! Invalid command line arguments. Use "itzanma <SLACK_API_TOKEN> <WUNDERGROUND_API_TOKEN>".')
+if(len(sys.argv) < 5):
+    abort('Error! Invalid command line arguments. Use "itzanma <SLACK_API_TOKEN> <WUNDERGROUND_API_TOKEN> <SSH_SERVER> <SSH_USERNAME>".')
 
 # the Slack api token
 slack_token = sys.argv[1]
@@ -1693,9 +1758,24 @@ objects = []  # all objects found
 target_name = "unknown"
 # lock sharing
 share = False
+# ssh connection
+ssh = None
+ssh_username = sys.argv[4]
+ssh_hostname = sys.argv[3]
+ssh_private_key_path = 'C:/Users/mcnow/Documents/ssh/itzamna.rsa'
 
 if simulate:
     doSimulate()  # adjust configuration for simulated mode
+
+if useSSH:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(ssh_hostname, username=ssh_username,
+                key_filename=ssh_private_key_path)
+    try:
+        stdin, stdout, stderr = ssh.exec_command('echo its alive')
+    except Exception as e:
+        logme(e.to_string())
 
 logme('Starting itzamna Slack bot service...')
 
@@ -1746,6 +1826,6 @@ while True:
             # wait
             time.sleep(read_delay_s)
     else:
-        logme("Error! Slack connection failed. Retrying in %d seconds..." %
+        logme("Error! Slack connection failed (%s). Retrying in %d seconds..." %
               (slack_token, reconnect_delay_s))
     time.sleep(reconnect_delay_s)
