@@ -645,7 +645,7 @@ def doPinpointByObjectNum(command, user):
     ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
     dec = Angle('%fd' % object['DEC']).to_string(unit=u.degree, sep=':')
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 180)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 300)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -699,7 +699,7 @@ def doPinpointByRaDec(command, user):
         return
 
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 180)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 300)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
