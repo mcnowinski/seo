@@ -35,12 +35,15 @@ import pytz
 import glob
 import shutil
 
-def runSubprocess(command_array, simulate=False, communicate=True):
+
+def runSubprocess(command_array, simulate=False, communicate=True, timeout=0):
     # command array is array with command and all required parameters
     if simulate:
         logme('Simulating subprocess "%s".' % (command_array))
         return ('', 0, 0)
     try:
+        if timeout > 0:
+            command_array = ['timeout', str(timeout)] + command_array
         sp = subprocess.Popen(
             command_array, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         logme('Running subprocess ("%s" %s)...' %
@@ -348,6 +351,7 @@ def doSqueeze(command, user):
 
     send_message("The observatory was successfully closed ('squoze')!")
 
+
 def toStars(command, user):
     # are there any .fits images to send?
     fits = glob.glob(image_path+'*.fits')
@@ -355,7 +359,8 @@ def toStars(command, user):
         send_message('Itzamna does not have any recent images to send!')
         return
     else:
-        send_message('Uploading %d image(s) to <%s|stars>. Itzamna is ready for your next command.' % (len(fits), stars_url))
+        send_message('Uploading %d image(s) to <%s|stars>. Itzamna is ready for your next command.' % (
+            len(fits), stars_url))
     # we are going to put these in a folder corresponding to the datetime this command was run!
     # a bit different from how this usually works...
 
@@ -640,7 +645,7 @@ def doPinpointByObjectNum(command, user):
     ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
     dec = Angle('%fd' % object['DEC']).to_string(unit=u.degree, sep=':')
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 180)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -694,7 +699,7 @@ def doPinpointByRaDec(command, user):
         return
 
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 180)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -1577,7 +1582,7 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = False 
+simulate = False
 # log file
 log_fname = 'itzamna.log'
 # name of channel assigned to telescope interface
