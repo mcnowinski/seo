@@ -450,7 +450,7 @@ class Telescope():
         while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
             iteration += 1
 
-            logger.debug('Performing adjustment #%d...' % (iteration))
+            logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (iteration, ra_offset, dec_offset))
 
             # get pointing image
             (output, error, pid) = self.runSubprocess(
@@ -494,7 +494,7 @@ class Telescope():
                 os.remove(base_path+'pointing.wcs')
                 os.remove(base_path+'pointing.new')
             except:
-                continue
+                pass
 
             # look for field center in solve-field output
             match = re.search(
