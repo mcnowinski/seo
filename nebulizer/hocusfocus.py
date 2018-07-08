@@ -25,6 +25,11 @@ from astropy.visualization import astropy_mpl_style
 plt.style.use(astropy_mpl_style)
 plt.ioff()
 
+# ensure slack token has been provided
+if(len(sys.argv) < 2):
+    abort("Error! Invalid command line arguments. Use \"hocusfocus '<FILTERS>'\".')
+
+
 # user, hardcode for now
 user = 'hocusfocus'
 
@@ -42,13 +47,14 @@ simulate = False
 delay_time = 30
 
 # image exposure in seconds
-exposure = 30
+exposure = 10
 
 # image binning
 binning = 2
 
 # image filter
-filter = 'clear'
+# filter = 'clear'
+filters = sys.argv[1].split()
 
 # minimum altitude to observe this target
 min_obs_alt = 60.0
@@ -146,65 +152,68 @@ telescope.pinpointier(target_observation)
 
 # get current focus position in case something goes awry
 telescope.slackdebug('Original focus position is %s.' % telescope.getFocus())
-focus_position_default = int(telescope.getFocus())
+focus_position_final = focus_position_default = int(telescope.getFocus())
 
-# calculate PSF for pass1_array focus positions
-for i, focus_position in enumerate(pass1_array):
-    # set focus to ith position of pass1_array
-    telescope.slackdebug('Setting focus position to %s...' % focus_position)
-    telescope.setFocus(focus_position)
+# calculate optimum focus position for each
+for filter in filters:
+    # calculate PSF for pass1_array focus positions
+    for i, focus_position in enumerate(pass1_array):
+        # set focus to ith position of pass1_array
+        telescope.slackdebug(
+            'Setting focus position to %s...' % focus_position)
+        telescope.setFocus(focus_position)
 
-    # take image
-    telescope.slackdebug('Taking calibration image...')
-    telescope.image(exposure, filter, binning, image_path, image_filename)
-    telescope.slackpreview(image_path+'/'+image_filename)
+        # take image
+        telescope.slackdebug('Taking calibration image...')
+        telescope.image(exposure, filter, binning, image_path, image_filename)
+        telescope.slackpreview(image_path+'/'+image_filename)
 
-    # perform photometry
-    telescope.slackdebug('Performing photometry on image...')
-    (output, error, pid) = telescope.runSubprocess(
-        [sextractor_bin_path, image_path+'/'+image_filename, '-c', sextractor_sex_path])
+        # perform photometry
+        telescope.slackdebug('Performing photometry on image...')
+        (output, error, pid) = telescope.runSubprocess(
+            [sextractor_bin_path, image_path+'/'+image_filename, '-c', sextractor_sex_path])
 
-    # perform psf extraction
-    telescope.slackdebug('Estimating point spread function of image...')
-    (output, error, pid) = telescope.runSubprocess(
-        [psfex_bin_path, sextractor_cat_path, '-c', psfex_cfg_path])
+        # perform psf extraction
+        telescope.slackdebug('Estimating point spread function of image...')
+        (output, error, pid) = telescope.runSubprocess(
+            [psfex_bin_path, sextractor_cat_path, '-c', psfex_cfg_path])
 
-    psf = fits.open(psfex_psf_path)
-    fwhm = psf[1].header['PSF_FWHM']
+        psf = fits.open(psfex_psf_path)
+        fwhm = psf[1].header['PSF_FWHM']
 
-    pass1_array_focus[i] = focus_position, fwhm
+        pass1_array_focus[i] = focus_position, fwhm
 
-    telescope.slackdebug(
-        'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
-    logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
+        telescope.slackdebug(
+            'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
+        logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
 
-    telescope.pinpointier(target_observation, False)
+        telescope.pinpointier(target_observation, False)
 
-# fit data points to a 2nd-deg polynomial
-pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
-pass1_fit_focus_pos = int(-pass1_fit[1]/(2*pass1_fit[0]))
+    # fit data points to a 2nd-deg polynomial
+    pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
+    focus_position_final = int(-pass1_fit[1]/(2*pass1_fit[0]))
 
-# save focus pos array
-#np.savetxt("/home/sirius/focus/"+folder+"/"+folder+".dat", pass1_array_focus, fmt='%.5f', header='focus_pos PSF')
+    # save focus pos array
+    #np.savetxt("/home/sirius/focus/"+folder+"/"+folder+".dat", pass1_array_focus, fmt='%.5f', header='focus_pos PSF')
 
-# graph focus fits
-array = np.array(pass1_array_focus)
-plt.scatter(array[:, 0], array[:, 1])
-x = np.arange(4000, 5100)
-y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
-plt.ylim(1, 8)
-plt.xlim(4550, 5100)
-plt.xlabel('Focus Position')
-plt.ylabel('FWHM')
-plt.savefig(plt_path, bbox_inches='tight')
-plt.close()
+    # graph focus fits
+    array = np.array(pass1_array_focus)
+    plt.scatter(array[:, 0], array[:, 1])
+    x = np.arange(4000, 5100)
+    y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
+    plt.ylim(1, 8)
+    plt.xlim(4550, 5100)
+    plt.xlabel('Focus Position')
+    plt.ylabel('FWHM')
+    plt.savefig(plt_path, bbox_inches='tight')
+    plt.close()
 
-telescope.slackimage(plt_path)
+    telescope.slackimage(plt_path)
 
 # set focus to minimum
 telescope.slackdebug('Setting final focus position to %d...' %
-                     pass1_fit_focus_pos)
-telescope.setFocus(pass1_fit_focus_pos)
+                     focus_position_final)
+telescope.setFocus(focus_position_final)
 
 telescope.squeezeit()
 
