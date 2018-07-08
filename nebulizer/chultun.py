@@ -391,11 +391,11 @@ class Telescope():
         # bin=1, 0.75 arsec/pixel
         scale_low = 0.55
         scale_high = 2.00
-        radius = 30.0  # up this to 30 deg, just in case scope is *way* off
+        radius = 10.0  # up this to 30 deg, just in case scope is *way* off
         cpu_limit = 30
         # offset limits (deg)
-        max_ra_offset = 30.0
-        max_dec_offset = 30.0
+        max_ra_offset = 10.0
+        max_dec_offset = 10.0
         min_ra_offset = 0.05
         min_dec_offset = 0.05
         # how many pointing iterations to allow?
