@@ -593,6 +593,7 @@ class Telescope():
                 name = name.replace('(', '')
                 name = name.replace(')', '')
                 name = name.replace("'", '')
+                name = name.replace("*", '')
                 filter = stack.filter
                 exposure = stack.exposure
                 binning = stack.binning
@@ -608,6 +609,7 @@ class Telescope():
                 fits = fits.replace('(', '')
                 fits = fits.replace(')', '')
                 fits = fits.replace("'", '')
+                fits = fits.replace("*", '')
                 self.slackdebug('Taking image (%s)...' % (fits))
                 if self.simulate:
                     time.sleep(exposure)

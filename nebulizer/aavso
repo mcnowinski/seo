@@ -1,0 +1,24 @@
+2018-07-04 05:05:34,771 DEBUG	target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755
+2018-07-04 05:05:34,772 DEBUG	image stack: exposure=45.000000, filter=g-band, binning=2, count=1
+2018-07-04 05:05:34,772 DEBUG	image stack: exposure=45.000000, filter=r-band, binning=2, count=1
+2018-07-04 05:05:34,772 DEBUG	image stack: exposure=45.000000, filter=i-band, binning=2, count=1
+2018-07-04 05:05:34,773 DEBUG	sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; 
+2018-07-04 05:05:36,307 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755; sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-07-04 08:57:12.762336; max_obs_time=2018-07-04 11:41:07.677757; max_alt_time=2018-07-04 11:39:08.898585; user=mcnowinski
+2018-07-04 05:07:28,678 DEBUG	target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755
+2018-07-04 05:07:28,679 DEBUG	image stack: exposure=45.000000, filter=g-band, binning=2, count=1
+2018-07-04 05:07:28,679 DEBUG	image stack: exposure=45.000000, filter=r-band, binning=2, count=1
+2018-07-04 05:07:28,679 DEBUG	image stack: exposure=45.000000, filter=i-band, binning=2, count=1
+2018-07-04 05:07:28,679 DEBUG	sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; 
+2018-07-04 05:07:29,967 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755; sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-07-04 08:57:11.975246; max_obs_time=2018-07-04 11:41:06.612022; max_alt_time=2018-07-04 11:39:08.407253; user=mcnowinski
+2018-07-04 05:17:08,167 DEBUG	target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755
+2018-07-04 05:17:08,168 DEBUG	image stack: exposure=45.000000, filter=g-band, binning=2, count=1
+2018-07-04 05:17:08,168 DEBUG	image stack: exposure=45.000000, filter=r-band, binning=2, count=1
+2018-07-04 05:17:08,168 DEBUG	image stack: exposure=45.000000, filter=i-band, binning=2, count=1
+2018-07-04 05:17:08,168 DEBUG	sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; 
+2018-07-04 05:17:09,459 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755; sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2018-07-04 08:56:59.616688; max_obs_time=2018-07-04 11:41:06.615401; max_alt_time=2018-07-04 11:39:11.310967; user=mcnowinski
+2018-07-05 04:16:51,328 DEBUG	target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755
+2018-07-05 04:16:51,345 DEBUG	image stack: exposure=45.000000, filter=g-band, binning=2, count=1
+2018-07-05 04:16:51,345 DEBUG	image stack: exposure=45.000000, filter=r-band, binning=2, count=1
+2018-07-05 04:16:51,346 DEBUG	image stack: exposure=45.000000, filter=i-band, binning=2, count=1
+2018-07-05 04:16:51,346 DEBUG	sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; 
+2018-07-05 04:16:52,880 DEBUG	observatory: code=G52, lat=38.288600, lon=-122.504000, alt=8.000000; target: name=V*FOAqr, ra=22 17 55.3796, dec=-08 21 03.755; sequence: repeat=-1;   image stack: exposure=45.000000, filter=g-band, binning=2, count=1;   image stack: exposure=45.000000, filter=r-band, binning=2, count=1;   image stack: exposure=45.000000, filter=i-band, binning=2, count=1; min_alt=30.000000 deg; obs_time=None; id=-1; active=1; min_obs_time=2458304.87015; max_obs_time=2458304.98736; max_alt_time=2458304.98275; user=mcnowinski

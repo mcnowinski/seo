@@ -27,8 +27,7 @@ plt.ioff()
 
 # ensure slack token has been provided
 if(len(sys.argv) < 2):
-    abort("Error! Invalid command line arguments. Use \"hocusfocus '<FILTERS>'\".')
-
+    abort("Error! Invalid command line arguments. Use \"hocusfocus '<FILTERS>'\".")
 
 # user, hardcode for now
 user = 'hocusfocus'
@@ -156,6 +155,8 @@ focus_position_final = focus_position_default = int(telescope.getFocus())
 
 # calculate optimum focus position for each
 for filter in filters:
+    telescope.slackdebug(
+        'Current filter is %s...' % filter)    
     # calculate PSF for pass1_array focus positions
     for i, focus_position in enumerate(pass1_array):
         # set focus to ith position of pass1_array
@@ -187,7 +188,7 @@ for filter in filters:
             'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
         logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
 
-        telescope.pinpointier(target_observation, False)
+    telescope.pinpointier(target_observation, False)
 
     # fit data points to a 2nd-deg polynomial
     pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
@@ -201,6 +202,7 @@ for filter in filters:
     plt.scatter(array[:, 0], array[:, 1])
     x = np.arange(4000, 5100)
     y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
+
     plt.ylim(1, 8)
     plt.xlim(4550, 5100)
     plt.xlabel('Focus Position')
@@ -212,8 +214,8 @@ for filter in filters:
 
 # set focus to minimum
 telescope.slackdebug('Setting final focus position to %d...' %
-                     focus_position_final)
-telescope.setFocus(focus_position_final)
+                     pass1_fit_focus_pos)
+telescope.setFocus(pass1_fit_focus_pos)
 
 telescope.squeezeit()
 

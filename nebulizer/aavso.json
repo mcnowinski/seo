@@ -1,0 +1,46 @@
+{
+    "user": "mcnowinski",
+    "simulate": false,
+    "observatory": {
+        "code": "G52",
+        "latitude": 38.2886,
+        "longitude": -122.50400,
+        "altitude": 8,
+        "timezone": "US/Pacific"
+    },
+    "min_obs_alt": 30,
+    "wait_time_s": 30,
+    "observations": {
+        "star": {
+            "target": {
+                "name": "V*FOAqr",
+                "type": "star"
+            },
+            "sequences": {
+                "main": {
+                    "repeat": -1,
+                    "stacks": [
+                        {
+                            "exposure": 45,
+                            "binning": 2,
+                            "filters": "g-band",
+                            "count": 1
+                        },
+                        {
+                            "exposure": 45,
+                            "binning": 2,
+                            "filters": "r-band",
+                            "count": 1
+                        },
+                        {
+                            "exposure": 45,
+                            "binning": 2,
+                            "filters": "i-band",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
