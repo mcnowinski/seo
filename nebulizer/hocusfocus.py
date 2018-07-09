@@ -16,6 +16,7 @@ from astropy.time import Time
 import time
 import numpy as np
 from astropy.io import fits
+import dict
 
 # for plots
 import matplotlib
@@ -151,12 +152,15 @@ telescope.pinpointier(target_observation)
 
 # get current focus position in case something goes awry
 telescope.slackdebug('Original focus position is %s.' % telescope.getFocus())
-focus_position_final = focus_position_default = int(telescope.getFocus())
+focus_position_default = int(telescope.getFocus())
+
+# store focus positions for each filter
+final_focus_positions = dict.fromkeys(filters)
 
 # calculate optimum focus position for each
 for filter in filters:
     telescope.slackdebug(
-        'Current filter is %s...' % filter)    
+        'Current filter is %s...' % filter)
     # calculate PSF for pass1_array focus positions
     for i, focus_position in enumerate(pass1_array):
         # set focus to ith position of pass1_array
@@ -192,7 +196,7 @@ for filter in filters:
 
     # fit data points to a 2nd-deg polynomial
     pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)
-    focus_position_final = int(-pass1_fit[1]/(2*pass1_fit[0]))
+    final_focus_positions[filter] = int(-pass1_fit[1]/(2*pass1_fit[0]))
 
     # save focus pos array
     #np.savetxt("/home/sirius/focus/"+folder+"/"+folder+".dat", pass1_array_focus, fmt='%.5f', header='focus_pos PSF')
@@ -213,9 +217,13 @@ for filter in filters:
     telescope.slackimage(plt_path)
 
 # set focus to minimum
-telescope.slackdebug('Setting final focus position to %d...' %
-                     pass1_fit_focus_pos)
-telescope.setFocus(pass1_fit_focus_pos)
+# telescope.slackdebug('Setting final focus position to %d...' %
+#                     pass1_fit_focus_pos)
+# telescope.setFocus(pass1_fit_focus_pos)
+
+for filter, final_focus_position in final_focus_positions.iteritems():
+    telescope.slackdebug('Optimum focus position for %s is %d.' %
+                         (filter, final_focus_position))
 
 telescope.squeezeit()
 
