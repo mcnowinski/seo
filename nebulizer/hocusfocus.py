@@ -16,7 +16,6 @@ from astropy.time import Time
 import time
 import numpy as np
 from astropy.io import fits
-import dict
 
 # for plots
 import matplotlib
