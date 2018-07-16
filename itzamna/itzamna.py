@@ -687,9 +687,13 @@ def doPinpointByRaDec(command, user):
 
     send_message('Itzamna is pinpointing the telescope. Please wait...')
 
+    # regex to format RA/dec for filename
+    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
+
     # reset the target name
     global target_name
-    target_name = "unknown"
+    target_name = "%s%s" % (ra, dec)
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     # send_message(output)
@@ -766,7 +770,7 @@ def doPointByObjectNum(command, user):
 
     # reset the target name
     global target_name
-    target_name = re.sub('[^A-Za-z0-9]', '_', object['name'])
+    target_name = re.sub('[^A-Za-z0-9]', '_', object['name']) 
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
@@ -812,9 +816,13 @@ def doPointByRaDec(command, user):
 
     send_message('Itzamna is pointing the telescope. Please wait...')
 
+    # regex to format RA/dec for filename
+    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
+
     # reset the target name
     global target_name
-    target_name = "unknown"
+    target_name = "%s%s" % (ra, dec)
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
