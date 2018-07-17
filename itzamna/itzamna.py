@@ -688,7 +688,7 @@ def doPinpointByRaDec(command, user):
     send_message('Itzamna is pinpointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
@@ -817,7 +817,7 @@ def doPointByRaDec(command, user):
     send_message('Itzamna is pointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
