@@ -46,7 +46,7 @@ simulate = False
 delay_time = 30
 
 # image exposure in seconds
-exposure = 10
+exposure = 30
 
 # image binning
 binning = 2
