@@ -688,7 +688,7 @@ def doPinpointByRaDec(command, user):
     send_message('Itzamna is pinpointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
@@ -770,7 +770,7 @@ def doPointByObjectNum(command, user):
 
     # reset the target name
     global target_name
-    target_name = re.sub('[^A-Za-z0-9]', '_', object['name']) 
+    target_name = re.sub('[^A-Za-z0-9]', '_', object['name'])
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
@@ -817,7 +817,7 @@ def doPointByRaDec(command, user):
     send_message('Itzamna is pointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
@@ -860,6 +860,8 @@ def getObject(command, user):
     #
     #found_celestial_object = False
     try:
+        # add flux data to results
+        Simbad.add_votable_fields('fluxdata(V)')
         result_table = Simbad.query_object(lookup.upper().replace('*', ''))
         if len(result_table) > max_results:
             send_message(
@@ -870,7 +872,7 @@ def getObject(command, user):
                 break
             count += 1
             objects.append({'type': 'Celestial', 'id': result_table['MAIN_ID'][row], 'name': result_table['MAIN_ID'][row].replace(' ', ''), 'RA': Angle(
-                result_table['RA'][row].replace(' ', ':') + ' hours').degree, 'DEC': Angle(result_table['DEC'][row].replace(' ', ':') + ' degrees').degree})
+                result_table['RA'][row].replace(' ', ':') + ' hours').degree, 'DEC': Angle(result_table['DEC'][row].replace(' ', ':') + ' degrees').degree, 'VMAG': result_table['FLUX_V'][row]})
     except:
         pass
     send_message('Found %d celestial match(es) for "%s".' %
@@ -997,7 +999,7 @@ def getObject(command, user):
                 "%Y/%m/%d %H:%M"), end.strftime("%Y/%m/%d %H:%M"), '1m')
             result.get_ephemerides(observatory_code)
             objects.append({'type': 'Solar System', 'id': object_name.upper(
-            ), 'name': result['targetname'][0], 'RA': result['RA'][0], 'DEC': result['DEC'][0]})
+            ), 'name': result['targetname'][0], 'RA': result['RA'][0], 'DEC': result['DEC'][0], 'VMAG': result['V'][0]})
         except:
             pass
     #
@@ -1017,14 +1019,13 @@ def getObject(command, user):
             sat_name = sat[0]
             sat_tle_line1 = sat[1]
             sat_tle_line2 = sat[2]
-            print sat
             sat_ephem = ephem.readtle(sat_name, sat_tle_line1, sat_tle_line2)
             sat_observer.date = datetime.datetime.utcnow()
             sat_ephem.compute(sat_observer)
             sat_coords = SkyCoord(ra='%s' % sat_ephem.ra, dec='%s' %
                                   sat_ephem.dec, unit=(u.hour, u.deg))
             objects.append({'type': 'Satellite', 'tle_line1': sat_tle_line1, 'tle_line2': sat_tle_line2, 'id': sat_name,
-                            'name': sat_name, 'RA': math.degrees(float(repr(sat_ephem.ra))), 'DEC': math.degrees(float(repr(sat_ephem.dec)))})
+                            'name': sat_name, 'RA': math.degrees(float(repr(sat_ephem.ra))), 'VMAG': '', 'DEC': math.degrees(float(repr(sat_ephem.dec)))})
 
     send_message('Found %d satellite match(es) for "%s".' %
                  (num_sat_matches, lookup))
@@ -1289,6 +1290,12 @@ def getClearDarkSky(command, user):
 
 
 def getSkyCam(command, user):
+
+    logme('Retrieving skycam image from SEO spacam...')
+
+    (output, error, pid) = runSubprocess(['spacam'], False)
+    send_file('spacam.jpg', 'SEO Spa-Cam in El Verano, CA')
+
     logme('Retrieving skycam images for sites near SEO...')
 
     dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
