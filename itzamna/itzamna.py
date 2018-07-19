@@ -1290,6 +1290,12 @@ def getClearDarkSky(command, user):
 
 
 def getSkyCam(command, user):
+
+    logme('Retrieving skycam image from SEO spacam...')
+
+    (output, error, pid) = runSubprocess(['spacam'], False)
+    send_file('spacam.jpg', 'SEO Spa-Cam in El Verano, CA')
+
     logme('Retrieving skycam images for sites near SEO...')
 
     dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
