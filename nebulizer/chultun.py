@@ -450,7 +450,8 @@ class Telescope():
         while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
             iteration += 1
 
-            logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (iteration, ra_offset, dec_offset))
+            logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (
+                iteration, ra_offset, dec_offset))
 
             # get pointing image
             (output, error, pid) = self.runSubprocess(
@@ -639,7 +640,7 @@ class Telescope():
                     self.slackpreview('%s/%s/%s/%s' %
                                       (image_path, user, name, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
-                    #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
+                    # (ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
                     #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
                 else:
                     self.slackdebug(
@@ -661,7 +662,7 @@ class Telescope():
             '%Y'), datetime.datetime.utcnow().strftime('%Y-%m-%d'))
         # off they go!
         # create new directory if required
-        #(output, error, pid) = runSubprocess(
+        # (output, error, pid) = runSubprocess(
         #    ['ssh', '-q', '-i', %s*.fits' % image_path, '%s' % dest_path])
         # if error == '':
         #    logger.info('Successfully uploaded %d image(s) to stars (%s).' % (
@@ -968,6 +969,7 @@ class Target():
             result.set_epochrange(start.iso, end.iso, '15m')
             result.get_ephemerides(observatory.code)
             # return transit RA/DEC if available times exist
+            logger.debug(result)
             if result and len(result['EL']):
                 imax = np.argmax(result['EL'])
                 ra = Angle(float(result['RA'][imax]) *
@@ -1002,7 +1004,7 @@ class Stack():
         self.do_pinpoint = do_pinpoint
 
     def toString(self):
-        return 'image stack: exposure=%f, filter=%s, binning=%d, count=%d' % (self.exposure, self.filter, self.binning, self.count)
+        return 'image stack: exposure=%f, filter=%s, binning=%d, count=%d, do_pinpoint=%s' % (self.exposure, self.filter, self.binning, self.count, self.do_pinpoint)
 
 
 #
@@ -1029,6 +1031,18 @@ class Sequence():
         for stack in self.stacks:
             sequence_string += '  %s\n' % stack.toString()
         return sequence_string
+
+    # estimate the total duration in seconds of the observing sequence
+    def getDuration(self):
+        if self.repeat == -1:
+            logger.warn('Sequence getDuration called on continuous sequence.')
+            return -1
+        sequenceTime = 0
+        for stack in self.stacks:
+            sequenceTime += stack.exposure
+        sequenceTime *= self.repeat
+        logger.debug('Sequence duration is %f seconds.' % sequenceTime)
+        return sequenceTime
 
 #
 # the observatory
