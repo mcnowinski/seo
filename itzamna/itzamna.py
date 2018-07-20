@@ -1050,9 +1050,10 @@ def getObject(command, user):
             ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
             dec = Angle('%fd' % object['DEC']).to_string(
                 unit=u.degree, sep=':')
-            report += '%d.\t%s object (%s) found at RA=%s, DEC=%s, ALT=%f, AZ=%f.\n' % (
-                index, object['type'], object['name'], ra, dec, altaz.alt.degree, altaz.az.degree)
+            report += '%d.\t%s object (%s) found at RA=%s, DEC=%s, ALT=%f, AZ=%f, VMAG=%s.\n' % (
+                index, object['type'], object['name'], ra, dec, altaz.alt.degree, altaz.az.degree, object['VMAG'])
             index += 1
+        report = report.replace("--", "N/A")   
         send_message(report)
     else:
         send_message(
