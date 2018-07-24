@@ -9,7 +9,7 @@
         "timezone": "US/Pacific"
     },
     "min_obs_alt": 30,
-    "wait_time_s": 30,
+    "delay_time": 30,
     "observations": {
         "target": {
             "name": "1102",
@@ -19,7 +19,7 @@
             "main": {
                 "repeat": -1,
                 "stacks": [{
-                    "exposure": 120,
+                    "exposure": 80,
                     "binning": 2,
                     "filters": "clear",
                     "count": 1
@@ -49,7 +49,7 @@
                         "do_pinpoint": false
                     },
                     {
-                        "exposure": 60,
+                        "exposure": 40,
                         "binning": 2,
                         "filters": "clear",
                         "count": 1,
