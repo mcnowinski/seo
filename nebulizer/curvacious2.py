@@ -60,7 +60,7 @@ observatory = Observatory(cfg['observatory']['code'], cfg['observatory']['latitu
 telescope = Telescope(cfg['simulate'])
 
 # pause time while waiting for object to become available
-wait_time_s = cfg['wait_time_s']
+delay_time = cfg['delay_time']
 
 # build main asteroid observation
 observation_json = cfg['observations']
@@ -118,7 +118,7 @@ while Time.now() < asteroid_main_observation.min_obs_time:
     wait_time_s = (asteroid_main_observation.min_obs_time-Time.now()).sec
     telescope.slackdebug('The observation (%s) will start in %d min (at %s)...' % (
         asteroid_main_observation.target.getName(), wait_time_s/60, asteroid_main_observation.min_obs_time.iso[:-7]))
-    time.sleep(wait_time_s)
+    time.sleep(delay_time)
 
 # start observations
 telescope.slackdebug("Starting observations...")
