@@ -444,7 +444,7 @@ def doBias(command,user):
     slackdebug('Taking image (%s)...' % (fits))
     (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
     (output, error, pid) = runSubprocess(
-        ['image dark time = %s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+        ['image', 'dark time = %s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
     if not error:
         send_message('Got image (%s).' % fits)
         slackpreview(fits)
@@ -481,7 +481,7 @@ def doDark(command, user):
     slackdebug('Taking image (%s)...' % (fits))
     (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
     (output, error, pid) = runSubprocess(
-        ['image dark time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+        ['image', 'dark time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
     if not error:
         send_message('Got image (%s).' % fits)
         slackpreview(fits)
