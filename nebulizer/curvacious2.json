@@ -12,25 +12,26 @@
     "delay_time": 30,
     "observations": {
         "target": {
-            "name": "1102",
-            "type": "asteroid"
+            "name": "pluto",
+            "type": "solar system"
         },
         "sequences": {
             "main": {
                 "repeat": -1,
                 "stacks": [{
-                    "exposure": 80,
+                    "exposure": 2,
                     "binning": 2,
                     "filters": "clear",
-                    "count": 1
+                    "count": 1,
+                    "do_pinpoint": false
                 }]
             },
             "calibration": {
-                "repeat": 3,
+                "repeat": 0,
                 "stacks": [{
-                        "exposure": 60,
+                        "exposure": 2,
                         "binning": 2,
-                        "filters": "g-band",
+                        "filters": "clear",
                         "count": 1,
                         "do_pinpoint": false
                     },
@@ -49,7 +50,7 @@
                         "do_pinpoint": false
                     },
                     {
-                        "exposure": 40,
+                        "exposure": 60,
                         "binning": 2,
                         "filters": "clear",
                         "count": 1,

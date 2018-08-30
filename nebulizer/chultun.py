@@ -66,6 +66,30 @@ scp_path = 'scp'
 max_pinpoint_time_s = 60
 
 #
+# 1 [OIII]  ZBPA500
+# 2 g-band  AST0536 A133
+# 3 r-band  AST0537 A134
+# 4 i-band  AST0538 A135
+# 5 [SII]   ZBPA670
+# 6 clear   ESCO Q320188
+# 7 h-alpha ZBPA660
+#
+# filter hash
+filters = {
+    'oiii': 1,
+    '[oiii]': 1,
+    #    'u-band': 1,
+    'g-band': 2,
+    'r-band': 3,
+    'i-band': 4,
+    'sii': 5,
+    '[sii]': 5,
+    #    'z-band': 5,
+    'clear': 6,
+    'h-alpha': 7
+}
+
+#
 # the SEO telescope
 #
 
@@ -227,6 +251,26 @@ class Telescope():
         else:
             logger.error('Focus command failed (%s).' % output)
         return focus_position
+
+    def setFilter(self, filter):
+        filter = filter.lower()
+
+        if filter not in filters:
+            logger.error('Could not find a filter (%s).' % filter)
+            return False
+
+        if not self.simulate:
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'filter', 'num=%d' % filters[filter]])
+
+            # done filter num=6 name=clear
+            if not re.search('done filter num\\=([0-9]+)', output):
+                logger.error('Could not set filter to %s.' % filter)
+                return False
+            # check match?
+
+        logger.info('Filter is %s.' % filter)
+        return True
 
     # check slit
     # if the slit is closed, alert the observer via Slack
@@ -440,7 +484,8 @@ class Telescope():
             logger.debug('Current filter is %s.' % current_filter)
             # set to clear (temporarily)
             logger.debug('Changing filter setting to clear (temporarily).')
-            (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            #(output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            self.setFilter('clear')
         else:
             logger.error('Unrecognized filter (%s).' % output)
 
@@ -567,13 +612,15 @@ class Telescope():
         # get the image!
         if filter == 'dark':
             # use h-alpha filter to reduce any ambient light
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', 'h-alpha'])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', 'h-alpha'])
+            self.setFilter('h-alpha')
             (output, error, pid) = self.runSubprocess(
                 ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
         else:
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', '%s' % filter])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', '"%s"' % filter])
+            self.setFilter(filter)
             (output, error, pid) = self.runSubprocess(
                 ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
 
@@ -618,21 +665,6 @@ class Telescope():
                 else:
                     self.image(exposure, filter, binning,
                                image_path+'/'+user+'/'+name, fits)
-#                    # make sure path exists!
-#                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
-#                                  ).mkdir(parents=True, exist_ok=True)
-#                    # get the image!
-#                    if filter == 'dark':
-#                        # use h-alpha filter to reduce any ambient light
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', 'h-alpha'])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
-#                    else:
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', '%s' % filter])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                 # if not error:
                 self.slackdebug('Got image (%s/%s/%s/%s).' %
                                 (image_path, user, name, fits))

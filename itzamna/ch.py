@@ -495,7 +495,7 @@ class query():
 
         self.url = url
 
-        #print (url)
+        #print ('JPL HORIZONS url = ' + url)
 
         # call HORIZONS
         i = 0  # count number of connection tries
@@ -1087,7 +1087,8 @@ class query():
     def export2pyephem(self, center='500@10', equinox=2000.):
         """Call JPL HORIZONS website to obtain orbital elements based on the
         provided targetname, epochs, and center code and create a
-        PyEphem (http://rhodesmill.org/pyephem/) object. This function
+        PyEphem (
+            ://rhodesmill.org/pyephem/) object. This function
         requires PyEphem to be installed.
 
         Parameters

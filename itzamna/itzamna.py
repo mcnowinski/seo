@@ -35,6 +35,15 @@ import pytz
 import glob
 import shutil
 
+# import classes from the chultun module
+from chultun import Target  # name, ra, dec
+from chultun import Stack  # exposure, filter, binning, count
+from chultun import Sequence  # stacks, repeat
+from chultun import Observatory  # code, latitude, longitude, altitude
+from chultun import Observation  # target, sequence
+from chultun import Scheduler  # observatory, observations
+from chultun import Telescope  # the telescope commands
+
 
 def runSubprocess(command_array, simulate=False, communicate=True, timeout=0):
     # command array is array with command and all required parameters
@@ -389,7 +398,7 @@ def doImage(command, user):
         return
 
     match = re.search(
-        '^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (u\\-band|g\\-band|r\\-band|i\\-band|z\\-band|clear|h\\-alpha)', command, re.IGNORECASE)
+        '^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (oiii|g\\-band|r\\-band|i\\-band|sii|clear|h\\-alpha)', command, re.IGNORECASE)
     if(match):
         exposure = match.group(2)
         binning = match.group(3)
@@ -405,7 +414,8 @@ def doImage(command, user):
         target_name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
-    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    #(output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    telescope.setFilter(filter)
     (output, error, pid) = runSubprocess(
         ['image', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
     if not error:
@@ -1053,7 +1063,7 @@ def getObject(command, user):
             report += '%d.\t%s object (%s) found at RA=%s, DEC=%s, ALT=%f, AZ=%f, VMAG=%s.\n' % (
                 index, object['type'], object['name'], ra, dec, altaz.alt.degree, altaz.az.degree, object['VMAG'])
             index += 1
-        report = report.replace("--", "N/A")   
+        report = report.replace("--", "N/A")
         send_message(report)
     else:
         send_message(
@@ -1660,7 +1670,7 @@ commands = [
     ['^\\\\(track) (on|off)', doTrack],
     ['^\\\\(crack)', doCrack],
     ['^\\\\(squeeze)', doSqueeze],
-    ['^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (u\\-band|g\\-band|r\\-band|i\\-band|z\\-band|clear|h\\-alpha)', doImage],
+    ['^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (oiii|g\\-band|r\\-band|i\\-band|sii|clear|h\\-alpha)', doImage],
     ['^\\\\(lock)', doLock],
     ['^\\\\(share) (on|off)', doShare],
     ['^\\\\(unlock)', doUnLock],
@@ -1727,6 +1737,9 @@ buildSatDatabase()
 
 # init the slack client
 sc = SlackClient(slack_token)
+
+# seo telescope
+telescope = Telescope(False)
 
 # main loop
 while True:

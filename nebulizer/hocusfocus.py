@@ -215,14 +215,16 @@ for filter in filters:
 
     telescope.slackimage(plt_path)
 
-# set focus to minimum
-# telescope.slackdebug('Setting final focus position to %d...' %
-#                     pass1_fit_focus_pos)
-# telescope.setFocus(pass1_fit_focus_pos)
-
 for filter, final_focus_position in final_focus_positions.iteritems():
     telescope.slackdebug('Optimum focus position for %s is %d.' %
                          (filter, final_focus_position))
+
+# set focus to minimum if just one filter was calibrated                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          j
+if len(filters) == 1:
+    filter = filters[0]
+    focus = final_focus_positions[filter]
+    telescope.slackdebug('Setting final focus position to %d...' % focus)
+    telescope.setFocus(focus)
 
 telescope.squeezeit()
 
