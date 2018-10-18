@@ -12,49 +12,50 @@
     "delay_time": 30,
     "observations": {
         "target": {
-            "name": "pluto",
+            "name": "2915",
             "type": "solar system"
         },
         "sequences": {
             "main": {
                 "repeat": -1,
+                "do_pinpoint": true,
                 "stacks": [{
-                    "exposure": 2,
+                    "exposure": 120,
                     "binning": 2,
                     "filters": "clear",
                     "count": 1,
-                    "do_pinpoint": false
+                    "do_pinpoint": true
                 }]
             },
             "calibration": {
-                "repeat": 0,
+                "repeat": 3,
                 "stacks": [{
-                        "exposure": 2,
+                        "exposure": 60,
                         "binning": 2,
                         "filters": "clear",
                         "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
+                    },
+                    {
+                        "exposure": 60,
+                        "binning": 2,
+                        "filters": "g-band",
+                        "count": 1,
+                        "do_pinpoint": true
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "r-band",
                         "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "i-band",
                         "count": 1,
-                        "do_pinpoint": false
-                    },
-                    {
-                        "exposure": 60,
-                        "binning": 2,
-                        "filters": "clear",
-                        "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
                     }
                 ]
             }
