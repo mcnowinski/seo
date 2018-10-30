@@ -95,8 +95,8 @@ observations = []
 stacks = []
 
 # initialize array covering a range of focus positions
-pass1_array = [4650, 4675, 4700, 4725, 4750, 4775, 4800,
-               4825, 4850, 4875, 4900, 4925, 4950, 4975, 5000]
+pass1_array = [10850, 10875, 10900, 10925, 10950, 10975, 11000,
+               11025, 11050, 11075, 11100, 11125, 11150, 11175, 11200]
 pass1_array_focus = np.zeros((len(pass1_array), 2))
 
 # read in reference stars from file
@@ -207,7 +207,7 @@ for filter in filters:
     y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
 
     plt.ylim(1, 8)
-    plt.xlim(4550, 5100)
+    plt.xlim(10500, 11500)
     plt.xlabel('Focus Position')
     plt.ylabel('FWHM')
     plt.savefig(plt_path, bbox_inches='tight')
@@ -215,14 +215,16 @@ for filter in filters:
 
     telescope.slackimage(plt_path)
 
-# set focus to minimum
-# telescope.slackdebug('Setting final focus position to %d...' %
-#                     pass1_fit_focus_pos)
-# telescope.setFocus(pass1_fit_focus_pos)
-
 for filter, final_focus_position in final_focus_positions.iteritems():
     telescope.slackdebug('Optimum focus position for %s is %d.' %
                          (filter, final_focus_position))
+
+# set focus to minimum if just one filter was calibrated                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          j
+if len(filters) == 1:
+    filter = filters[0]
+    focus = final_focus_positions[filter]
+    telescope.slackdebug('Setting final focus position to %d...' % focus)
+    telescope.setFocus(focus)
 
 telescope.squeezeit()
 

@@ -66,6 +66,30 @@ scp_path = 'scp'
 max_pinpoint_time_s = 60
 
 #
+# 1 [OIII]  ZBPA500
+# 2 g-band  AST0536 A133
+# 3 r-band  AST0537 A134
+# 4 i-band  AST0538 A135
+# 5 [SII]   ZBPA670
+# 6 clear   ESCO Q320188
+# 7 h-alpha ZBPA660
+#
+# filter hash
+filters = {
+    'oiii': 1,
+    '[oiii]': 1,
+    #    'u-band': 1,
+    'g-band': 2,
+    'r-band': 3,
+    'i-band': 4,
+    'sii': 5,
+    '[sii]': 5,
+    #    'z-band': 5,
+    'clear': 6,
+    'h-alpha': 7
+}
+
+#
 # the SEO telescope
 #
 
@@ -227,6 +251,26 @@ class Telescope():
         else:
             logger.error('Focus command failed (%s).' % output)
         return focus_position
+
+    def setFilter(self, filter):
+        filter = filter.lower()
+
+        if filter not in filters:
+            logger.error('Could not find a filter (%s).' % filter)
+            return False
+
+        if not self.simulate:
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'filter', 'num=%d' % filters[filter]])
+
+            # done filter num=6 name=clear
+            if not re.search('done filter num\\=([0-9]+)', output):
+                logger.error('Could not set filter to %s.' % filter)
+                return False
+            # check match?
+
+        logger.info('Filter is %s.' % filter)
+        return True
 
     # check slit
     # if the slit is closed, alert the observer via Slack
@@ -440,7 +484,8 @@ class Telescope():
             logger.debug('Current filter is %s.' % current_filter)
             # set to clear (temporarily)
             logger.debug('Changing filter setting to clear (temporarily).')
-            (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            # (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            self.setFilter('clear')
         else:
             logger.error('Unrecognized filter (%s).' % output)
 
@@ -550,6 +595,10 @@ class Telescope():
             # how many times does this imaging sequence get repeated?
             for repeat in range(0, observation.sequence.repeat):
                 self.getImageStacks(observation)
+                logger.debug('observation.sequence.do_pinpoint = %s.' %
+                             observation.sequence.do_pinpoint)
+                if observation.sequence.do_pinpoint:
+                    self.pinpointier(observation, False)
         else:  # end time specified, this must be a continuous observation
             # make double sure that this is a continuous observation!
             if observation.sequence.repeat != Sequence.CONTINUOUS:
@@ -560,6 +609,10 @@ class Telescope():
                 'Repeating background observation until %s...' % end_time.iso)
             while Time.now() < end_time:  # how many times does this imaging sequence get repeated?
                 self.getImageStacks(observation)
+                logger.debug('observation.sequence.do_pinpoint = %s.' %
+                             observation.sequence.do_pinpoint)
+                if observation.sequence.do_pinpoint:
+                    self.pinpointier(observation, False)
 
     def image(self, exposure, filter, binning, path, filename):
         # make sure path exists!
@@ -567,13 +620,15 @@ class Telescope():
         # get the image!
         if filter == 'dark':
             # use h-alpha filter to reduce any ambient light
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', 'h-alpha'])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', 'h-alpha'])
+            self.setFilter('h-alpha')
             (output, error, pid) = self.runSubprocess(
                 ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
         else:
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', '%s' % filter])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', '"%s"' % filter])
+            self.setFilter(filter)
             (output, error, pid) = self.runSubprocess(
                 ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
 
@@ -618,21 +673,6 @@ class Telescope():
                 else:
                     self.image(exposure, filter, binning,
                                image_path+'/'+user+'/'+name, fits)
-#                    # make sure path exists!
-#                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
-#                                  ).mkdir(parents=True, exist_ok=True)
-#                    # get the image!
-#                    if filter == 'dark':
-#                        # use h-alpha filter to reduce any ambient light
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', 'h-alpha'])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
-#                    else:
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', '%s' % filter])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                 # if not error:
                 self.slackdebug('Got image (%s/%s/%s/%s).' %
                                 (image_path, user, name, fits))
@@ -641,7 +681,7 @@ class Telescope():
                                       (image_path, user, name, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
                     # (ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
-                    #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
+                    # (output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
                 else:
                     self.slackdebug(
                         'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
@@ -807,7 +847,7 @@ class Target():
     def setRa(self, ra):
         self.ra = ra
 
-    #dec = declination
+    # dec = declination
     def getDec(self):
         return self.dec
 
@@ -857,7 +897,7 @@ class Target():
             f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
                                 urllib2.quote(lookups[repeat].upper()))
             output = f.read()  # the whole enchilada
-            #print output
+            # print output
             lines = output.splitlines()  # line by line
             # no matches? go home
             if re.search('No matches found', output):
@@ -904,7 +944,7 @@ class Target():
                         epoch_yr = line[12:22].strip()
                         primary_desig = line[22:37].strip()
                         match_name = line[37:len(line)].strip()
-                        #print record_number, epoch_yr, primary_desig, match_name
+                        # print record_number, epoch_yr, primary_desig, match_name
                         # add semicolon for small body lookups
                         object_names.append(record_number + ';')
                 # check our parse job
@@ -938,7 +978,7 @@ class Target():
                             name = line[9:45].strip()
                             designation = line[45:57].strip()
                             other = line[57:len(line)].strip()
-                            #print record_number, name, designation, other
+                            # print record_number, name, designation, other
                             # NO semicolon for major body lookups
                             object_names.append(record_number)
                 # check our parse job
@@ -993,7 +1033,7 @@ class Stack():
     filter = 'clear'  # filter, e.g., clear, h-alpha, u-band, g-band, r-band, i-band, z-band
     binning = 1  # binning, e.g. 1 or 2
     count = 1  # number of images in this stack
-    do_pinpoint = True  # refine pointing in between imaging
+    do_pinpoint = True  # refine pointing in between images
 
     # init
     def __init__(self, exposure, filter, binning, count, do_pinpoint=True):
@@ -1014,20 +1054,23 @@ class Sequence():
 
     stacks = []  # list of image stacks
     repeat = None  # number of times to repeat this sequence
+    do_pinpoint = True  # refine pointing in between stacks
 
     # repeat as much as possible
     CONTINUOUS = -1
 
     # init
-    def __init__(self, stacks, repeat):
+    def __init__(self, stacks, repeat, do_pinpoint=True):
         self.stacks = stacks
         self.repeat = repeat
+        self.do_pinpoint = do_pinpoint
 
     def addStack(self, stack):
         self.stacks.append(stack)
 
     def toString(self):
-        sequence_string = 'sequence: repeat=%d\n' % (self.repeat)
+        sequence_string = 'sequence: repeat=%d, do_pinpoint=%s\n' % (
+            self.repeat, self.do_pinpoint)
         for stack in self.stacks:
             sequence_string += '  %s\n' % stack.toString()
         return sequence_string
@@ -1408,7 +1451,7 @@ class Scheduler():
             f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
                                 urllib2.quote(lookups[repeat].upper()))
             output = f.read()  # the whole enchilada
-            #print output
+            # print output
             lines = output.splitlines()  # line by line
             # no matches? go home
             if re.search('No matches found', output):
@@ -1455,7 +1498,7 @@ class Scheduler():
                         epoch_yr = line[12:22].strip()
                         primary_desig = line[22:37].strip()
                         match_name = line[37:len(line)].strip()
-                        #print record_number, epoch_yr, primary_desig, match_name
+                        # print record_number, epoch_yr, primary_desig, match_name
                         # add semicolon for small body lookups
                         object_names.append(record_number + ';')
                 # check our parse job
@@ -1489,7 +1532,7 @@ class Scheduler():
                             name = line[9:45].strip()
                             designation = line[45:57].strip()
                             other = line[57:len(line)].strip()
-                            #print record_number, name, designation, other
+                            # print record_number, name, designation, other
                             # NO semicolon for major body lookups
                             object_names.append(record_number)
                 # check our parse job
@@ -1500,8 +1543,8 @@ class Scheduler():
                     else:
                         logger.info(
                             'Multiple JPL major body parsing successful!')
-        #start = datetime.datetime.utcnow()
-        #end = start+datetime.timedelta(hours=12)
+        # start = datetime.datetime.utcnow()
+        # end = start+datetime.timedelta(hours=12)
         # get *nearest* sunset and *next* sunrise times
         # still not a big fan of this!
         observatory_location_obsplan = Observer(longitude=self.observatory.longitude*u.deg, latitude=self.observatory.latitude *

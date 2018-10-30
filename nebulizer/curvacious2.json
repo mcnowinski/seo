@@ -12,17 +12,19 @@
     "delay_time": 30,
     "observations": {
         "target": {
-            "name": "1102",
-            "type": "asteroid"
+            "name": "2915",
+            "type": "solar system"
         },
         "sequences": {
             "main": {
                 "repeat": -1,
+                "do_pinpoint": true,
                 "stacks": [{
-                    "exposure": 80,
+                    "exposure": 120,
                     "binning": 2,
                     "filters": "clear",
-                    "count": 1
+                    "count": 1,
+                    "do_pinpoint": true
                 }]
             },
             "calibration": {
@@ -30,30 +32,30 @@
                 "stacks": [{
                         "exposure": 60,
                         "binning": 2,
+                        "filters": "clear",
+                        "count": 1,
+                        "do_pinpoint": true
+                    },
+                    {
+                        "exposure": 60,
+                        "binning": 2,
                         "filters": "g-band",
                         "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "r-band",
                         "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "i-band",
                         "count": 1,
-                        "do_pinpoint": false
-                    },
-                    {
-                        "exposure": 40,
-                        "binning": 2,
-                        "filters": "clear",
-                        "count": 1,
-                        "do_pinpoint": false
+                        "do_pinpoint": true
                     }
                 ]
             }
