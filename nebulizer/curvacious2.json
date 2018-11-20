@@ -12,7 +12,7 @@
     "delay_time": 30,
     "observations": {
         "target": {
-            "name": "2915",
+            "name": "1385",
             "type": "solar system"
         },
         "sequences": {
@@ -20,42 +20,43 @@
                 "repeat": -1,
                 "do_pinpoint": true,
                 "stacks": [{
-                    "exposure": 120,
+                    "exposure": 60,
                     "binning": 2,
                     "filters": "clear",
-                    "count": 1,
-                    "do_pinpoint": true
+                    "count": 3,
+                    "do_pinpoint": false 
                 }]
             },
             "calibration": {
                 "repeat": 3,
+		        "do_pinpoint": true,
                 "stacks": [{
                         "exposure": 60,
                         "binning": 2,
                         "filters": "clear",
                         "count": 1,
-                        "do_pinpoint": true
+                        "do_pinpoint": false
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "g-band",
                         "count": 1,
-                        "do_pinpoint": true
+                        "do_pinpoint": false
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "r-band",
                         "count": 1,
-                        "do_pinpoint": true
+                        "do_pinpoint": false
                     },
                     {
                         "exposure": 60,
                         "binning": 2,
                         "filters": "i-band",
                         "count": 1,
-                        "do_pinpoint": true
+                        "do_pinpoint": false
                     }
                 ]
             }

@@ -18,9 +18,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="2006ASPC..351..112B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="2"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2018-10-10"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="19:52:33"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="11" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2018-11-07"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="18:10:59"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="8" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="mcnowinski"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="aster"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/home/mcnowinski/seo/nebulizer"/>
@@ -105,27 +105,27 @@
    <DATA><TABLEDATA>
     <TR>
      <TD>hf.cat</TD><TD>no ident</TD><TD>1</TD>
-     <TD>428</TD><TD>428</TD><TD>428</TD><TD>428</TD>
-     <TD>371</TD><TD>371</TD><TD>371</TD><TD>371</TD>
-     <TD>5.16175</TD><TD>5.16175</TD><TD>5.16175</TD>
-     <TD>1.09824</TD><TD>1.09824</TD><TD>1.09824</TD>
-     <TD>1.03145</TD><TD>1.03145</TD><TD>1.03145</TD>
-     <TD>4.36141</TD><TD>5.13144</TD><TD>5.75171</TD>
-     <TD>6.73687</TD><TD>8.15591</TD><TD>8.88981</TD>
-     <TD>0.00865507</TD><TD>0.0655084</TD><TD>0.126875</TD>
-     <TD>-0.0720985</TD><TD>-0.0581553</TD><TD>0.0113885</TD>
-     <TD>-0.0630469</TD><TD>0.0301546</TD><TD>0.113345</TD>
-     <TD>9.81643</TD><TD>9.98999</TD><TD>10</TD>
-     <TD>0.241429</TD><TD>0.26469</TD><TD>0.324695</TD>
-     <TD>4.30648</TD><TD>5.08602</TD><TD>5.71068</TD>
-     <TD>6.65167</TD><TD>8.08325</TD><TD>8.82619</TD>
-     <TD>0.00895518</TD><TD>0.0662915</TD><TD>0.129649</TD>
-     <TD>-0.0731548</TD><TD>-0.0588452</TD><TD>0.0111842</TD>
-     <TD>-0.0648654</TD><TD>0.0305255</TD><TD>0.115599</TD>
-     <TD>9.99493</TD><TD>9.99963</TD><TD>10</TD>
-     <TD>0.240911</TD><TD>0.26425</TD><TD>0.324411</TD>
-     <TD>0.205027</TD><TD>0.224907</TD><TD>0.290919</TD>
-     <TD>39.3758</TD><TD>54.1518</TD><TD>61.5414</TD>
+     <TD>402</TD><TD>402</TD><TD>402</TD><TD>402</TD>
+     <TD>346</TD><TD>346</TD><TD>346</TD><TD>346</TD>
+     <TD>5.19704</TD><TD>5.19704</TD><TD>5.19704</TD>
+     <TD>1.10575</TD><TD>1.10575</TD><TD>1.10575</TD>
+     <TD>0.99151</TD><TD>0.99151</TD><TD>0.99151</TD>
+     <TD>4.26087</TD><TD>5.02641</TD><TD>5.58202</TD>
+     <TD>6.5849</TD><TD>7.90266</TD><TD>8.62977</TD>
+     <TD>0.00547838</TD><TD>0.0385098</TD><TD>0.117398</TD>
+     <TD>-0.0359503</TD><TD>-0.0238983</TD><TD>0.0550698</TD>
+     <TD>-0.0782397</TD><TD>0.0301972</TD><TD>0.116075</TD>
+     <TD>9.91455</TD><TD>9.99926</TD><TD>9.99995</TD>
+     <TD>0.161656</TD><TD>0.182239</TD><TD>0.228197</TD>
+     <TD>4.20267</TD><TD>4.97762</TD><TD>5.53916</TD>
+     <TD>6.49473</TD><TD>7.82895</TD><TD>8.56346</TD>
+     <TD>0.00556331</TD><TD>0.0391806</TD><TD>0.120291</TD>
+     <TD>-0.0367285</TD><TD>-0.0238143</TD><TD>0.0561832</TD>
+     <TD>-0.080033</TD><TD>0.0311126</TD><TD>0.118951</TD>
+     <TD>9.98611</TD><TD>9.99973</TD><TD>10</TD>
+     <TD>0.161165</TD><TD>0.181918</TD><TD>0.227852</TD>
+     <TD>0.122803</TD><TD>0.171375</TD><TD>0.217153</TD>
+     <TD>43.3103</TD><TD>59.5463</TD><TD>64.0891</TD>
      <TD>1.54647</TD><TD>1.54649</TD><TD>1.5465</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -206,27 +206,27 @@
    <DATA><TABLEDATA>
     <TR>
      <TD>1</TD>
-     <TD>428</TD><TD>428</TD><TD>428</TD><TD>428</TD>
-     <TD>371</TD><TD>371</TD><TD>371</TD><TD>371</TD>
-     <TD>5.16175</TD><TD>5.16175</TD><TD>5.16175</TD>
-     <TD>1.09824</TD><TD>1.09824</TD><TD>1.09824</TD>
-     <TD>1.03145</TD><TD>1.03145</TD><TD>1.03145</TD>
-     <TD>4.36141</TD><TD>5.13144</TD><TD>5.75171</TD>
-     <TD>6.73687</TD><TD>8.15591</TD><TD>8.88981</TD>
-     <TD>0.00865507</TD><TD>0.0655084</TD><TD>0.126875</TD>
-     <TD>-0.0720985</TD><TD>-0.0581553</TD><TD>0.0113885</TD>
-     <TD>-0.0630469</TD><TD>0.0301546</TD><TD>0.113345</TD>
-     <TD>9.81643</TD><TD>9.98999</TD><TD>10</TD>
-     <TD>0.241429</TD><TD>0.26469</TD><TD>0.324695</TD>
-     <TD>4.30648</TD><TD>5.08602</TD><TD>5.71068</TD>
-     <TD>6.65167</TD><TD>8.08325</TD><TD>8.82619</TD>
-     <TD>0.00895518</TD><TD>0.0662915</TD><TD>0.129649</TD>
-     <TD>-0.0731548</TD><TD>-0.0588452</TD><TD>0.0111842</TD>
-     <TD>-0.0648654</TD><TD>0.0305255</TD><TD>0.115599</TD>
-     <TD>9.99493</TD><TD>9.99963</TD><TD>10</TD>
-     <TD>0.240911</TD><TD>0.26425</TD><TD>0.324411</TD>
-     <TD>0.205027</TD><TD>0.224907</TD><TD>0.290919</TD>
-     <TD>39.3758</TD><TD>54.1518</TD><TD>61.5414</TD>
+     <TD>402</TD><TD>402</TD><TD>402</TD><TD>402</TD>
+     <TD>346</TD><TD>346</TD><TD>346</TD><TD>346</TD>
+     <TD>5.19704</TD><TD>5.19704</TD><TD>5.19704</TD>
+     <TD>1.10575</TD><TD>1.10575</TD><TD>1.10575</TD>
+     <TD>0.99151</TD><TD>0.99151</TD><TD>0.99151</TD>
+     <TD>4.26087</TD><TD>5.02641</TD><TD>5.58202</TD>
+     <TD>6.5849</TD><TD>7.90266</TD><TD>8.62977</TD>
+     <TD>0.00547838</TD><TD>0.0385098</TD><TD>0.117398</TD>
+     <TD>-0.0359503</TD><TD>-0.0238983</TD><TD>0.0550698</TD>
+     <TD>-0.0782397</TD><TD>0.0301972</TD><TD>0.116075</TD>
+     <TD>9.91455</TD><TD>9.99926</TD><TD>9.99995</TD>
+     <TD>0.161656</TD><TD>0.182239</TD><TD>0.228197</TD>
+     <TD>4.20267</TD><TD>4.97762</TD><TD>5.53916</TD>
+     <TD>6.49473</TD><TD>7.82895</TD><TD>8.56346</TD>
+     <TD>0.00556331</TD><TD>0.0391806</TD><TD>0.120291</TD>
+     <TD>-0.0367285</TD><TD>-0.0238143</TD><TD>0.0561832</TD>
+     <TD>-0.080033</TD><TD>0.0311126</TD><TD>0.118951</TD>
+     <TD>9.98611</TD><TD>9.99973</TD><TD>10</TD>
+     <TD>0.161165</TD><TD>0.181918</TD><TD>0.227852</TD>
+     <TD>0.122803</TD><TD>0.171375</TD><TD>0.217153</TD>
+     <TD>43.3103</TD><TD>59.5463</TD><TD>64.0891</TD>
      <TD>1.54647</TD><TD>1.54649</TD><TD>1.5465</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -237,7 +237,7 @@
    <FIELD name="Time" datatype="char" arraysize="*" ucd="meta;time.event.end"/>
    <FIELD name="Msg" datatype="char" arraysize="*" ucd="meta"/>
    <DATA><TABLEDATA>
-    <TR><TD>2018-10-10</TD><TD>19:52:22</TD><TD>This executable has been compiled using a version of the FFTW library without suPerformance will be degraded.</TD></TR>
+    <TR><TD>2018-11-07</TD><TD>18:10:51</TD><TD>This executable has been compiled using a version of the FFTW library without suPerformance will be degraded.</TD></TR>
    </TABLEDATA></DATA>
   </TABLE>
   <RESOURCE ID="Config" name="Config">

@@ -1392,8 +1392,12 @@ def getSkyCam(command, user):
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
 
-    f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
-                        (wunderground_token, wunderground_station))
+    try:
+        f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
+                            (wunderground_token, wunderground_station))
+    except:
+        send_message('Connection to wunderground failed.')
+        return
     json_string = f.read()
     parsed_json = json.loads(json_string)
     hourly_forecasts = parsed_json['hourly_forecast']
@@ -1580,7 +1584,11 @@ def buildSatDatabase():
             zipfile = ZipFile(StringIO(urllib2.urlopen(url).read()))
             sats = zipfile.open(zipfile.namelist()[0]).readlines()
         else:
-            sats = urllib2.urlopen(url).readlines()
+            try:
+                sats = urllib2.urlopen(url).readlines()
+            except:
+                logme('Error! Failed to open the satellite database.')
+                return []
         # clean it up
         sats = [item.strip() for item in sats]
         # create an array of name, tle1, and tle2
@@ -1688,7 +1696,8 @@ reconnect_delay_s = 10
 bot_name = 'Itzamna'
 # specify a station close to SEO, e.g. LOLO Sonoma Farms
 #wunderground_station = 'KCASONOM27'
-wunderground_station = 'KCASONOM51'
+#wunderground_station = 'KCASONOM51'
+wunderground_station = 'KCASONOM64'
 # how many hours of forecast should we show?
 wunderground_max_forecast_hours = 12
 # giphy shown when itzamna app is first started

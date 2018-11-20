@@ -147,7 +147,7 @@ telescope.crackit()
 # point the scope
 telescope.slackdebug('Pointing telescope to %s...' %
                      target_observation.target.getName())
-telescope.pinpointier(target_observation)
+telescope.pinpoint(target_observation)
 
 # get current focus position in case something goes awry
 telescope.slackdebug('Original focus position is %s.' % telescope.getFocus())
@@ -191,7 +191,7 @@ for filter in filters:
             'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
         logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
 
-    telescope.pinpointier(target_observation, False)
+    telescope.pinpoint(target_observation, False)
 
     # fit data points to a 2nd-deg polynomial
     pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)

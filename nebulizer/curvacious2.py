@@ -31,7 +31,7 @@ def calibrationObservations():
     telescope.checkAlt()
     telescope.checkClouds()
     # point the scope
-    telescope.pinpointier(asteroid_calibration_observation)
+    telescope.pinpoint(asteroid_calibration_observation)
     telescope.getImage(asteroid_calibration_observation)
     telescope.slackdebug("Calibration observations complete.")
 
@@ -138,6 +138,8 @@ while Time.now() + TimeDelta(asteroid_calibration_observation_duration_s, format
     telescope.checkAlt()
     telescope.checkClouds()
     telescope.getImageStacks(asteroid_main_observation, None, False)
+    if asteroid_main_observation.sequence.do_pinpoint:
+        telescope.pinpoint(asteroid_main_observation, False)
     doCalibrationObservations = True
 
 if doCalibrationObservations:
@@ -155,6 +157,8 @@ while Time.now() + TimeDelta(asteroid_calibration_observation_duration_s, format
     telescope.checkAlt()
     telescope.checkClouds()
     telescope.getImageStacks(asteroid_main_observation, None, False)
+    if asteroid_main_observation.sequence.do_pinpoint:
+        telescope.pinpoint(asteroid_main_observation, False)
     doCalibrationObservations = True
 
 if doCalibrationObservations:

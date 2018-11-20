@@ -392,41 +392,6 @@ class Telescope():
         return True
 
     def pinpoint(self, observation, point=True):
-        name = observation.target.name
-        ra = observation.target.getRa().replace(' ', ':')
-        dec = observation.target.getDec().replace(' ', ':')
-
-        self.slackdebug(
-            'Pointing telescope to %s (RA=%s, DEC=%s)...' % (name, ra, dec))
-
-        # turn tracking on (just in case)
-        (output, error, pid) = self.runSubprocess(
-            ['tx', 'track', 'on'], self.simulate)
-
-        # point the telescope
-        start_point = datetime.datetime.utcnow()
-        if point == True:  # point and refine
-            (output, error, pid) = self.runSubprocess(
-                ['pinpoint', '%s' % ra, '%s' % dec], self.simulate)
-        else:  # just refine
-            (output, error, pid) = self.runSubprocess(
-                [python_path, pinpoint_path, '%s' % ra, '%s' % dec], self.simulate)
-        end_point = datetime.datetime.utcnow()
-
-        # calculate pointing time in seconds
-        dt_point = (end_point-start_point).total_seconds()
-        logger.debug(
-            'Pinpointing telescope required %d seconds to complete.' % dt_point)
-
-        # if refining takes more than max_pinpoint_time_s, send an alert to Slack
-        if point == False and dt_point > max_pinpoint_time_s:
-            self.slackalert(
-                'Warning! Pinpointing telescope required %d seconds to complete. Check clouds, tracking, etc.' % dt_point)
-
-        # check the current telescope position
-        (output, error, pid) = self.runSubprocess(['tx', 'where'])
-
-    def pinpointier(self, observation, point=True):
         # MODIFY THESE FIELDS AS NEEDED!
         base_path = '/tmp/'+datetime.datetime.now().strftime("%Y%m%d.%H%M%S%f.pinpoint.")
         # path to astrometry.net solve_field executable
@@ -598,7 +563,7 @@ class Telescope():
                 logger.debug('observation.sequence.do_pinpoint = %s.' %
                              observation.sequence.do_pinpoint)
                 if observation.sequence.do_pinpoint:
-                    self.pinpointier(observation, False)
+                    self.pinpoint(observation, False)
         else:  # end time specified, this must be a continuous observation
             # make double sure that this is a continuous observation!
             if observation.sequence.repeat != Sequence.CONTINUOUS:
@@ -612,7 +577,7 @@ class Telescope():
                 logger.debug('observation.sequence.do_pinpoint = %s.' %
                              observation.sequence.do_pinpoint)
                 if observation.sequence.do_pinpoint:
-                    self.pinpointier(observation, False)
+                    self.pinpoint(observation, False)
 
     def image(self, exposure, filter, binning, path, filename):
         # make sure path exists!
@@ -686,7 +651,11 @@ class Telescope():
                     self.slackdebug(
                         'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
-                    self.pinpointier(observation, False)
+                    self.pinpoint(observation, False)
+
+                # turn tracking on (just in case)
+                (output, error, pid) = self.runSubprocess(
+                    ['tx', 'track', 'on'], self.simulate)                    
 
     # ssh -q -i /home/mcnowinski/.ssh/id_rsa_stars dmcginnis427@stars.uchicago.edu "mkdir -p /data/images/StoneEdge/0.5meter/2018/2018-05-26/ exit"
     # scp -q -r -i /home/mcnowinski/.ssh/id_rsa_stars * dmcginnis427@stars.uchicago.edu:/data/images/StoneEdge/0.5meter/2018/2018-05-26/
