@@ -1,0 +1,152 @@
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 0 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 0 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Error. Invalid date in .\test.fits.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Error. Invalid date in .\test.fits.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Error. Invalid date in .\test.fits.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Error. Invalid date in .\test.fits.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 2 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 2 observations of 3 objects in 1 sextracted files.
