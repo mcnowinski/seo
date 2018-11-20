@@ -432,6 +432,71 @@ def doImage(command, user):
 # send alert message to slack
 
 
+def doBias(command, user):
+    # this command requires that user has telescope locked
+    if not lockedByYou(user):
+        send_message('Please lock the telescope before calling this command.')
+        return
+
+    match = re.search(
+        '^\\\\(bias) (0|1|2|3|4)', command, re.IGNORECASE)
+    if(match):
+        exposure = '0.1'
+        binning = match.group(2)
+        filter = 'clear'
+        send_message('Taking bias frame (bin=%s). Please wait...' % binning)
+    else:
+        logme('Error. Unexpected command format (%s).' % command)
+        return
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        'bias', filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
+    fits = fits.replace(' ', '_')
+    slackdebug('Taking image (%s)...' % (fits))
+    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    (output, error, pid) = runSubprocess(
+        ['image', 'dark', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+    if not error:
+        send_message('Got image (%s).' % fits)
+        slackpreview(fits)
+    else:
+        send_message('Error. Image command failed (%s).' % fits)
+
+
+def doDark(command, user):
+    # this command requires that user has telescope locked
+    if not lockedByYou(user):
+        send_message('Please lock the telescope before calling this command.')
+        return
+
+    match = re.search(
+        '^\\\\(dark) ([0-9\\.]+) (0|1|2|3|4)', command, re.IGNORECASE)
+    if(match):
+        exposure = match.group(2)
+        binning = match.group(3)
+        filter = 'h-alpha'
+        send_message('Taking dark frame (exposure=%s, bin=%s). Please wait...' % (
+            exposure, binning))
+    else:
+        logme('Error. Unexpected command format (%s).' % command)
+        return
+
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        'dark', filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
+    fits = fits.replace(' ', '_')
+    slackdebug('Taking image (%s)...' % (fits))
+    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    (output, error, pid) = runSubprocess(
+        ['image', 'dark', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+    if not error:
+        send_message('Got image (%s).' % fits)
+        slackpreview(fits)
+    else:
+        send_message('Error. Image command failed (%s).' % fits)
+
+
+# send alert message to slack
 def slackdebugalert(msg):
     msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
     (output, error, pid) = runSubprocess(['slackalert', msg], simulate)
@@ -698,7 +763,7 @@ def doPinpointByRaDec(command, user):
     send_message('Itzamna is pinpointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
@@ -827,7 +892,7 @@ def doPointByRaDec(command, user):
     send_message('Itzamna is pointing the telescope. Please wait...')
 
     # regex to format RA/dec for filename
-    ra = re.sub('^(\d{1,3}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
     dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
 
     # reset the target name
@@ -1414,6 +1479,8 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
+                 '>`\\bias <binning>` takes a bias frame\n' + \
+                 '>`\\dark <exposure> <binning>` takes a dark frame.\n' + \
                  '>`\\tostars` uploads recent images to <%s|stars> (run this command at the end of your session)\n' % stars_url
                  )
     send_message('\n')
@@ -1671,6 +1738,8 @@ commands = [
     ['^\\\\(crack)', doCrack],
     ['^\\\\(squeeze)', doSqueeze],
     ['^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (oiii|g\\-band|r\\-band|i\\-band|sii|clear|h\\-alpha)', doImage],
+    ['^\\\\(bias) (0|1|2|3|4)', doBias],
+    ['^\\\\(dark) ([0-9\\.]+) (0|1|2|3|4)', doDark],
     ['^\\\\(lock)', doLock],
     ['^\\\\(share) (on|off)', doShare],
     ['^\\\\(unlock)', doUnLock],

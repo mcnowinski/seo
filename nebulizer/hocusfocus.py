@@ -95,8 +95,8 @@ observations = []
 stacks = []
 
 # initialize array covering a range of focus positions
-pass1_array = [4650, 4675, 4700, 4725, 4750, 4775, 4800,
-               4825, 4850, 4875, 4900, 4925, 4950, 4975, 5000]
+pass1_array = [10850, 10875, 10900, 10925, 10950, 10975, 11000,
+               11025, 11050, 11075, 11100, 11125, 11150, 11175, 11200]
 pass1_array_focus = np.zeros((len(pass1_array), 2))
 
 # read in reference stars from file
@@ -207,7 +207,7 @@ for filter in filters:
     y = pass1_fit[0]*x**2+pass1_fit[1]*x+pass1_fit[2]
 
     plt.ylim(1, 8)
-    plt.xlim(4550, 5100)
+    plt.xlim(10500, 11500)
     plt.xlabel('Focus Position')
     plt.ylabel('FWHM')
     plt.savefig(plt_path, bbox_inches='tight')

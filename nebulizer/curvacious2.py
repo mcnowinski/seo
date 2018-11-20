@@ -79,7 +79,7 @@ for stack_json in stacks_json:
     logger.debug(stack.toString().replace('\n', '; '))
     stacks.append(stack)
 # build sequence
-sequence = Sequence(stacks, int(sequence_json['repeat']))
+sequence = Sequence(stacks, int(sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
 logger.debug(sequence.toString().replace('\n', '; '))
 # build main observations
 asteroid_main_observation = Observation(
@@ -99,7 +99,7 @@ for stack_json in stacks_json:
     logger.debug(stack.toString().replace('\n', '; '))
     stacks.append(stack)
 # build sequence
-sequence = Sequence(stacks, int(sequence_json['repeat']))
+sequence = Sequence(stacks, int(sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
 logger.debug(sequence.toString().replace('\n', '; '))
 # build calibration observations
 asteroid_calibration_observation = Observation(
