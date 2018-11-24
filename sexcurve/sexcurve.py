@@ -21,6 +21,9 @@ import ch  # custom callHorizons library
 import dateutil
 from datetime import datetime
 from datetime import timedelta
+from astropy.wcs import WCS
+from astropy.coordinates import SkyCoord
+import pandas as pd
 
 # logger
 
@@ -94,13 +97,18 @@ sextractor_filter_fname = 'D:/owncloud/code/seo/sexcurve/sexcurve.conv'
 dRa = 0.00062
 dDec = 0.00062
 # target/comp list
-comps_in_fname = './comps.in.txt'
+comps_fname = './comps.in.txt'
 targets_out_fname = './targets.out.csv'
 # mask file that identifies bad pixels
 bad_pixels_fname = './bad_pixels.txt'
 cleaned_output_path = './cor/'
 # observatory code
 obs_code = 'G52'
+# panstarrs ref magnitude
+pso_ref_mag = 'rPSFMag'
+# panstarrs max magnitude
+pso_max_mag = 17
+
 #
 # END SETTINGS
 #
@@ -123,7 +131,7 @@ args = parser.parse_args()
 
 # make sure input files and folder exist
 inputs = [input_path, sextractor_bin_fname, sextractor_cfg_fname,
-          sextractor_param_fname,  sextractor_filter_fname, comps_in_fname]
+          sextractor_param_fname,  sextractor_filter_fname, comps_fname]
 for input in inputs:
     if not os.path.exists(input_path):
         logme('Error. The file or path (%s) does not exist.' % input)
@@ -193,6 +201,7 @@ fits_files = glob.glob(input_path+'*.fits')+glob.glob(input_path+'*.fit')
 for fits_file in sorted(fits_files):
     fits_data = fits.open(fits_file)
     header = fits_data[0].header
+    wcs = WCS(header)
     airmass = header['AIRMASS']
     try:
         dt_obs = dateutil.parser.parse(header['DATE-OBS'])
@@ -200,16 +209,35 @@ for fits_file in sorted(fits_files):
         logme('Error. Invalid observation date found in %s.' % fits_file)
         exit()
     try:
+        naxis1 = header['NAXIS1']
+        naxis2 = header['NAXIS2']
+    except:
+        logme('Error. Invalid CCD pixel size found in %s.' % fits_file)
+        exit()
+    try:
+        ra = header['CRVAL1']
+        dec = header['CRVAL2']
+    except:
+        logme('Error. Invalid RA/DEC found in %s.' % fits_file)
+        exit()
+    try:
         JD = header['MJD-OBS']
     except KeyError:
         JD = header['JD']
+    # calculate image corners in ra/dec
+    ra1, dec1 = wcs.all_pix2world(0, 0, 0)
+    ra2, dec2 = wcs.all_pix2world(naxis1, naxis2, 0)
+    # calculate search radius in degrees from the center!
+    c1 = SkyCoord(ra1, dec1, unit="deg")
+    c2 = SkyCoord(ra2, dec2, unit="deg")
+    diagonal = c1.separation(c2)
     logme("Sextracting %s" % (fits_file))
     output_file = sex_output_path + \
         fits_file.replace('\\', '/').rsplit('/', 1)[1]
     output_file = '%s%s.txt' % (output_file, sex_output_suffix)
     # add input filename, output filename, airmass, and jd to sex_file list
     image_data.append(
-        {'image': fits_file, 'sex': output_file, 'jd': JD, 'airmass': airmass, 'dt_obs': dt_obs})
+        {'image': fits_file, 'sex': output_file, 'jd': JD, 'airmass': airmass, 'ra': ra, 'dec': dec, 'dt_obs': dt_obs, 'radius': '%f' % (diagonal.deg/2*60)})
     # sextract this file
     (output, error, id) = runSubprocess([sextractor_bin_fname, fits_file, '-c', sextractor_cfg_fname, '-catalog_name',
                                          output_file, '-parameters_name', sextractor_param_fname, '-filter_name', sextractor_filter_fname])
@@ -218,9 +246,50 @@ for fits_file in sorted(fits_files):
         exit()
 logme('Sextracted %d files.' % len(image_data))
 
+# build comps_fname from
+# PanSTARRS Stack Object Catalog Search
+logme('Searching for comparison stars in the PANSTARRS catalog (ra=%s, dec=%s, radius=%s)...' %
+      (image_data[0]['ra'], image_data[0]['dec'], image_data[0]['radius']))
+pso_url_base = 'http://archive.stsci.edu/panstarrs/stackobject/search.php'
+#pso_url_parms = '?ra=%s&dec=%s&radius=%s&resolver=Resolve&nDetections=&equinox=J2000&action=Search&max_records=50001&&coordformat=dec&outputformat=CSV_file&skipformat=on&selectedColumnsCsv=rpsfmag&selectedColumnsList%%5B%%5D=rpsfmag&ordercolumn1=rpsfmag&descending1=on'
+# url = pso_url_base + \
+#    pso_url_parms % (image_data[0]['ra'], image_data[0]
+#                     ['dec'], image_data[0]['radius'])
+# pso_url_parms = '?target=&resolver=Resolve&radius=18.662909&ra=46.2120679197&dec=6.08738465191&equinox=J2000&nDetections=&selectedColumnsCsv=rpsfmag&selectedColumnsList%5B%5D=rpsfmag' + \
+#    '&availableColumns=rpsfmag&ordercolumn1=&ordercolumn2=&ordercolumn3=&coordformat=dec&outputformat=CSV_file&skipformat=on' + \
+#    '&max_records=50001&max_rpp=5000&action=Search'
+pso_url_parms = '?resolver=Resolve&radius=%s&ra=%s&dec=%s&equinox=J2000&nDetections=&selectedColumnsCsv=objname%%2Cobjid%%2Cramean%%2Cdecmean%%2Cgpsfmag%%2Crpsfmag%%2Cipsfmag' + \
+    '&coordformat=dec&outputformat=CSV_file&skipformat=on' + \
+    '&max_records=50001&action=Search'
+url = pso_url_base + \
+    pso_url_parms % (image_data[0]['radius'], image_data[0]['ra'], image_data[0]
+                     ['dec'])
+#print url
+comps = pd.read_csv(url)
+if len(comps) <= 0:
+    logme('Error. No comparison stars found!')
+    exit()
+# remove dupes, keep first
+comps.drop_duplicates(subset=['objName'], keep='first', inplace=True)
+# make sure magnitudes are treated as floats
+comps[pso_ref_mag] = pd.to_numeric(comps[pso_ref_mag], errors='coerce')
+# remove spaces from obj names
+comps['objName'] = comps['objName'].str.replace('PSO ', '')
+# filter based on ref (r?) magnitude!
+comps = comps.query("%s > 0 & %s < %f" %
+                    (pso_ref_mag, pso_ref_mag, pso_max_mag))
+if len(comps) <= 0:
+    logme('Error. No comparison stars meet the criteria (%s <= %f)!' %
+          (pso_ref_mag, pso_max_mag))
+    exit()
+logme('A total of %d comparison star(s) met the criteria (%s <= %f).' %
+      (len(comps), pso_ref_mag, pso_max_mag))
+comps_for_sex = comps[['raMean', 'decMean', 'objName']]
+comps_for_sex.to_csv(comps_fname, sep=' ', index=False, header=False)
+
 # read ra/dec from target/comp stars list
 object_data = []
-sfile = file('%s' % comps_in_fname, 'rt')
+sfile = file('%s' % comps_fname, 'rt')
 lines = [s for s in sfile if len(s) > 2 and s[0] != '#']
 sfile.close()
 count = 0
@@ -230,17 +299,8 @@ for index, l in enumerate(lines):
     ra = float(spl[0])
     dec = float(spl[1])
     name = spl[2]
-#    if spl[3] == 'T' or spl[2] == 't':
-#        if target_index >= 0:
-#            logme('Error. More than one target was identified in %s!' %
-#                  comps_in_fname)
-#            os.sys.exit(1)
-#        target_index = index
     object_data.append(
         {'index': index, 'ra': ra, 'dec': dec, 'object_name': name})
-# if target_index < 0:
-#    logme('Error. No targets were specified in %s!' % comps_in_fname)
-#    os.sys.exit(1)
 
 # add the asteroid to the object list
 # we don't know the ra/dec yet until we get the date/time from the FITS file
@@ -316,6 +376,9 @@ if args.plot_apd:
     data = np.genfromtxt(ofile, delimiter=',', skip_header=1)
     for index, s in enumerate(object_data):
         filtered_array = np.array(filter(lambda row: row[0] == index, data))
+        # ensure this object was detected!
+        if len(filtered_array) == 0:
+            continue
         magnitudes = np.mean(filtered_array, axis=0)[
             mag_start_index:mag_start_index+len(apertures)]
         magnitude_stdevs = np.std(filtered_array, axis=0)[
@@ -350,7 +413,7 @@ if args.plot_ds9:
                     xp = int(float(o['x']))
                     yp = int(float(o['y']))
                     # print o['object_name'].replace('-','')
-                    reg2 = 'regions command "point %s %s #color=lightgreen text=%s point=cross"' % (xp, yp, o['object_name'].replace(
+                    reg2 = 'regions command "point %s %s #color=lightgreen text=\'%s\' point=cross"' % (xp, yp, o['object_name'].replace(
                         '-', '').replace('.', ''))  # the times two because xvar is up and then again that value down
                     ds.set('%s' % (reg2))
         ds.set('frame new')
@@ -375,6 +438,9 @@ if args.apd:
     data = np.genfromtxt(ofile, delimiter=',', skip_header=1)
     for index, s in enumerate(object_data):
         filtered_array = np.array(filter(lambda row: row[0] == index, data))
+        # ensure this object was detected!
+        if len(filtered_array) == 0:
+            continue
         # print 'Target %s' % s['object_name']
         jds = filtered_array[:, jd_index]
         for idx, apd_index in enumerate(apd_idxs):

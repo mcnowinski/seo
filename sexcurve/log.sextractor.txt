@@ -150,3 +150,673 @@ Sextracted 1 files.
 Searching for 3 objects in sextracted data.
 Warning! Found 2 of 3 objects in ./sexcurve/test.fits.sex.txt.
 Found 2 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracted 0 files.
+Searching for 3 objects in sextracted data.
+Found 0 observations of 3 objects in 0 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 2 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 2 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Warning! Found 1 of 3 objects in ./sexcurve/test.fits.sex.txt.
+Found 1 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 3 objects in sextracted data.
+Found 3 observations of 3 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 9972 objects in sextracted data.
+Warning! Found 137 of 9972 objects in ./sexcurve/test.fits.sex.txt.
+Found 137 observations of 9972 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 9972 objects in sextracted data.
+Warning! Found 137 of 9972 objects in ./sexcurve/test.fits.sex.txt.
+Found 137 observations of 9972 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for 11591 objects in sextracted data.
+Warning! Found 225 of 11591 objects in ./sexcurve/test.fits.sex.txt.
+Found 225 observations of 11591 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison stars met the criteria (rPSFMag <= 18.000000)!
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000)!
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000)!
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000)!
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000)!
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000).
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000).
+Program execution halted.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000).
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 349 comparison star(s) met the criteria (rPSFMag <= 18.000000).
+Searching for 350 objects in sextracted data.
+Warning! Found 169 of 350 objects in ./sexcurve/test.fits.sex.txt.
+Found 169 observations of 350 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 239 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 240 objects in sextracted data.
+Warning! Found 147 of 240 objects in ./sexcurve/test.fits.sex.txt.
+Found 147 observations of 240 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 200 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 201 objects in sextracted data.
+Warning! Found 122 of 201 objects in ./sexcurve/test.fits.sex.txt.
+Found 122 observations of 201 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 200 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 201 objects in sextracted data.
+Warning! Found 122 of 201 objects in ./sexcurve/test.fits.sex.txt.
+Found 122 observations of 201 objects in 1 sextracted files.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 200 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 201 objects in sextracted data.
+Warning! Found 122 of 201 objects in ./sexcurve/test.fits.sex.txt.
+Found 122 observations of 201 objects in 1 sextracted files.
+Analyzing photometry for aperture diameter(s) = 10 pixels.
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+Photometry to be performed for 12 aperture diameters: 4,5,6,7,8,9,10,11,12,13,14,15.
+Sextracting .\test.fits
+Sextracted 1 files.
+Searching for comparison stars in the PANSTARRS catalog (ra=46.2120679197, dec=6.08738465191, radius=18.662909)...
+A total of 200 comparison star(s) met the criteria (rPSFMag <= 17.000000).
+Searching for 201 objects in sextracted data.
+Warning! Found 122 of 201 objects in ./sexcurve/test.fits.sex.txt.
+Found 122 observations of 201 objects in 1 sextracted files.
+Analyzing photometry for aperture diameter(s) = 10 pixels.
