@@ -69,7 +69,7 @@ sequence_json = observation_json['sequences']['main']
 stacks_json = sequence_json['stacks']
 # build target
 target = Target.from_name(
-    target_json['name'], observatory, target_json['type'])
+    target_json['name'], observatory, target_json['type'], target_json['ra_offset'], target_json['dec_offset'])
 logger.debug(target.toString().replace('\n', '; '))
 # build image stacks
 stacks = []

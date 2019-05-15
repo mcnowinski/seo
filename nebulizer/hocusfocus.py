@@ -95,8 +95,8 @@ observations = []
 stacks = []
 
 # initialize array covering a range of focus positions
-pass1_array = [10850, 10875, 10900, 10925, 10950, 10975, 11000,
-               11025, 11050, 11075, 11100, 11125, 11150, 11175, 11200]
+pass1_array = [10750, 10775, 10800, 10825, 10850, 10875, 10900,
+               10925, 10950, 10975, 11000, 11025, 11050, 11075, 11100]
 pass1_array_focus = np.zeros((len(pass1_array), 2))
 
 # read in reference stars from file

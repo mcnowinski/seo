@@ -13,7 +13,9 @@
     "observations": {
         "target": {
             "name": "1385",
-            "type": "solar system"
+            "type": "solar system",
+            "ra_offset": 0.0,
+            "dec_offset": -0.15
         },
         "sequences": {
             "main": {

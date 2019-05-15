@@ -625,7 +625,7 @@ class Telescope():
                 # fits = '%s_%s_%dsec_bin%d_%s_%s_num%d_seo.fits' % (
                 #    name, filter, exposure, binning, user, datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss'), count)
                 fits = '%s_%s_%.2fs_bin%d_%s_seo_%s_%03d_RAW.fits' % (
-                    name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), user, count)
+                    name, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), exposure, binning, filter, user, count)
                 fits = fits.replace(' ', '_')
                 fits = fits.replace('(', '')
                 fits = fits.replace(')', '')
@@ -790,7 +790,7 @@ class Target():
 
     # init with name and type only
     @classmethod
-    def from_name(cls, keyword, observatory, type):
+    def from_name(cls, keyword, observatory, type, ra_offset=None, dec_offset=None):
         objects = Target.findObjects(keyword, observatory, type)
         if len(objects) == 0:
             logger.error('Could not find matching object for %s.' % keyword)
@@ -799,7 +799,13 @@ class Target():
             if len(objects) > 1:
                 logger.warn('Found multiple matching objects for %s. Using first object (%s).' % (
                     name, objects[0]['name']))
-        target = cls(objects[0]['name'], objects[0]['ra'], objects[0]['dec'])
+        if ra_offset != None or dec_offset != None:
+            logger.warn('********************************************')
+            logger.warn('*** ALERT! TELESCOPE POINTING IS OFFSET! ***')
+            logger.warn('********************************************')
+        dec = Angle('%s degrees'%objects[0]['dec']).degree + dec_offset;
+        ra = Angle('%s hours'%objects[0]['ra']).degree + ra_offset;
+        target = cls(objects[0]['name'], Angle(ra * u.deg).to_string(unit=u.hour, sep=':'), Angle(dec* u.deg).to_string(unit=u.degree, sep=':'))
         return target
 
     # name

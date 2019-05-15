@@ -1392,12 +1392,12 @@ def getSkyCam(command, user):
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
 
-    try:
-        f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
-                            (wunderground_token, wunderground_station))
-    except:
-        send_message('Connection to wunderground failed.')
-        return
+    #try:
+    f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
+                        (wunderground_token, wunderground_station))
+    #except:
+    #    send_message('Connection to wunderground failed.')
+    #    return
     json_string = f.read()
     parsed_json = json.loads(json_string)
     hourly_forecasts = parsed_json['hourly_forecast']
