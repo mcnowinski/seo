@@ -13,7 +13,7 @@
     "observations": {
         "asteroid": {
             "target": {
-                "name": "25916",
+                "name": "242",
                 "type": "asteroid"
             },
             "sequences": {
@@ -49,7 +49,7 @@
         },
         "reference": {
             "target": {
-                "name": "BD-003152",
+                "name": "SA_109_537",
                 "type": "star"
             },
             "sequences": {

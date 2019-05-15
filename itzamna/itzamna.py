@@ -36,8 +36,17 @@ import pytz
 import glob
 import shutil
 
+# import classes from the chultun module
+from chultun import Target  # name, ra, dec
+from chultun import Stack  # exposure, filter, binning, count
+from chultun import Sequence  # stacks, repeat
+from chultun import Observatory  # code, latitude, longitude, altitude
+from chultun import Observation  # target, sequence
+from chultun import Scheduler  # observatory, observations
+from chultun import Telescope  # the telescope commands
 
-def runSubprocess(command_array, simulate=False, communicate=True):
+
+def runSubprocess(command_array, simulate=False, communicate=True, timeout=0):
     if useSSH:
         return runSubprocessSSH(command_array, simulate, communicate)
     else:
@@ -50,6 +59,8 @@ def runSubprocessLocal(command_array, simulate, communicate):
         logme('Simulating subprocess "%s".' % (command_array))
         return ('', 0, 0)
     try:
+        if timeout > 0:
+            command_array = ['timeout', str(timeout)] + command_array
         sp = subprocess.Popen(
             command_array, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         logme('Running subprocess ("%s" %s)...' %
@@ -419,6 +430,9 @@ def toStars(command, user):
     if(len(fits) <= 0):
         send_message('Itzamna does not have any recent images to send!')
         return
+    else:
+        send_message('Uploading %d image(s) to <%s|stars>. Itzamna is ready for your next command.' % (
+            len(fits), stars_url))
     # we are going to put these in a folder corresponding to the datetime this command was run!
     # a bit different from how this usually works...
 
@@ -430,7 +444,7 @@ def toStars(command, user):
         ['tostars', '%s*.fits' % image_path, '%s' % dest_path], simulate)
     if error == '':
         send_message(
-            'Successfully uploaded %d image(s) to <http://stars.uchicago.edu/fitsview18/|stars>!' % len(fits))
+            'Successfully uploaded %d image(s) to <%s|stars>!' % (len(fits), stars_url))
         # move images to archive
         files = glob.iglob(image_path+'*.fits')
         for file in files:
@@ -447,7 +461,7 @@ def doImage(command, user):
         return
 
     match = re.search(
-        '^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (u\\-band|g\\-band|r\\-band|i\\-band|z\\-band|clear|h\\-alpha)', command, re.IGNORECASE)
+        '^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (oiii|g\\-band|r\\-band|i\\-band|sii|clear|h\\-alpha)', command, re.IGNORECASE)
     if(match):
         exposure = match.group(2)
         binning = match.group(3)
@@ -463,7 +477,8 @@ def doImage(command, user):
         target_name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
     fits = fits.replace(' ', '_')
     slackdebug('Taking image (%s)...' % (fits))
-    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    #(output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    telescope.setFilter(filter)
     (output, error, pid) = runSubprocess(
         ['image', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
     if not error:
@@ -480,6 +495,71 @@ def doImage(command, user):
 # send alert message to slack
 
 
+def doBias(command, user):
+    # this command requires that user has telescope locked
+    if not lockedByYou(user):
+        send_message('Please lock the telescope before calling this command.')
+        return
+
+    match = re.search(
+        '^\\\\(bias) (0|1|2|3|4)', command, re.IGNORECASE)
+    if(match):
+        exposure = '0.1'
+        binning = match.group(2)
+        filter = 'clear'
+        send_message('Taking bias frame (bin=%s). Please wait...' % binning)
+    else:
+        logme('Error. Unexpected command format (%s).' % command)
+        return
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        'bias', filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
+    fits = fits.replace(' ', '_')
+    slackdebug('Taking image (%s)...' % (fits))
+    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    (output, error, pid) = runSubprocess(
+        ['image', 'dark', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+    if not error:
+        send_message('Got image (%s).' % fits)
+        slackpreview(fits)
+    else:
+        send_message('Error. Image command failed (%s).' % fits)
+
+
+def doDark(command, user):
+    # this command requires that user has telescope locked
+    if not lockedByYou(user):
+        send_message('Please lock the telescope before calling this command.')
+        return
+
+    match = re.search(
+        '^\\\\(dark) ([0-9\\.]+) (0|1|2|3|4)', command, re.IGNORECASE)
+    if(match):
+        exposure = match.group(2)
+        binning = match.group(3)
+        filter = 'h-alpha'
+        send_message('Taking dark frame (exposure=%s, bin=%s). Please wait...' % (
+            exposure, binning))
+    else:
+        logme('Error. Unexpected command format (%s).' % command)
+        return
+
+    # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
+    fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
+        'dark', filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), 'itzamna', 0)
+    fits = fits.replace(' ', '_')
+    slackdebug('Taking image (%s)...' % (fits))
+    (output, error, pid) = runSubprocess(['pfilter', '%s' % filter], simulate)
+    (output, error, pid) = runSubprocess(
+        ['image', 'dark', 'time=%s' % exposure, 'bin=%s' % binning, 'outfile=%s' % fits], simulate)
+    if not error:
+        send_message('Got image (%s).' % fits)
+        slackpreview(fits)
+    else:
+        send_message('Error. Image command failed (%s).' % fits)
+
+
+# send alert message to slack
 def slackdebugalert(msg):
     msg = datetime.datetime.utcnow().strftime('%m-%d-%Y %H:%M:%S ') + msg
     (output, error, pid) = runSubprocess(['slackalert', msg], simulate)
@@ -703,7 +783,7 @@ def doPinpointByObjectNum(command, user):
     ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
     dec = Angle('%fd' % object['DEC']).to_string(unit=u.degree, sep=':')
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 300)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -745,9 +825,13 @@ def doPinpointByRaDec(command, user):
 
     send_message('Itzamna is pinpointing the telescope. Please wait...')
 
+    # regex to format RA/dec for filename
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
+
     # reset the target name
     global target_name
-    target_name = "unknown"
+    target_name = "%s%s" % (ra, dec)
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     # send_message(output)
@@ -757,7 +841,7 @@ def doPinpointByRaDec(command, user):
         return
 
     (output, error, pid) = runSubprocess(
-        ['pinpoint', '%s' % ra, '%s' % dec], simulate)
+        ['pinpoint', '%s' % ra, '%s' % dec], simulate, True, 300)
     # done point move=62.455 dist=0.0031
     # send_message(output)
     if not re.search('BAM', output):
@@ -870,9 +954,13 @@ def doPointByRaDec(command, user):
 
     send_message('Itzamna is pointing the telescope. Please wait...')
 
+    # regex to format RA/dec for filename
+    ra = re.sub('^(\d{1,2}):(\d{2}):(\d{2}).+', r'\1h\2m\3s', ra)
+    dec = re.sub('(\d{1,2}):(\d{2}):(\d{2}).+', r'\1d\2m\3s', dec)
+
     # reset the target name
     global target_name
-    target_name = "unknown"
+    target_name = "%s%s" % (ra, dec)
 
     (output, error, pid) = runSubprocess(['tx', 'track', 'on'], simulate)
     if not re.search('done track ha\\=[0-9\\+\\-\\.]+\\sdec\\=[0-9\\+\\-\\.]+', output):
@@ -910,6 +998,8 @@ def getObject(command, user):
     #
     #found_celestial_object = False
     try:
+        # add flux data to results
+        Simbad.add_votable_fields('fluxdata(V)')
         result_table = Simbad.query_object(lookup.upper().replace('*', ''))
         if len(result_table) > max_results:
             send_message(
@@ -920,7 +1010,7 @@ def getObject(command, user):
                 break
             count += 1
             objects.append({'type': 'Celestial', 'id': result_table['MAIN_ID'][row], 'name': result_table['MAIN_ID'][row].replace(' ', ''), 'RA': Angle(
-                result_table['RA'][row].replace(' ', ':') + ' hours').degree, 'DEC': Angle(result_table['DEC'][row].replace(' ', ':') + ' degrees').degree})
+                result_table['RA'][row].replace(' ', ':') + ' hours').degree, 'DEC': Angle(result_table['DEC'][row].replace(' ', ':') + ' degrees').degree, 'VMAG': result_table['FLUX_V'][row]})
     except:
         pass
     send_message('Found %d celestial match(es) for "%s".' %
@@ -1047,7 +1137,7 @@ def getObject(command, user):
                 "%Y/%m/%d %H:%M"), end.strftime("%Y/%m/%d %H:%M"), '1m')
             result.get_ephemerides(observatory_code)
             objects.append({'type': 'Solar System', 'id': object_name.upper(
-            ), 'name': result['targetname'][0], 'RA': result['RA'][0], 'DEC': result['DEC'][0]})
+            ), 'name': result['targetname'][0], 'RA': result['RA'][0], 'DEC': result['DEC'][0], 'VMAG': result['V'][0]})
         except:
             pass
     #
@@ -1067,14 +1157,13 @@ def getObject(command, user):
             sat_name = sat[0]
             sat_tle_line1 = sat[1]
             sat_tle_line2 = sat[2]
-            print sat
             sat_ephem = ephem.readtle(sat_name, sat_tle_line1, sat_tle_line2)
             sat_observer.date = datetime.datetime.utcnow()
             sat_ephem.compute(sat_observer)
             sat_coords = SkyCoord(ra='%s' % sat_ephem.ra, dec='%s' %
                                   sat_ephem.dec, unit=(u.hour, u.deg))
             objects.append({'type': 'Satellite', 'tle_line1': sat_tle_line1, 'tle_line2': sat_tle_line2, 'id': sat_name,
-                            'name': sat_name, 'RA': math.degrees(float(repr(sat_ephem.ra))), 'DEC': math.degrees(float(repr(sat_ephem.dec)))})
+                            'name': sat_name, 'RA': math.degrees(float(repr(sat_ephem.ra))), 'VMAG': '', 'DEC': math.degrees(float(repr(sat_ephem.dec)))})
 
     send_message('Found %d satellite match(es) for "%s".' %
                  (num_sat_matches, lookup))
@@ -1099,9 +1188,10 @@ def getObject(command, user):
             ra = Angle('%fd' % object['RA']).to_string(unit=u.hour, sep=':')
             dec = Angle('%fd' % object['DEC']).to_string(
                 unit=u.degree, sep=':')
-            report += '%d.\t%s object (%s) found at RA=%s, DEC=%s, ALT=%f, AZ=%f.\n' % (
-                index, object['type'], object['name'], ra, dec, altaz.alt.degree, altaz.az.degree)
+            report += '%d.\t%s object (%s) found at RA=%s, DEC=%s, ALT=%f, AZ=%f, VMAG=%s.\n' % (
+                index, object['type'], object['name'], ra, dec, altaz.alt.degree, altaz.az.degree, object['VMAG'])
             index += 1
+        report = report.replace("--", "N/A")
         send_message(report)
     else:
         send_message(
@@ -1339,6 +1429,12 @@ def getClearDarkSky(command, user):
 
 
 def getSkyCam(command, user):
+
+    logme('Retrieving skycam image from SEO spacam...')
+
+    (output, error, pid) = runSubprocess(['spacam'], False)
+    send_file('spacam.jpg', 'SEO Spa-Cam in El Verano, CA')
+
     logme('Retrieving skycam images for sites near SEO...')
 
     dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -1359,8 +1455,12 @@ def getSkyCam(command, user):
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
 
+    #try:
     f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
                         (wunderground_token, wunderground_station))
+    #except:
+    #    send_message('Connection to wunderground failed.')
+    #    return
     json_string = f.read()
     parsed_json = json.loads(json_string)
     hourly_forecasts = parsed_json['hourly_forecast']
@@ -1446,7 +1546,9 @@ def getHelp(command, user=None):
                  # '>`\\track <on/off>` toggles telescope tracking\n' + \
                  # '>`\\nudge <dRA in arcmin> <dDEC in arcmin>` offsets the telescope pointing\n' + \
                  '>`\\image <exposure> <binning> <filter>` takes a picture\n' + \
-                 '>`\\tostars` uploads recent images to <http://stars.uchicago.edu/fitsview18/|stars> (run this command at the end of your session)\n'
+                 '>`\\bias <binning>` takes a bias frame\n' + \
+                 '>`\\dark <exposure> <binning>` takes a dark frame.\n' + \
+                 '>`\\tostars` uploads recent images to <%s|stars> (run this command at the end of your session)\n' % stars_url
                  )
     send_message('\n')
 
@@ -1545,7 +1647,11 @@ def buildSatDatabase():
             zipfile = ZipFile(StringIO(urllib2.urlopen(url).read()))
             sats = zipfile.open(zipfile.namelist()[0]).readlines()
         else:
-            sats = urllib2.urlopen(url).readlines()
+            try:
+                sats = urllib2.urlopen(url).readlines()
+            except:
+                logme('Error! Failed to open the satellite database.')
+                return []
         # clean it up
         sats = [item.strip() for item in sats]
         # create an array of name, tle1, and tle2
@@ -1640,7 +1746,7 @@ def doSimulate():
 #CHANGE THESE VALUES AS NEEDED#
 ###############################
 # run in simulate mode? restrict telescope commands
-simulate = True
+
 # use SSH ro send commands to telescope server remotely
 useSSH = True
 # log file
@@ -1655,7 +1761,8 @@ reconnect_delay_s = 10
 bot_name = 'Itzamna'
 # specify a station close to SEO, e.g. LOLO Sonoma Farms
 #wunderground_station = 'KCASONOM27'
-wunderground_station = 'KCASONOM51'
+#wunderground_station = 'KCASONOM51'
+wunderground_station = 'KCASONOM64'
 # how many hours of forecast should we show?
 wunderground_max_forecast_hours = 12
 # giphy shown when itzamna app is first started
@@ -1704,7 +1811,9 @@ commands = [
     ['^\\\\(track) (on|off)', doTrack],
     ['^\\\\(crack)', doCrack],
     ['^\\\\(squeeze)', doSqueeze],
-    ['^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (u\\-band|g\\-band|r\\-band|i\\-band|z\\-band|clear|h\\-alpha)', doImage],
+    ['^\\\\(image) ([0-9\\.]+) (0|1|2|3|4) (oiii|g\\-band|r\\-band|i\\-band|sii|clear|h\\-alpha)', doImage],
+    ['^\\\\(bias) (0|1|2|3|4)', doBias],
+    ['^\\\\(dark) ([0-9\\.]+) (0|1|2|3|4)', doDark],
     ['^\\\\(lock)', doLock],
     ['^\\\\(share) (on|off)', doShare],
     ['^\\\\(unlock)', doUnLock],
@@ -1724,6 +1833,8 @@ if(len(sys.argv) < 5):
 slack_token = sys.argv[1]
 # the Slack url for file uploads
 slack_file_upload_url = "https://slack.com/api/files.upload"
+# the stars server URL (2018)
+stars_url = 'http://stars.uchicago.edu/fitsview18/'
 # the Wunderground api token
 wunderground_token = sys.argv[2]
 # track if slack client is connected
@@ -1784,6 +1895,9 @@ buildSatDatabase()
 
 # init the slack client
 sc = SlackClient(slack_token)
+
+# seo telescope
+telescope = Telescope(False)
 
 # main loop
 while True:

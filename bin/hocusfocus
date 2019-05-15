@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+if [ $# -ne 1 ]; then
+    echo "This routine calibrates the focus position."
+    echo "Usage: hocusfocus <filter names separated by spaces and surrounded by quotes>"
+    exit 1
+fi
+
+alert "Focusing routine started."
+
+/home/mcnowinski/anaconda2/bin/python /home/mcnowinski/bin/hocusfocus.py $1
+
+alert "Focusing routine complete."

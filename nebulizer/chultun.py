@@ -66,6 +66,30 @@ scp_path = 'scp'
 max_pinpoint_time_s = 60
 
 #
+# 1 [OIII]  ZBPA500
+# 2 g-band  AST0536 A133
+# 3 r-band  AST0537 A134
+# 4 i-band  AST0538 A135
+# 5 [SII]   ZBPA670
+# 6 clear   ESCO Q320188
+# 7 h-alpha ZBPA660
+#
+# filter hash
+filters = {
+    'oiii': 1,
+    '[oiii]': 1,
+    #    'u-band': 1,
+    'g-band': 2,
+    'r-band': 3,
+    'i-band': 4,
+    'sii': 5,
+    '[sii]': 5,
+    #    'z-band': 5,
+    'clear': 6,
+    'h-alpha': 7
+}
+
+#
 # the SEO telescope
 #
 
@@ -228,6 +252,26 @@ class Telescope():
             logger.error('Focus command failed (%s).' % output)
         return focus_position
 
+    def setFilter(self, filter):
+        filter = filter.lower()
+
+        if filter not in filters:
+            logger.error('Could not find a filter (%s).' % filter)
+            return False
+
+        if not self.simulate:
+            (output, error, pid) = self.runSubprocess(
+                ['tx', 'filter', 'num=%d' % filters[filter]])
+
+            # done filter num=6 name=clear
+            if not re.search('done filter num\\=([0-9]+)', output):
+                logger.error('Could not set filter to %s.' % filter)
+                return False
+            # check match?
+
+        logger.info('Filter is %s.' % filter)
+        return True
+
     # check slit
     # if the slit is closed, alert the observer via Slack
     def checkSlit(self):
@@ -348,41 +392,6 @@ class Telescope():
         return True
 
     def pinpoint(self, observation, point=True):
-        name = observation.target.name
-        ra = observation.target.getRa().replace(' ', ':')
-        dec = observation.target.getDec().replace(' ', ':')
-
-        self.slackdebug(
-            'Pointing telescope to %s (RA=%s, DEC=%s)...' % (name, ra, dec))
-
-        # turn tracking on (just in case)
-        (output, error, pid) = self.runSubprocess(
-            ['tx', 'track', 'on'], self.simulate)
-
-        # point the telescope
-        start_point = datetime.datetime.utcnow()
-        if point == True:  # point and refine
-            (output, error, pid) = self.runSubprocess(
-                ['pinpoint', '%s' % ra, '%s' % dec], self.simulate)
-        else:  # just refine
-            (output, error, pid) = self.runSubprocess(
-                [python_path, pinpoint_path, '%s' % ra, '%s' % dec], self.simulate)
-        end_point = datetime.datetime.utcnow()
-
-        # calculate pointing time in seconds
-        dt_point = (end_point-start_point).total_seconds()
-        logger.debug(
-            'Pinpointing telescope required %d seconds to complete.' % dt_point)
-
-        # if refining takes more than max_pinpoint_time_s, send an alert to Slack
-        if point == False and dt_point > max_pinpoint_time_s:
-            self.slackalert(
-                'Warning! Pinpointing telescope required %d seconds to complete. Check clouds, tracking, etc.' % dt_point)
-
-        # check the current telescope position
-        (output, error, pid) = self.runSubprocess(['tx', 'where'])
-
-    def pinpointier(self, observation, point=True):
         # MODIFY THESE FIELDS AS NEEDED!
         base_path = '/tmp/'+datetime.datetime.now().strftime("%Y%m%d.%H%M%S%f.pinpoint.")
         # path to astrometry.net solve_field executable
@@ -391,11 +400,11 @@ class Telescope():
         # bin=1, 0.75 arsec/pixel
         scale_low = 0.55
         scale_high = 2.00
-        radius = 30.0  # up this to 30 deg, just in case scope is *way* off
+        radius = 10.0  # up this to 30 deg, just in case scope is *way* off
         cpu_limit = 30
         # offset limits (deg)
-        max_ra_offset = 30.0
-        max_dec_offset = 30.0
+        max_ra_offset = 10.0
+        max_dec_offset = 10.0
         min_ra_offset = 0.05
         min_dec_offset = 0.05
         # how many pointing iterations to allow?
@@ -440,7 +449,8 @@ class Telescope():
             logger.debug('Current filter is %s.' % current_filter)
             # set to clear (temporarily)
             logger.debug('Changing filter setting to clear (temporarily).')
-            (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            # (output, error, pid) = self.runSubprocess(['pfilter', 'clear'])
+            self.setFilter('clear')
         else:
             logger.error('Unrecognized filter (%s).' % output)
 
@@ -450,7 +460,8 @@ class Telescope():
         while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
             iteration += 1
 
-            logger.debug('Performing adjustment #%d...' % (iteration))
+            logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (
+                iteration, ra_offset, dec_offset))
 
             # get pointing image
             (output, error, pid) = self.runSubprocess(
@@ -494,7 +505,7 @@ class Telescope():
                 os.remove(base_path+'pointing.wcs')
                 os.remove(base_path+'pointing.new')
             except:
-                continue
+                pass
 
             # look for field center in solve-field output
             match = re.search(
@@ -549,6 +560,10 @@ class Telescope():
             # how many times does this imaging sequence get repeated?
             for repeat in range(0, observation.sequence.repeat):
                 self.getImageStacks(observation)
+                logger.debug('observation.sequence.do_pinpoint = %s.' %
+                             observation.sequence.do_pinpoint)
+                if observation.sequence.do_pinpoint:
+                    self.pinpoint(observation, False)
         else:  # end time specified, this must be a continuous observation
             # make double sure that this is a continuous observation!
             if observation.sequence.repeat != Sequence.CONTINUOUS:
@@ -559,6 +574,10 @@ class Telescope():
                 'Repeating background observation until %s...' % end_time.iso)
             while Time.now() < end_time:  # how many times does this imaging sequence get repeated?
                 self.getImageStacks(observation)
+                logger.debug('observation.sequence.do_pinpoint = %s.' %
+                             observation.sequence.do_pinpoint)
+                if observation.sequence.do_pinpoint:
+                    self.pinpoint(observation, False)
 
     def image(self, exposure, filter, binning, path, filename):
         # make sure path exists!
@@ -566,13 +585,15 @@ class Telescope():
         # get the image!
         if filter == 'dark':
             # use h-alpha filter to reduce any ambient light
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', 'h-alpha'])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', 'h-alpha'])
+            self.setFilter('h-alpha')
             (output, error, pid) = self.runSubprocess(
                 ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
         else:
-            (output, error, pid) = self.runSubprocess(
-                ['pfilter', '%s' % filter])
+            # (output, error, pid) = self.runSubprocess(
+            #    ['pfilter', '"%s"' % filter])
+            self.setFilter(filter)
             (output, error, pid) = self.runSubprocess(
                 ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s' % (path, filename)])
 
@@ -593,6 +614,7 @@ class Telescope():
                 name = name.replace('(', '')
                 name = name.replace(')', '')
                 name = name.replace("'", '')
+                name = name.replace("*", '')
                 filter = stack.filter
                 exposure = stack.exposure
                 binning = stack.binning
@@ -603,11 +625,12 @@ class Telescope():
                 # fits = '%s_%s_%dsec_bin%d_%s_%s_num%d_seo.fits' % (
                 #    name, filter, exposure, binning, user, datetime.datetime.utcnow().strftime('%Y%b%d_%Hh%Mm%Ss'), count)
                 fits = '%s_%s_%.2fs_bin%d_%s_seo_%s_%03d_RAW.fits' % (
-                    name, filter, exposure, binning, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), user, count)
+                    name, datetime.datetime.utcnow().strftime('%y%m%d_%H%M%S'), exposure, binning, filter, user, count)
                 fits = fits.replace(' ', '_')
                 fits = fits.replace('(', '')
                 fits = fits.replace(')', '')
                 fits = fits.replace("'", '')
+                fits = fits.replace("*", '')
                 self.slackdebug('Taking image (%s)...' % (fits))
                 if self.simulate:
                     time.sleep(exposure)
@@ -615,21 +638,6 @@ class Telescope():
                 else:
                     self.image(exposure, filter, binning,
                                image_path+'/'+user+'/'+name, fits)
-#                    # make sure path exists!
-#                    pathlib2.Path('%s/%s/%s' % (image_path, user, name)
-#                                  ).mkdir(parents=True, exist_ok=True)
-#                    # get the image!
-#                    if filter == 'dark':
-#                        # use h-alpha filter to reduce any ambient light
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', 'h-alpha'])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'dark', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
-#                    else:
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['pfilter', '%s' % filter])
-#                        (output, error, pid) = self.runSubprocess(
-#                            ['image', 'time=%f' % exposure, 'bin=%d' % binning, 'outfile=%s/%s/%s/%s' % (image_path, user, name, fits)])
                 # if not error:
                 self.slackdebug('Got image (%s/%s/%s/%s).' %
                                 (image_path, user, name, fits))
@@ -637,13 +645,17 @@ class Telescope():
                     self.slackpreview('%s/%s/%s/%s' %
                                       (image_path, user, name, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
-                    #(ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
-                    #(output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
+                    # (ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
+                    # (output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
                 else:
                     self.slackdebug(
                         'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
-                    self.pinpointier(observation, False)
+                    self.pinpoint(observation, False)
+
+                # turn tracking on (just in case)
+                (output, error, pid) = self.runSubprocess(
+                    ['tx', 'track', 'on'], self.simulate)                    
 
     # ssh -q -i /home/mcnowinski/.ssh/id_rsa_stars dmcginnis427@stars.uchicago.edu "mkdir -p /data/images/StoneEdge/0.5meter/2018/2018-05-26/ exit"
     # scp -q -r -i /home/mcnowinski/.ssh/id_rsa_stars * dmcginnis427@stars.uchicago.edu:/data/images/StoneEdge/0.5meter/2018/2018-05-26/
@@ -659,7 +671,7 @@ class Telescope():
             '%Y'), datetime.datetime.utcnow().strftime('%Y-%m-%d'))
         # off they go!
         # create new directory if required
-        #(output, error, pid) = runSubprocess(
+        # (output, error, pid) = runSubprocess(
         #    ['ssh', '-q', '-i', %s*.fits' % image_path, '%s' % dest_path])
         # if error == '':
         #    logger.info('Successfully uploaded %d image(s) to stars (%s).' % (
@@ -778,7 +790,7 @@ class Target():
 
     # init with name and type only
     @classmethod
-    def from_name(cls, keyword, observatory, type):
+    def from_name(cls, keyword, observatory, type, ra_offset=None, dec_offset=None):
         objects = Target.findObjects(keyword, observatory, type)
         if len(objects) == 0:
             logger.error('Could not find matching object for %s.' % keyword)
@@ -787,7 +799,13 @@ class Target():
             if len(objects) > 1:
                 logger.warn('Found multiple matching objects for %s. Using first object (%s).' % (
                     name, objects[0]['name']))
-        target = cls(objects[0]['name'], objects[0]['ra'], objects[0]['dec'])
+        if ra_offset != None or dec_offset != None:
+            logger.warn('********************************************')
+            logger.warn('*** ALERT! TELESCOPE POINTING IS OFFSET! ***')
+            logger.warn('********************************************')
+        dec = Angle('%s degrees'%objects[0]['dec']).degree + dec_offset;
+        ra = Angle('%s hours'%objects[0]['ra']).degree + ra_offset;
+        target = cls(objects[0]['name'], Angle(ra * u.deg).to_string(unit=u.hour, sep=':'), Angle(dec* u.deg).to_string(unit=u.degree, sep=':'))
         return target
 
     # name
@@ -804,7 +822,7 @@ class Target():
     def setRa(self, ra):
         self.ra = ra
 
-    #dec = declination
+    # dec = declination
     def getDec(self):
         return self.dec
 
@@ -854,7 +872,7 @@ class Target():
             f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
                                 urllib2.quote(lookups[repeat].upper()))
             output = f.read()  # the whole enchilada
-            #print output
+            # print output
             lines = output.splitlines()  # line by line
             # no matches? go home
             if re.search('No matches found', output):
@@ -901,7 +919,7 @@ class Target():
                         epoch_yr = line[12:22].strip()
                         primary_desig = line[22:37].strip()
                         match_name = line[37:len(line)].strip()
-                        #print record_number, epoch_yr, primary_desig, match_name
+                        # print record_number, epoch_yr, primary_desig, match_name
                         # add semicolon for small body lookups
                         object_names.append(record_number + ';')
                 # check our parse job
@@ -935,7 +953,7 @@ class Target():
                             name = line[9:45].strip()
                             designation = line[45:57].strip()
                             other = line[57:len(line)].strip()
-                            #print record_number, name, designation, other
+                            # print record_number, name, designation, other
                             # NO semicolon for major body lookups
                             object_names.append(record_number)
                 # check our parse job
@@ -966,6 +984,7 @@ class Target():
             result.set_epochrange(start.iso, end.iso, '15m')
             result.get_ephemerides(observatory.code)
             # return transit RA/DEC if available times exist
+            logger.debug(result)
             if result and len(result['EL']):
                 imax = np.argmax(result['EL'])
                 ra = Angle(float(result['RA'][imax]) *
@@ -989,7 +1008,7 @@ class Stack():
     filter = 'clear'  # filter, e.g., clear, h-alpha, u-band, g-band, r-band, i-band, z-band
     binning = 1  # binning, e.g. 1 or 2
     count = 1  # number of images in this stack
-    do_pinpoint = True  # refine pointing in between imaging
+    do_pinpoint = True  # refine pointing in between images
 
     # init
     def __init__(self, exposure, filter, binning, count, do_pinpoint=True):
@@ -1000,7 +1019,7 @@ class Stack():
         self.do_pinpoint = do_pinpoint
 
     def toString(self):
-        return 'image stack: exposure=%f, filter=%s, binning=%d, count=%d' % (self.exposure, self.filter, self.binning, self.count)
+        return 'image stack: exposure=%f, filter=%s, binning=%d, count=%d, do_pinpoint=%s' % (self.exposure, self.filter, self.binning, self.count, self.do_pinpoint)
 
 
 #
@@ -1010,23 +1029,38 @@ class Sequence():
 
     stacks = []  # list of image stacks
     repeat = None  # number of times to repeat this sequence
+    do_pinpoint = True  # refine pointing in between stacks
 
     # repeat as much as possible
     CONTINUOUS = -1
 
     # init
-    def __init__(self, stacks, repeat):
+    def __init__(self, stacks, repeat, do_pinpoint=True):
         self.stacks = stacks
         self.repeat = repeat
+        self.do_pinpoint = do_pinpoint
 
     def addStack(self, stack):
         self.stacks.append(stack)
 
     def toString(self):
-        sequence_string = 'sequence: repeat=%d\n' % (self.repeat)
+        sequence_string = 'sequence: repeat=%d, do_pinpoint=%s\n' % (
+            self.repeat, self.do_pinpoint)
         for stack in self.stacks:
             sequence_string += '  %s\n' % stack.toString()
         return sequence_string
+
+    # estimate the total duration in seconds of the observing sequence
+    def getDuration(self):
+        if self.repeat == -1:
+            logger.warn('Sequence getDuration called on continuous sequence.')
+            return -1
+        sequenceTime = 0
+        for stack in self.stacks:
+            sequenceTime += stack.exposure
+        sequenceTime *= self.repeat
+        logger.debug('Sequence duration is %f seconds.' % sequenceTime)
+        return sequenceTime
 
 #
 # the observatory
@@ -1392,7 +1426,7 @@ class Scheduler():
             f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
                                 urllib2.quote(lookups[repeat].upper()))
             output = f.read()  # the whole enchilada
-            #print output
+            # print output
             lines = output.splitlines()  # line by line
             # no matches? go home
             if re.search('No matches found', output):
@@ -1439,7 +1473,7 @@ class Scheduler():
                         epoch_yr = line[12:22].strip()
                         primary_desig = line[22:37].strip()
                         match_name = line[37:len(line)].strip()
-                        #print record_number, epoch_yr, primary_desig, match_name
+                        # print record_number, epoch_yr, primary_desig, match_name
                         # add semicolon for small body lookups
                         object_names.append(record_number + ';')
                 # check our parse job
@@ -1473,7 +1507,7 @@ class Scheduler():
                             name = line[9:45].strip()
                             designation = line[45:57].strip()
                             other = line[57:len(line)].strip()
-                            #print record_number, name, designation, other
+                            # print record_number, name, designation, other
                             # NO semicolon for major body lookups
                             object_names.append(record_number)
                 # check our parse job
@@ -1484,8 +1518,8 @@ class Scheduler():
                     else:
                         logger.info(
                             'Multiple JPL major body parsing successful!')
-        #start = datetime.datetime.utcnow()
-        #end = start+datetime.timedelta(hours=12)
+        # start = datetime.datetime.utcnow()
+        # end = start+datetime.timedelta(hours=12)
         # get *nearest* sunset and *next* sunrise times
         # still not a big fan of this!
         observatory_location_obsplan = Observer(longitude=self.observatory.longitude*u.deg, latitude=self.observatory.latitude *
