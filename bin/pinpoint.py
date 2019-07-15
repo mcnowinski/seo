@@ -70,6 +70,9 @@ max_tries=5
 time=10
 bin=2
 fits_fname=base_path+'pointing.fits'
+#ra and dec gain factors
+gain_ra = 1.0
+gain_dec = 1.0
 
 log=open(log_fname, 'a+')	 
 
@@ -91,6 +94,8 @@ else:
 ra_offset = 5.0
 dec_offset = 5.0
 iteration = 0
+ra_point = ra_target
+dec_point = dec_target
 while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
     iteration += 1
     
@@ -150,10 +155,19 @@ while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and i
         ra_offset -= 360.0
     dec_offset=float(dec_target)-float(DEC_image)
 
+    #apply ra and dec gains
+    ra_offset = ra_offset*gain_ra
+    dec_offset = dec_offset*gain_dec
     if(abs(ra_offset) <= max_ra_offset and abs(dec_offset) <=max_dec_offset):
         #os.system('tx offset ra=%f dec=%f cos > /dev/null' % (ra_offset, dec_offset))
-        os.system('tx offset ra=%f dec=%f > /dev/null' % (ra_offset, dec_offset))
-        logme("...complete (dRA=%f deg, dDEC=%f deg)."%(ra_offset, dec_offset))
+        #os.system('tx offset ra=%f dec=%f > /dev/null' % (ra_offset, dec_offset))
+        ra_point = ra_point + ra_offset
+        dec_point = dec_point + dec_offset
+        ra = coord.Angle(ra_point * u.deg).to_string(unit=u.hour, sep=':')
+        dec = coord.Angle(dec_point * u.deg).to_string(unit=u.degree, sep=':')
+        logme('tx point ra=%s dec=%s > /dev/null' % (ra, dec))
+	os.system('tx point ra=%s dec=%s > /dev/null' % (ra, dec))
+        logme("...complete (dRA=%f deg, dDEC=%f deg, gainRA=%f, gainDEC=%f)."%(ra_offset, dec_offset, gain_ra, gain_dec))
     else:
         logme("Error. Calculated offsets too large (tx offset ra=%f dec=%f)! Pinpoint aborted." % (ra_offset, dec_offset))   
         quit(1)

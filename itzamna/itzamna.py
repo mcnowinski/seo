@@ -963,8 +963,11 @@ def getObject(command, user):
     lookups = [lookup + suffix, lookup + suffix + ';']
     for repeat in range(0, 2):
         # user JPL Horizons batch to find matches
-        f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
-                            urllib2.quote(lookups[repeat].upper()))
+        try:
+          f = urllib2.urlopen('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=l&COMMAND="%s"' %
+                              urllib2.quote(lookups[repeat].upper()))
+        except:
+          return
         output = f.read()  # the whole enchilada
         lines = output.splitlines()  # line by line
         # no matches? go home
@@ -1194,6 +1197,8 @@ def doLock(command, user):
 def doUnLock(command, user):
     global share
 
+    force = re.search('force', command, re.IGNORECASE)
+
     logme('Unlocking the telescope...')
 
     # check to make sure the telescope is locked and if so, locked by us!
@@ -1203,7 +1208,7 @@ def doUnLock(command, user):
         send_message("The telescope is not locked.")
         return False
     # is telescope locked by us?
-    if username != user['name']:
+    if not force and username != user['name']:
         logme("Warning. Can't unlock the telescope. The telescope is already locked by %s (%s)!" % (
             username, email))
         send_message('The telescope is already locked by %s (%s)!' %
@@ -1391,26 +1396,25 @@ def getSkyCam(command, user):
 
 def getForecast(command, user):
     logme('Retrieving the hourly forecast from wunderground.com...')
-
-    #try:
-    f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
-                        (wunderground_token, wunderground_station))
-    #except:
-    #    send_message('Connection to wunderground failed.')
-    #    return
-    json_string = f.read()
-    parsed_json = json.loads(json_string)
-    hourly_forecasts = parsed_json['hourly_forecast']
-    count = 0
-    send_message("Weather Forecast:")
-    for hourly_forecast in hourly_forecasts:
-        count += 1
-        if count > wunderground_max_forecast_hours:
-            break
-        send_message("", [{"image_url": "%s" % hourly_forecast['icon_url'], "title":"%s at %s:" % (
-            hourly_forecast['condition'], hourly_forecast['FCTTIME']['pretty'])}])
-    send_message("\n")
-    f.close()
+    try:
+        f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
+                            (wunderground_token, wunderground_station))
+        json_string = f.read()
+        parsed_json = json.loads(json_string)
+        hourly_forecasts = parsed_json['hourly_forecast']
+        count = 0
+        send_message("Weather Forecast:")
+        for hourly_forecast in hourly_forecasts:
+            count += 1
+            if count > wunderground_max_forecast_hours:
+                break
+            send_message("", [{"image_url": "%s" % hourly_forecast['icon_url'], "title":"%s at %s:" % (
+                hourly_forecast['condition'], hourly_forecast['FCTTIME']['pretty'])}])
+        send_message("\n")
+        f.close()
+    except:
+        send_message('Communication to wunderground failed.')
+        return
 
 # get weather from Wunderground
 
@@ -1422,32 +1426,31 @@ def getWeather(command, user):
     try:
         f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/conditions/q/pws:%s.json' %
                             (wunderground_token, wunderground_station))
+        json_string = f.read()
+        parsed_json = json.loads(json_string)
+        location = parsed_json['current_observation']['observation_location']['city']
+        station = parsed_json['current_observation']['station_id']
+        temp = parsed_json['current_observation']['temperature_string']
+        weather = parsed_json['current_observation']['weather']
+        rh = parsed_json['current_observation']['relative_humidity']
+        wind = parsed_json['current_observation']['wind_string']
+        wind_dir = parsed_json['current_observation']['wind_dir']
+        wind_mph = parsed_json['current_observation']['wind_mph']
+        dewpoint = parsed_json['current_observation']['dewpoint_string']
+        icon_url = parsed_json['current_observation']['icon_url']
+        last_update = parsed_json['current_observation']['observation_time']
+        send_message("", [{"image_url": "%s" %icon_url, "title": "Current Weather:"}])
+        send_message(">%s" % (last_update))
+        send_message(">Conditions: %s" % (weather))
+        send_message(">Temperature: %s" % (temp))
+        send_message(">Winds: %s" % (wind))
+        send_message(">Humidity: %s" % (rh))
+        send_message(">Local Station: %s (%s)" % (location, station))
+        send_message("\n")
+        f.close()
     except:
         send_message("Weather forecast failed.")
         return
-    json_string = f.read()
-    parsed_json = json.loads(json_string)
-    location = parsed_json['current_observation']['observation_location']['city']
-    station = parsed_json['current_observation']['station_id']
-    temp = parsed_json['current_observation']['temperature_string']
-    weather = parsed_json['current_observation']['weather']
-    rh = parsed_json['current_observation']['relative_humidity']
-    wind = parsed_json['current_observation']['wind_string']
-    wind_dir = parsed_json['current_observation']['wind_dir']
-    wind_mph = parsed_json['current_observation']['wind_mph']
-    dewpoint = parsed_json['current_observation']['dewpoint_string']
-    icon_url = parsed_json['current_observation']['icon_url']
-    last_update = parsed_json['current_observation']['observation_time']
-    send_message("", [{"image_url": "%s" %
-                       icon_url, "title": "Current Weather:"}])
-    send_message(">%s" % (last_update))
-    send_message(">Conditions: %s" % (weather))
-    send_message(">Temperature: %s" % (temp))
-    send_message(">Winds: %s" % (wind))
-    send_message(">Humidity: %s" % (rh))
-    send_message(">Local Station: %s (%s)" % (location, station))
-    send_message("\n")
-    f.close()
 
 
 def getHelp(command, user=None):
@@ -1528,15 +1531,17 @@ def send_message(msg, attachments=None):
 
 
 def send_file(path, title):
-    if slack_connected:
-        # curl -F file=@$file -F channels=$slackpreview_channel -F title="$title" -F token=$slackpreview_token $slackpreview_url > /dev/null 2>&1
-        files = {'file': open(path, 'rb')}
-        data = {'channels': slack_channel_name,
-                'title': title, 'token': slack_token}
-        url = slack_file_upload_url
-        r = requests.post(url, files=files, data=data)
-    else:
-        logme('Error! Could not send file (%s). Client is not connected.' % path)
+    try:
+       if slack_connected:
+           # curl -F file=@$file -F channels=$slackpreview_channel -F title="$title" -F token=$slackpreview_token $slackpreview_url > /dev/null 2>&1
+           files = {'file': open(path, 'rb')}
+           data = {'channels': slack_channel_name,
+                   'title': title, 'token': slack_token}
+           url = slack_file_upload_url
+           r = requests.post(url, files=files, data=data)
+    except:
+       pass
+    logme('Error! Could not send file (%s). Client is not connected.' % path)	   
 
 # get a list of slack users
 
@@ -1581,8 +1586,12 @@ def buildSatDatabase():
         match = re.search('zip$', url)
         # if it's a zipped file, unzip first!
         if match:
-            zipfile = ZipFile(StringIO(urllib2.urlopen(url).read()))
-            sats = zipfile.open(zipfile.namelist()[0]).readlines()
+            try:
+                zipfile = ZipFile(StringIO(urllib2.urlopen(url).read()))
+                sats = zipfile.open(zipfile.namelist()[0]).readlines()
+            except:
+                logme('Error! Failed to open the satellite database.')
+                return [] 
         else:
             try:
                 sats = urllib2.urlopen(url).readlines()
@@ -1751,7 +1760,7 @@ commands = [
     ['^\\\\(dark) ([0-9\\.]+) (0|1|2|3|4)', doDark],
     ['^\\\\(lock)', doLock],
     ['^\\\\(share) (on|off)', doShare],
-    ['^\\\\(unlock)', doUnLock],
+    ['^\\\\(unlock)(\\sforce)?', doUnLock],
     ['^\\\\(homer)', doHomer],
     ['^\\\\(clouds)', getClouds],
     ['^\\\\(focus)\\s([0-9]+)', doFocus],

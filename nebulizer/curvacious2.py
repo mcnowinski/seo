@@ -69,7 +69,7 @@ sequence_json = observation_json['sequences']['main']
 stacks_json = sequence_json['stacks']
 # build target
 target = Target.from_name(
-    target_json['name'], observatory, target_json['type'], target_json['ra_offset'], target_json['dec_offset'])
+    target_json['name'], observatory, target_json['type'], target_json.get('ra_offset'), target_json.get('dec_offset'))
 logger.debug(target.toString().replace('\n', '; '))
 # build image stacks
 stacks = []
@@ -79,7 +79,8 @@ for stack_json in stacks_json:
     logger.debug(stack.toString().replace('\n', '; '))
     stacks.append(stack)
 # build sequence
-sequence = Sequence(stacks, int(sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
+sequence = Sequence(stacks, int(
+    sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
 logger.debug(sequence.toString().replace('\n', '; '))
 # build main observations
 asteroid_main_observation = Observation(
@@ -99,7 +100,8 @@ for stack_json in stacks_json:
     logger.debug(stack.toString().replace('\n', '; '))
     stacks.append(stack)
 # build sequence
-sequence = Sequence(stacks, int(sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
+sequence = Sequence(stacks, int(
+    sequence_json['repeat']), sequence_json['do_pinpoint'] if 'do_pinpoint' in sequence_json else True)
 logger.debug(sequence.toString().replace('\n', '; '))
 # build calibration observations
 asteroid_calibration_observation = Observation(

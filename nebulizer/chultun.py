@@ -378,6 +378,7 @@ class Telescope():
                 if self.simulate:
                     break
                 time.sleep(30)
+                (output, error, pid) = self.runSubprocess(['tx', 'taux'])
                 match = re.search('cloud=([\\-\\.0-9]+)', output)
                 if match:
                     clouds = float(match.group(1))
@@ -400,7 +401,7 @@ class Telescope():
         # bin=1, 0.75 arsec/pixel
         scale_low = 0.55
         scale_high = 2.00
-        radius = 10.0  # up this to 30 deg, just in case scope is *way* off
+        radius = 30.0  # up this to 30 deg, just in case scope is *way* off
         cpu_limit = 30
         # offset limits (deg)
         max_ra_offset = 10.0
@@ -460,8 +461,8 @@ class Telescope():
         while((abs(ra_offset) > min_ra_offset or abs(dec_offset) > min_dec_offset) and iteration < max_tries):
             iteration += 1
 
-            logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (
-                iteration, ra_offset, dec_offset))
+            #logger.debug('Performing adjustment #%d (dRA=%f, dDEC=%f)...' % (
+            #    iteration, ra_offset, dec_offset))
 
             # get pointing image
             (output, error, pid) = self.runSubprocess(
@@ -469,7 +470,7 @@ class Telescope():
 
             if not os.path.isfile(fits_fname):
                 logger.error('File (%s) not found.' % fits_fname)
-                return
+                return False
 
             self.slackdebug('Got pinpoint image.')
             self.slackpreview(fits_fname)
@@ -486,7 +487,7 @@ class Telescope():
                 except KeyError:
                     logger.error(
                         "RA/DEC not found in input FITS header (%s)." % fits_fname)
-                    return
+                    return False
 
             # plate solve this image, using RA/DEC from FITS header
             (output, error, pid) = self.runSubprocess([solve_field_path, '--no-verify', '--overwrite', '--no-remove-lines', '--downsample', '%d' % downsample, '--scale-units', 'arcsecperpix', '--no-plots',
@@ -513,15 +514,18 @@ class Telescope():
             if match:
                 RA_image = match.group(1).strip()
                 DEC_image = match.group(2).strip()
+		logger.debug('Current pointing location is RA=%s, DEC=%s.'%(RA_image, DEC_image))
             else:
                 logger.error(
                     "Field center RA/DEC not found in solve-field output!")
-                return
+                return False
 
             ra_offset = float(ra_target)-float(RA_image)
             if ra_offset > 350:
                 ra_offset -= 360.0
             dec_offset = float(dec_target)-float(DEC_image)
+
+            #dec_offset *= 1.5		
 
             if(abs(ra_offset) <= max_ra_offset and abs(dec_offset) <= max_dec_offset):
                 (output, error, pid) = self.runSubprocess(
@@ -533,7 +537,7 @@ class Telescope():
             else:
                 logger.error("Calculated offsets too large (tx offset ra=%f dec=%f)! Pinpoint aborted." % (
                     ra_offset, dec_offset))
-                return
+                return False
 
             # turn tracking on (just in case)
             (output, error, pid) = self.runSubprocess(
@@ -542,13 +546,13 @@ class Telescope():
         if(iteration < max_tries):
             logger.info('BAM! Your target has been pinpoint-ed!')
             self.slackdebug('Your target has been pinpoint-ed!')
-            return
+            return True
 
         logger.error(
             'Exceeded maximum number of adjustments (%d).' % max_tries)
         self.slackalert(
             'Exceeded maximum number of adjustments (%d).' % max_tries)
-        return
+        return False
 
     def getImage(self, observation, end_time=None):
         if end_time == None:  # no end time, just repeat stack(s) by count
@@ -798,11 +802,13 @@ class Target():
         else:
             if len(objects) > 1:
                 logger.warn('Found multiple matching objects for %s. Using first object (%s).' % (
-                    name, objects[0]['name']))
+                    keyword, objects[0]['name']))
         if ra_offset != None or dec_offset != None:
             logger.warn('********************************************')
             logger.warn('*** ALERT! TELESCOPE POINTING IS OFFSET! ***')
             logger.warn('********************************************')
+            logger.warn('RA offset=%f degrees, DEC offset=%f degrees'%(ra_offset,dec_offset))
+        #logger.debug(objects[0])
         dec = Angle('%s degrees'%objects[0]['dec']).degree + dec_offset;
         ra = Angle('%s hours'%objects[0]['ra']).degree + ra_offset;
         target = cls(objects[0]['name'], Angle(ra * u.deg).to_string(unit=u.hour, sep=':'), Angle(dec* u.deg).to_string(unit=u.degree, sep=':'))

@@ -1,0 +1,46 @@
+{
+    "user": "mcnowinski",
+    "simulate": false,
+    "observatory": {
+        "code": "G52",
+        "latitude": 38.2886,
+        "longitude": -122.50400,
+        "altitude": 8,
+        "timezone": "US/Pacific"
+    },
+    "min_obs_alt": 30,
+    "delay_time": 30,
+    "observations": {
+        "target": {
+            "name": "KOI-6295",
+            "type": "star",
+            "ra_offset": 0.0,
+            "dec_offset": 0.0
+        },
+        "sequences": {
+            "main": {
+                "repeat": -1,
+                "do_pinpoint": true,
+                "stacks": [{
+                    "exposure": 85,
+                    "binning": 2,
+                    "filters": "r-band",
+                    "count": 3,
+                    "do_pinpoint": true 
+                }]
+            },
+            "calibration": {
+                "repeat": 1,
+                "do_pinpoint": true,
+                "stacks": [{
+                        "exposure": 85,
+                        "binning": 2,
+                        "filters": "r-band",
+                        "count": 1,
+                        "do_pinpoint": true
+                    }
+                ]
+            }
+        }
+    }
+}

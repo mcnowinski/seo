@@ -110,14 +110,15 @@ foreach picid ($picids)
 		goto die
 	endif
 	rm -f skyflat*.fits > /dev/null
-    set num_images=0
+    	set num_images=0
+    	set take_flats=0
 	while ( $count )
 		echo image time=$exptime bin=$bin filter=`pfilter` 
 		image time=$exptime bin=$bin notime
-        #getImage $EXPOSURE_SEC $BINNING image.fits        
+        	#getImage $EXPOSURE_SEC $BINNING image.fits        
 		if ($status) exit
-        #set bias=/home/mcnowinski/bias/bias.$bin.fits
-        #echo $bias
+        	#set bias=/home/mcnowinski/bias/bias.$bin.fits
+        	#echo $bias
 		##set bias=`findcal image bias` 
 		#sub image $bias 
 		#if ($status) then
@@ -153,21 +154,25 @@ foreach picid ($picids)
 			set msg='skyflat: exposure time too long'
 			goto die
 		endif
-        set fits=flat_$filters[$num]_bin${bin}_${exptime}sec_${observer}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" ${num_images}`_${UNIQUE_HASH}_seo.fits
-		set exptime=$newtime
-		# jog the telescope around a bit
-		set r=`rand n=2`
-		tx offset ha=`echo $r[1]-.5 | bc` dec=`echo $r[2]-.5 | bc` cos > /dev/null
-		#mv image.fits skyflat$count.fits
-        #cp image.fits flat.$filters[$num].bin$bin.`date -u +"%Y%m%d.%H%M%S%3N"`.fits
-        cp image.fits $fits
-        #echo $fits >> $TOSTARS_FILE_LIST
-        #preview in Slack
-        stiffy image.fits image.tif
-        convert -resize 50% -normalize -quality 75 image.tif image.jpg
-        (slackpreview image.jpg "Got flat image (bin=$bin, filter=$filters[$num])."; rm image.tif; rm image.jpg) &
-		@ count--
-        @ num_images++
+        if ($take_flats) then
+            set fits=flat_$filters[$num]_bin${bin}_${exptime}sec_${observer}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" ${num_images}`_${UNIQUE_HASH}_seo.fits
+            set exptime=$newtime
+            # jog the telescope around a bit
+            set r=`rand n=2`
+            tx offset ha=`echo $r[1]-.5 | bc` dec=`echo $r[2]-.5 | bc` cos > /dev/null
+            #mv image.fits skyflat$count.fits
+            #cp image.fits flat.$filters[$num].bin$bin.`date -u +"%Y%m%d.%H%M%S%3N"`.fits
+            cp image.fits $fits
+            #echo $fits >> $TOSTARS_FILE_LIST
+            #preview in Slack
+            stiffy image.fits image.tif
+            convert -resize 50% -normalize -quality 75 image.tif image.jpg
+            (slackpreview image.jpg "Got flat image (bin=$bin, filter=$filters[$num])."; rm image.tif; rm image.jpg) &
+            @ count--
+            @ num_images++
+        else
+            @ take_flats++
+        endif
 	end
 	#median skyflat*.fits mean outfile=image
     #rm skyflat*.fits

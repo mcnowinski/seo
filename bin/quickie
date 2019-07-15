@@ -84,3 +84,5 @@ tx slit
 tx lock clear
 
 alert "Telescope diagnostic routine complete."
+
+cd $FLATPATH
