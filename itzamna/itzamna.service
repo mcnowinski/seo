@@ -1,0 +1,15 @@
+[Unit]
+Description=Slack #itzamna service
+After=network.target
+
+[Service]
+User=mcnowinski
+Group=users
+Restart=always
+WorkingDirectory=/home/mcnowinski/bin
+Environment="PATH=/home/mcnowinski/sex/sextractor/bin:/home/mcnowinski/bin:/home/mcnowinski/sonoma/bin:/home/sonoma/bin:/home/mcnowinski/anaconda2/bin:/usr/local/bin:/home/mcnowinski/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin/X11:/usr/games"
+EnvironmentFile=/home/mcnowinski/bin/slack.conf
+ExecStart=/home/mcnowinski/anaconda2/bin/python /home/mcnowinski/seo/itzamna/itzamna.py $itzamna_token $wunderground_token
+
+[Install]
+WantedBy=multi-user.target
