@@ -1504,9 +1504,9 @@ def logme(msg):
     # open log file
     log = open(log_fname, 'a+')
     dt = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S:\t")
-    log.write((dt + msg + "\n").encode('utf8'))
+    log.write((dt + str(msg) + "\n").encode('utf8'))
     log.close()
-    print (dt + msg).encode('utf8')
+    print (dt + str(msg)).encode('utf8')
     return
 
 # send a message into the slack_channel
@@ -1778,7 +1778,7 @@ slack_token = sys.argv[1]
 # the Slack url for file uploads
 slack_file_upload_url = "https://slack.com/api/files.upload"
 # the stars server URL (2018)
-stars_url = 'http://stars.uchicago.edu/fitsview18/'
+stars_url = 'http://stars.uchicago.edu/fitsview19/'
 # the Wunderground api token
 wunderground_token = sys.argv[2]
 # track if slack client is connected
