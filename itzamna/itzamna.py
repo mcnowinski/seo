@@ -1778,7 +1778,7 @@ slack_token = sys.argv[1]
 # the Slack url for file uploads
 slack_file_upload_url = "https://slack.com/api/files.upload"
 # the stars server URL (2018)
-stars_url = 'http://stars.uchicago.edu/fitsview19/'
+stars_url = 'http://stars.uchicago.edu/fitsview20/'
 # the Wunderground api token
 wunderground_token = sys.argv[2]
 # track if slack client is connected

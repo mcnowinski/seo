@@ -408,6 +408,7 @@ class Telescope():
         max_dec_offset = 10.0
         min_ra_offset = 0.05
         min_dec_offset = 0.05
+        #min_dec_offset = 0.01
         # how many pointing iterations to allow?
         max_tries = 5
         # image command parameters
@@ -619,6 +620,7 @@ class Telescope():
                 name = name.replace(')', '')
                 name = name.replace("'", '')
                 name = name.replace("*", '')
+                name = name.replace("/", '')
                 filter = stack.filter
                 exposure = stack.exposure
                 binning = stack.binning
@@ -636,18 +638,19 @@ class Telescope():
                 fits = fits.replace("'", '')
                 fits = fits.replace("*", '')
                 self.slackdebug('Taking image (%s)...' % (fits))
+                dt_string = datetime.datetime.utcnow().strftime('%y%m%d')
                 if self.simulate:
                     time.sleep(exposure)
                     error = 0
                 else:
                     self.image(exposure, filter, binning,
-                               image_path+'/'+user+'/'+name, fits)
+                               image_path+'/'+user+'/'+name+'/'+dt_string, fits)
                 # if not error:
-                self.slackdebug('Got image (%s/%s/%s/%s).' %
-                                (image_path, user, name, fits))
+                self.slackdebug('Got image (%s/%s/%s/%s/%s).' %
+                                (image_path, user, name, dt_string, fits))
                 if not self.simulate:
-                    self.slackpreview('%s/%s/%s/%s' %
-                                      (image_path, user, name, fits))
+                    self.slackpreview('%s/%s/%s/%s/%s' %
+                                      (image_path, user, name, dt_string, fits))
                     # IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
                     # (ssh -q -i $STARS_PRIVATE_KEY_PATH $STARS_USERNAME@$STARS_SERVER "mkdir -p $IMAGE_PATHNAME"; scp -q -i $STARS_PRIVATE_KEY_PATH $IMAGE_FILENAME $STARS_USERNAME@$STARS_SERVER:$IMAGE_PATHNAME/$IMAGE_FILENAME) &
                     # (output, error, pid) = runSubprocess(['tostars','%s'%name.replace(' ', '_').replace('(', '').replace(')', ''),'%s'%fits])
@@ -655,7 +658,20 @@ class Telescope():
                     self.slackdebug(
                         'Error. Image command failed (%s/%s/%s/%s).' % (image_path, user, name, fits))
                 if do_pinpoint:
-                    self.pinpoint(observation, False)
+                  done = False
+                  while not done:
+                    # check sun, clouds, slit, etc.
+                    self.checkSun()
+                    if self.is_cracked:
+                      self.checkSlit()
+                    self.checkAlt()
+                    self.checkClouds()
+                    # point the scope
+                    done = self.pinpoint(observation)
+                    if not done:
+                      self.slackdebug("Pinpoint failed. Will retry.")
+                      # turn tracking on (just in case)
+                      (output, error, pid) = self.runSubprocess(['tx', 'track', 'on'], self.simulate)
 
                 # turn tracking on (just in case)
                 (output, error, pid) = self.runSubprocess(
@@ -990,7 +1006,6 @@ class Target():
             result.set_epochrange(start.iso, end.iso, '15m')
             result.get_ephemerides(observatory.code)
             # return transit RA/DEC if available times exist
-            logger.debug(result)
             if result and len(result['EL']):
                 imax = np.argmax(result['EL'])
                 ra = Angle(float(result['RA'][imax]) *

@@ -590,11 +590,13 @@ class query():
                         this_eph.append('n.a.')
                     fieldnames.append('lunar_presence')
                     datatypes.append(object)
-                if (item.find('R.A._(ICRF/J2000.0)') > -1):
+#mcn 020520 update RA field name
+                if (item.find('R.A._(ICRF)') > -1):
                     this_eph.append(np.float64(line[idx]))
                     fieldnames.append('RA')
                     datatypes.append(np.float64)
-                if (item.find('DEC_(ICRF/J2000.0)') > -1):
+#mcn 020520 update DEC field name
+                if (item.find('DEC_(ICRF)') > -1):
                     this_eph.append(np.float64(line[idx]))
                     fieldnames.append('DEC')
                     datatypes.append(np.float64)
@@ -899,10 +901,9 @@ class query():
               + "&CENTER='" + str(center) + "'" \
               + "&OUT_UNITS='AU-D'" \
               + "&REF_PLANE='ECLIPTIC'" \
-              + "REF_SYSTEM='J2000'" \
+              + "&REF_SYSTEM='J2000'" \
               + "&TP_TYPE='ABSOLUTE'" \
               + "&ELEM_LABELS='YES'" \
-              + "CSV_FORMAT='YES'" \
               + "&OBJ_DATA='YES'"
 
         # check if self.targetname is a designation

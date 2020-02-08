@@ -19,14 +19,14 @@ COUNT=0
 
 NAME=dark
 USER=mcnowinski
-FILTER=clear
+FILTER=h-alpha
 
 #TOSTARS_FILE_LIST=input_`date -u +"%Y%b%d_%Hh%Mm%Ss"`
 ##create list of files for input to to stars
 #touch $TOSTARS_FILE_LIST
 
 #not really necessary, but why not
-pfilter clear
+pfilter h-alpha
 
 #assign stars server destination pathname
 IMAGE_PATHNAME=$STARS_IMAGE_PATH/`date -u +"%Y"`/`date -u +"%Y-%m-%d"`/${NAME}
@@ -42,6 +42,7 @@ checkCCDTemp
 for (( i=1; i<=$NUM_DARKS; i++ )); do
   IMAGE_FILENAME=${NAME}_${FILTER}_${EXPOSURE_SEC}sec_bin${BINNING}_${USER}_`date -u +"%Y%b%d_%Hh%Mm%Ss"`_num`printf "%04d" $COUNT`_${UNIQUE_HASH}_seo.fits
   getImage $EXPOSURE_SEC $BINNING $IMAGE_FILENAME dark
+  #getImageNotel $EXPOSURE_SEC $BINNING $IMAGE_FILENAME dark
   #getImage $EXPOSURE_SEC $BINNING `date -u +"%Y%m%d.%H%M%S%3N"`.`printf "%03d" $COUNT`.dark.$BINNING.$EXPOSURE_SEC.fits dark
   if [ $SUCCESS -eq 1 ]
   then

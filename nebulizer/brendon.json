@@ -12,7 +12,7 @@
     "delay_time": 30,
     "observations": {
         "target": {
-            "name": "29943",
+            "name": "2016 WG36",
             "type": "solar system",
             "ra_offset": 0.0,
             "dec_offset": 0.0
@@ -22,20 +22,20 @@
                 "repeat": -1,
                 "do_pinpoint": true,
                 "stacks": [{
-                    "exposure": 120,
+                    "exposure": 60,
                     "binning": 2,
-                    "filters": "r-band",
-                    "count": 3,
+                    "filters": "clear",
+                    "count": 1,
                     "do_pinpoint": true 
                 }]
             },
             "calibration": {
-                "repeat": 3,
+                "repeat": 1,
                 "do_pinpoint": true,
                 "stacks": [{
-                        "exposure": 120, 
+                        "exposure": 60, 
                         "binning": 2,
-                        "filters": "r-band",
+                        "filters": "clear",
                         "count": 1,
                         "do_pinpoint": true
                     }

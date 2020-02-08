@@ -12,10 +12,10 @@ tx home ha
 alert "Calibrating DEC drive..."
 tx home dec
 
-alert "Correcting HA and DEC homing offsets..."
-tx offset ha=0.97
-tx offset dec=0.48
-tx home force ha dec
+#alert "Correcting HA and DEC homing offsets..."
+#tx offset ha=0.97
+#tx offset dec=0.48
+#tx home force ha dec
 
 alert "Calibrating DOME drive..."
 tx home domer

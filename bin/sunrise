@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source $DIR/utils
+
+#check parameters
+if [ $# -ne 1 ]; then
+    echo "This routine loops until the sun has risen."
+    echo "Usage: sunrise <sun alt. at sunrise in degrees>"
+    exit 1
+fi
+
+MIN_SUN_ALT=$1
+function sunIsDown {
+  local SUN_ALT=`sun | grep -o 'alt=[0-9\.\-]\+' | cut -c5-`
+  if [ ${SUN_ALT%.*} -lt ${MIN_SUN_ALT%.*} ]
+  then
+    debug "Sun is DOWN. Altitude is $SUN_ALT deg."
+    return 0
+  else
+    alert "Sun has risen! Altitude is $SUN_ALT deg."
+    return 1
+  fi
+}
+
+alert "Waiting for sun to rise before continuing..."
+while sunIsDown
+do
+    sleep 60
+done

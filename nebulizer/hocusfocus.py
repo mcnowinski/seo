@@ -191,7 +191,7 @@ for filter in filters:
             'For a focus position of %s, estimated FWHM is %s.' % (focus_position, fwhm))
         logger.info('focus_position=%s, fwhm=%s' % (focus_position, fwhm))
 
-    telescope.pinpoint(target_observation, False)
+        telescope.pinpoint(target_observation, False)
 
     # fit data points to a 2nd-deg polynomial
     pass1_fit = np.polyfit(pass1_array_focus[:, 0], pass1_array_focus[:, 1], 2)

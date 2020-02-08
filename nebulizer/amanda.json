@@ -21,19 +21,22 @@
             "main": {
                 "repeat": -1,
                 "do_pinpoint": true,
-                "stacks": [{
-                    "exposure": 120,
+                "stacks": 
+                [
+                  {
+                    "exposure": 60,
                     "binning": 2,
                     "filters": "r-band",
-                    "count": 3,
+                    "count": 1,
                     "do_pinpoint": true 
-                }]
+                  }
+                ]
             },
             "calibration": {
                 "repeat": 1,
                 "do_pinpoint": true,
                 "stacks": [{
-                        "exposure": 120,
+                        "exposure": 60,
                         "binning": 2,
                         "filters": "r-band",
                         "count": 1,

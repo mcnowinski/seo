@@ -66,6 +66,28 @@ function getImage {
     fi
 }
 
+#take image
+SUCCESS=0
+#parameters are $1=time, $2=binning, $3=outfile, $4=flags, e.g., "notel" or "dark", $5=preview (optional, 0=OFF, 1=ON; default is 1)
+function getImageNotel {
+    SUCCESS=1 #assume success!
+    PREVIEW=${5:-1} #preview is ON by default
+    #echo image time=$1 bin=$2 outfile=$3 $4
+    image time=$1 bin=$2 notel outfile=$3 $4
+    if [ $? -eq 0 ]
+    then
+        debug "Got image ($3)."
+        if [ $PREVIEW -eq 1 ]
+        then
+            preview "$3" "$3"
+        fi
+    else
+        alert "Error. Image command failed ($3)."
+        SUCCESS=0
+    fi
+}
+
+
 NUM_ALERTS=50
 SNOOZE_TIME_S=10
 #is slit open? if not, exit

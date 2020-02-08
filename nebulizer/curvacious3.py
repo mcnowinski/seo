@@ -37,10 +37,10 @@ def calibrationObservations():
 
 
 # path to configuration
-cfg_path = "/home/mcnowinski/seo/nebulizer/amanda.json"
+cfg_path = "/home/mcnowinski/seo/nebulizer/curvacious3.json"
 
 # set up logger
-logger = log.get_logger('amanda')
+logger = log.get_logger('curvacious')
 
 # load target and comparison observations
 with open(cfg_path) as f:
@@ -110,7 +110,7 @@ asteroid_calibration_observation_duration_s = sequence.getDuration()
 logger.debug(asteroid_calibration_observation.toString().replace('\n', '; '))
 
 # start observations
-telescope.slackdebug('Starting amanda...')
+telescope.slackdebug('Starting curvacious...')
 
 # wait for sun to set
 telescope.checkSun(True)
@@ -126,19 +126,7 @@ while Time.now() < asteroid_main_observation.min_obs_time:
 telescope.slackdebug("Starting observations...")
 telescope.crackit()
 
-#calibrationObservations()
-done = False
-while not done:
-    # check sun, clouds, slit, etc.
-    telescope.checkSun()
-    if telescope.is_cracked:
-        telescope.checkSlit()
-    telescope.checkAlt()
-    telescope.checkClouds()
-    # point the scope
-    done = telescope.pinpoint(asteroid_calibration_observation)
-    if not done:
-      telescope.slackdebug("Pinpoint failed. Will retry.")	
+calibrationObservations()
 
 # get images of target until target reaches max altitude, if it hasn't already
 doCalibrationObservations = False
@@ -156,8 +144,8 @@ while Time.now() + TimeDelta(asteroid_calibration_observation_duration_s, format
         telescope.pinpoint(asteroid_main_observation, False)
     doCalibrationObservations = True
 
-#if doCalibrationObservations:
-#    calibrationObservations()
+if doCalibrationObservations:
+    calibrationObservations()
 
 # get images of target until target has set
 doCalibrationObservations = False
@@ -175,8 +163,8 @@ while Time.now() + TimeDelta(asteroid_calibration_observation_duration_s, format
         telescope.pinpoint(asteroid_main_observation, False)
     doCalibrationObservations = True
 
-#if doCalibrationObservations:
-#    calibrationObservations()
+if doCalibrationObservations:
+    calibrationObservations()
 
 telescope.slackdebug("All observations for %s are complete." %
                      (asteroid_main_observation.target.getName()))
