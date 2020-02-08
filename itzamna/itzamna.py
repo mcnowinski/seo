@@ -46,14 +46,22 @@ from chultun import Scheduler  # observatory, observations
 from chultun import Telescope  # the telescope commands
 
 # logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s',
-    handlers=[
-        logging.FileHandler("itzamna.log"),
-        logging.StreamHandler()
-    ])
-logger = logging.getLogger('itzamna')
+# set up logging to file - see previous section for more details
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s',
+#                    datefmt='%m-%d %H:%M',
+                    filename='/tmp/itzamna.log',
+                    filemode='w')
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+# set a format which is simpler for console use
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s')
+# tell the handler to use this format
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
+logger = logging.getLogger('')
 
 def runSubprocess(command_array, simulate=False, communicate=True, timeout=0):
     # command array is array with command and all required parameters
