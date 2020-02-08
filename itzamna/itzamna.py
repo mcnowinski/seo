@@ -34,6 +34,7 @@ plt.style.use(astropy_mpl_style)
 import pytz
 import glob
 import shutil
+import logging
 
 # import classes from the chultun module
 from chultun import Target  # name, ra, dec
@@ -44,35 +45,44 @@ from chultun import Observation  # target, sequence
 from chultun import Scheduler  # observatory, observations
 from chultun import Telescope  # the telescope commands
 
+# logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s',
+    handlers=[
+        logging.FileHandler("itzamna.log"),
+        logging.StreamHandler()
+    ])
+logger = logging.getLogger('itzamna')
 
 def runSubprocess(command_array, simulate=False, communicate=True, timeout=0):
     # command array is array with command and all required parameters
     if simulate:
-        logme('Simulating subprocess "%s".' % (command_array))
+        logger.info('Simulating subprocess "%s".' % (command_array))
         return ('', 0, 0)
     try:
         if timeout > 0:
             command_array = ['timeout', str(timeout)] + command_array
         sp = subprocess.Popen(
             command_array, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        logme('Running subprocess ("%s" %s)...' %
+        logger.info('Running subprocess ("%s" %s)...' %
               (' '.join(command_array), sp.pid))
         sp.wait()
         if communicate:
             output, error = sp.communicate(b'\n\n')
             if error:
-                logme('Error. Process (%s) reported error.' %
+                logger.info('Error. Process (%s) reported error.' %
                       (command_array))
             return (output, error, sp.pid)
         else:  # some processes, like keepopen, hang forever with .communicate()
             return ('', '', 0)
     except Exception as e:
-        logme(traceback.format_exception(*sys.exc_info()))
+        logger.info(traceback.format_exception(*sys.exc_info()))
         return ('', 'Unknown error.', 0)
 
 
 def getStats(command, user):
-    logme('Retrieving telescope statistics...')
+    logger.info('Retrieving telescope statistics...')
 
     send_message('Retrieving telescope statistics...')
     send_message(
@@ -96,10 +106,10 @@ def getObservability(command, user):
         if match.group(2):
             object_index = int(match.group(2).strip())
         else:
-            logme('No object index provided in \\plot command. Choosing first object...')
+            logger.info('No object index provided in \\plot command. Choosing first object...')
             object_index = 1
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # if we don't have any objects from \find, go home
@@ -134,7 +144,7 @@ def getObservability(command, user):
     send_message(
         'Itzamna is calculating when "%s" is observable from your location. Please wait...' % object['name'])
 
-    logme('Checking observability of %s (%d)...' %
+    logger.info('Checking observability of %s (%d)...' %
           (object['name'], object_index))
 
     # calculate local time of observatory
@@ -317,15 +327,15 @@ def doCrack(command, user):
     target_name = "unknown"
 
     (output, error, pid) = runSubprocess(['tin', 'interrupt'], simulate)
-    logme(output)
+    logger.info(output)
 
     (output, error, pid) = runSubprocess(
         ['openup_nolock', 'nocloud'], simulate)
-    logme(output)
+    logger.info(output)
 
     (output, error, pid) = runSubprocess(
         ['keepopen', 'maxtime=36000', 'slit'], simulate, False)
-    logme(output)
+    logger.info(output)
 
     send_message("The observatory was successfully opened ('cracked')!")
 
@@ -349,14 +359,14 @@ def doSqueeze(command, user):
         # at least try to get slit closed!
         (output, error, pid) = runSubprocess(['tx', 'slit', 'close'], simulate)
         return
-    logme(output)
+    logger.info(output)
 
     (output, error, pid) = runSubprocess(['tx', 'lock', 'clear'], simulate)
     if not re.search('done lock', output):
-        logme('Error. Could not clear lock')
+        logger.info('Error. Could not clear lock')
 
     (output, error, pid) = runSubprocess(['tin', 'resume'], simulate)
-    logme(output)
+    logger.info(output)
 
     send_message("The observatory was successfully closed ('squoze')!")
 
@@ -406,7 +416,7 @@ def doImage(command, user):
         send_message('Taking image (exposure=%s s, bin=%s, filter=%s). Please wait...' % (
             exposure, binning, filter))
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
@@ -446,7 +456,7 @@ def doBias(command, user):
         filter = 'clear'
         send_message('Taking bias frame (bin=%s). Please wait...' % binning)
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
     # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
     fits = image_path + '%s_%s_%ss_bin%s_%s_%s_seo_%d_RAW.fits' % (
@@ -478,7 +488,7 @@ def doDark(command, user):
         send_message('Taking dark frame (exposure=%s, bin=%s). Please wait...' % (
             exposure, binning))
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # IMAGE_FILENAME=${NAME}_${filter}_${EXPOSURE_SEC}s_bin${BINNING}_`date -u +"%y%m%d_%H%M%S"`__seo_${USER}_`printf "%04d" $COUNT`_RAW.fits
@@ -542,7 +552,7 @@ def doShare(command, user):
             share = False
             send_message('Your lock has been un-shared!')
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
 
@@ -564,7 +574,7 @@ def doTrack(command, user):
         else:
             send_message('Telescope tracking is %s.' % toggle)
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
 
@@ -586,7 +596,7 @@ def doFocus(command, user):
         else:
             send_message('Focus position is %s.' % match.group(2))
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
 
@@ -617,7 +627,7 @@ def doOffset(command, user):
             send_message("Telescope pointing successfully offset (dRA=%.2f', dDEC=%.2f')." % (
                 offset_ra, offset_dec))
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
 
@@ -651,11 +661,11 @@ def doPinpointByObjectNum(command, user):
         if match.group(2):
             object_index = int(match.group(2).strip())
         else:
-            logme(
+            logger.info(
                 'No object index provided in \\pinpoint command. Choosing first object...')
             object_index = 1
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # this command requires that user has telescope locked
@@ -703,7 +713,7 @@ def doPinpointByObjectNum(command, user):
 
     send_message(
         'Itzamna is pinpointing the telescope to "%s". Please wait...' % object['name'])
-    logme('Pinpointing the telescope to %s (%d)...' %
+    logger.info('Pinpointing the telescope to %s (%d)...' %
           (object['name'], object_index))
 
     # reset the target name
@@ -738,7 +748,7 @@ def doPinpointByRaDec(command, user):
         ra = match.group(2)
         dec = match.group(3)
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # this command requires that user has telescope locked
@@ -795,10 +805,10 @@ def doPointByObjectNum(command, user):
         if match.group(2):
             object_index = int(match.group(2).strip())
         else:
-            logme('No object index provided in \\point command. Choosing first object...')
+            logger.info('No object index provided in \\point command. Choosing first object...')
             object_index = 1
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # this command requires that user has telescope locked
@@ -840,7 +850,7 @@ def doPointByObjectNum(command, user):
 
     send_message(
         'Itzamna is pointing the telescope to "%s". Please wait...' % object['name'])
-    logme('Pointing the telescope to %s (%d)...' %
+    logger.info('Pointing the telescope to %s (%d)...' %
           (object['name'], object_index))
 
     # reset the target name
@@ -873,7 +883,7 @@ def doPointByRaDec(command, user):
         ra = match.group(2)
         dec = match.group(3)
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     # this command requires that user has telescope locked
@@ -922,7 +932,7 @@ def getObject(command, user):
     if(match):
         lookup = match.group(2)
     else:
-        logme('Error. Unexpected command format (%s).' % command)
+        logger.info('Error. Unexpected command format (%s).' % command)
         return
 
     send_message(
@@ -972,10 +982,10 @@ def getObject(command, user):
         lines = output.splitlines()  # line by line
         # no matches? go home
         if re.search('No matches found', output):
-            logme('No matches found in JPL Horizons for %s.' %
+            logger.info('No matches found in JPL Horizons for %s.' %
                   lookups[repeat].upper())
         elif re.search('Target body name:', output):
-            logme('Single match found in JPL Horizons for %s.' %
+            logger.info('Single match found in JPL Horizons for %s.' %
                   lookups[repeat].upper().replace(suffix, ''))
             # just one match?
             # if major body search (repeat = 0), ignore small body results
@@ -988,14 +998,14 @@ def getObject(command, user):
                 if match:
                     object_names.append(match.group(1))
                 else:
-                    logme('Error. Could not parse id for single match major body (%s).' %
+                    logger.info('Error. Could not parse id for single match major body (%s).' %
                           lookups[repeat].upper().replace(suffix, ''))
             else:
                 # user search term is unique, so use it!
                 object_names.append(
                     lookups[repeat].upper().replace(suffix, ''))
         elif repeat == 1 and re.search('Matching small-bodies', output):
-            logme('Multiple small bodies found in JPL Horizons for %s.' %
+            logger.info('Multiple small bodies found in JPL Horizons for %s.' %
                   lookups[repeat].upper())
             # Matching small-bodies:
             #
@@ -1021,11 +1031,11 @@ def getObject(command, user):
             match = re.search('(\\d+) matches\\.', output)
             if match:
                 if int(match.group(1)) != match_count:
-                    logme('Multiple JPL small body parsing error!')
+                    logger.info('Multiple JPL small body parsing error!')
                 else:
-                    logme('Multiple JPL small body parsing successful!')
+                    logger.info('Multiple JPL small body parsing successful!')
         elif repeat == 0 and re.search('Multiple major-bodies', output):
-            logme('Multiple major bodies found in JPL Horizons for %s.' %
+            logger.info('Multiple major bodies found in JPL Horizons for %s.' %
                   lookups[repeat].upper())
             # Multiple major-bodies match string "50*"
             #
@@ -1053,9 +1063,9 @@ def getObject(command, user):
             match = re.search('Number of matches =([\\s\\d]+).', output)
             if match:
                 if int(match.group(1)) != match_count:
-                    logme('Multiple JPL major body parsing error!')
+                    logger.info('Multiple JPL major body parsing error!')
                 else:
-                    logme('Multiple JPL major body parsing successful!')
+                    logger.info('Multiple JPL major body parsing successful!')
     start = datetime.datetime.utcnow()
     end = start+datetime.timedelta(seconds=60)
     send_message('Found %d solar system match(es) for "%s".' %
@@ -1139,7 +1149,7 @@ def getObject(command, user):
 
 
 def lockedBy():
-    logme('Checking to see if the telescope is locked...')
+    logger.info('Checking to see if the telescope is locked...')
 
     locked_by = (None, None)
     (output, error, pid) = runSubprocess(['tx', 'lock'], simulate)
@@ -1147,7 +1157,7 @@ def lockedBy():
     match = re.search('^done lock user=(\S+) email=(\S+)', output)
     if(match):
         locked_by = (match.group(1), match.group(2))
-        logme('Telescope is currently locked by %s (%s).' %
+        logger.info('Telescope is currently locked by %s (%s).' %
               (match.group(1), match.group(2)))
     return locked_by
 
@@ -1164,7 +1174,7 @@ def lockedByYou(user):
 
 
 def doLock(command, user):
-    logme('Locking the telescope...')
+    logger.info('Locking the telescope...')
 
     # check to make sure the telescope isn't already locked
     (username, email) = lockedBy()
@@ -1190,7 +1200,7 @@ def doLock(command, user):
     if(match):
         send_message('Telescope successfully locked!')
     else:
-        logme('Error. Telescope could not be locked (%s)' % output)
+        logger.info('Error. Telescope could not be locked (%s)' % output)
         send_message('Telescope could *not* be locked!')
 
 
@@ -1199,7 +1209,7 @@ def doUnLock(command, user):
 
     force = re.search('force', command, re.IGNORECASE)
 
-    logme('Unlocking the telescope...')
+    logger.info('Unlocking the telescope...')
 
     # check to make sure the telescope is locked and if so, locked by us!
     (username, email) = lockedBy()
@@ -1209,7 +1219,7 @@ def doUnLock(command, user):
         return False
     # is telescope locked by us?
     if not force and username != user['name']:
-        logme("Warning. Can't unlock the telescope. The telescope is already locked by %s (%s)!" % (
+        logger.info("Warning. Can't unlock the telescope. The telescope is already locked by %s (%s)!" % (
             username, email))
         send_message('The telescope is already locked by %s (%s)!' %
                      (username, email))
@@ -1222,12 +1232,12 @@ def doUnLock(command, user):
         send_message('Telescope successfully unlocked!')
         share = False
     else:
-        logme('Error. Telescope could not be unlocked (%s)' % output)
+        logger.info('Error. Telescope could not be unlocked (%s)' % output)
         send_message('Telescope could *not* be unlocked!')
 
 
 def getSlit(command, user):
-    logme('Retrieving dome slit status...')
+    logger.info('Retrieving dome slit status...')
 
     status = 'unknown'
 
@@ -1239,14 +1249,14 @@ def getSlit(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
     return status
 
 
 def getSun(command, user):
-    logme('Retrieving current sun information...')
+    logger.info('Retrieving current sun information...')
 
     (output, error, pid) = runSubprocess(['sun'], simulate)
     # 21:30:51.07 -14:42:54.0 2017.107 sun alt=35.8
@@ -1259,12 +1269,12 @@ def getSun(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
 
 def getClouds(command, user):
-    logme('Retrieving current cloud cover...')
+    logger.info('Retrieving current cloud cover...')
 
     (output, error, pid) = runSubprocess(['tx', 'taux'], simulate)
     # done taux ovolts=3.048 irvolts=0.199 cloud=0.26 rain=0 dew=2.97
@@ -1275,12 +1285,12 @@ def getClouds(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
 
 def getFocus(command, user):
-    logme('Retrieving current focus...')
+    logger.info('Retrieving current focus...')
 
     (output, error, pid) = runSubprocess(['tx', 'focus'], simulate)
     # done focus pos=4854
@@ -1291,12 +1301,12 @@ def getFocus(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
 
 def getMoon(command, user):
-    logme('Retrieving current moon information...')
+    logger.info('Retrieving current moon information...')
 
     (output, error, pid) = runSubprocess(['moon'], simulate)
     # 07:38:11.68 +17:30:06.9 2017.107 moon alt=-21.1 phase=0.85 lunation=1164
@@ -1309,12 +1319,12 @@ def getMoon(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
 
 def getWhere(command, user):
-    logme('Retrieving the current telescope pointing information...')
+    logger.info('Retrieving the current telescope pointing information...')
 
     (output, error, pid) = runSubprocess(['tx', 'where'], simulate)
     # done where ra=05:25:25.11 dec=+38:17:17.0 equinox=2017.105 ha=0.010 secz=1.00 alt=90.0 az=265.1 slewing=0
@@ -1341,12 +1351,12 @@ def getWhere(command, user):
     else:
         send_message(
             'Error. Command (%s) did not return a valid response.' % command)
-        logme('Error. Command (%s) did not return a valid response (%s).' %
+        logger.info('Error. Command (%s) did not return a valid response (%s).' %
               (command, output))
 
 
 def doWelcome():
-    logme('Sending welcome message to Slack users...')
+    logger.info('Sending welcome message to Slack users...')
 
     send_message("", [{"image_url": "%s" % welcome_giphy_url,
                        "title": "Itzamna is here! Let your wishes be known..."}])
@@ -1359,7 +1369,7 @@ def doWelcome():
 
 
 def getClearDarkSky(command, user):
-    logme('Retrieving the current Clear Sky charts for SEO...')
+    logger.info('Retrieving the current Clear Sky charts for SEO...')
 
     dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for _ in range(5))
@@ -1372,12 +1382,12 @@ def getClearDarkSky(command, user):
 
 def getSkyCam(command, user):
 
-    logme('Retrieving skycam image from SEO spacam...')
+    logger.info('Retrieving skycam image from SEO spacam...')
 
     (output, error, pid) = runSubprocess(['spacam'], False)
     send_file('spacam.jpg', 'SEO Spa-Cam in El Verano, CA')
 
-    logme('Retrieving skycam images for sites near SEO...')
+    logger.info('Retrieving skycam images for sites near SEO...')
 
     dummy = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for _ in range(5))
@@ -1395,7 +1405,7 @@ def getSkyCam(command, user):
 
 
 def getForecast(command, user):
-    logme('Retrieving the hourly forecast from wunderground.com...')
+    logger.info('Retrieving the hourly forecast from wunderground.com...')
     try:
         f = urllib2.urlopen('http://api.wunderground.com/api/%s/geolookup/hourly/q/pws:%s.json' %
                             (wunderground_token, wunderground_station))
@@ -1420,7 +1430,7 @@ def getForecast(command, user):
 
 
 def getWeather(command, user):
-    logme('Retrieving the current weather conditions from wunderground.com...')
+    logger.info('Retrieving the current weather conditions from wunderground.com...')
 
     # just in case wunderground is down...
     try:
@@ -1454,7 +1464,7 @@ def getWeather(command, user):
 
 
 def getHelp(command, user=None):
-    logme('Processing the "help" command...')
+    logger.info('Processing the "help" command...')
 
     # allow getHelp to be called by Itzamna
     user_name = 'Fear not, mortals'
@@ -1494,20 +1504,8 @@ def getHelp(command, user=None):
 
 
 def abort(msg):
-    logme(msg)
+    logger.info(msg)
     os.sys.exit(1)
-
-# print and log messages
-
-
-def logme(msg):
-    # open log file
-    log = open(log_fname, 'a+')
-    dt = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S:\t")
-    log.write((dt + str(msg) + "\n").encode('utf8'))
-    log.close()
-    print (dt + str(msg)).encode('utf8')
-    return
 
 # send a message into the slack_channel
 
@@ -1523,11 +1521,11 @@ def send_message(msg, attachments=None):
                 attachments=attachments
             )
             if len(msg.strip()) > 0:
-                logme('Slack message: "%s"' % (msg.strip()))
+                logger.info('Slack message: "%s"' % (msg.strip()))
                 return
     except:
         pass
-    logme('Error! Could not send message. Client is not connected.')
+    logger.info('Error! Could not send message. Client is not connected.')
 
 
 def send_file(path, title):
@@ -1541,7 +1539,7 @@ def send_file(path, title):
            r = requests.post(url, files=files, data=data)
     except:
        pass
-    logme('Error! Could not send file (%s). Client is not connected.' % path)	   
+    logger.info('Error! Could not send file (%s). Client is not connected.' % path)	   
 
 # get a list of slack users
 
@@ -1554,7 +1552,7 @@ def get_users():
                 return result['members']
     except:
         pass
-    logme('Error! Could not get user list. Client is not connected.')
+    logger.info('Error! Could not get user list. Client is not connected.')
     return []
 
 # get a list of private and public channels
@@ -1575,7 +1573,7 @@ def get_channels():
                 return channels
     except:
         pass
-    logme('Error! Could not get channel list. Client is not connected.')
+    logger.info('Error! Could not get channel list. Client is not connected.')
     return []
 
 
@@ -1590,13 +1588,13 @@ def buildSatDatabase():
                 zipfile = ZipFile(StringIO(urllib2.urlopen(url).read()))
                 sats = zipfile.open(zipfile.namelist()[0]).readlines()
             except:
-                logme('Error! Failed to open the satellite database.')
+                logger.info('Error! Failed to open the satellite database.')
                 return [] 
         else:
             try:
                 sats = urllib2.urlopen(url).readlines()
             except:
-                logme('Error! Failed to open the satellite database.')
+                logger.info('Error! Failed to open the satellite database.')
                 return []
         # clean it up
         sats = [item.strip() for item in sats]
@@ -1605,7 +1603,7 @@ def buildSatDatabase():
                 for i in xrange(0, len(sats)-2, 3)]
         # add sats to norad database
         norad_sat_db = numpy.concatenate((norad_sat_db, sats))
-    logme('Read NORAD Two-Line Elements for %d satellite(s).' %
+    logger.info('Read NORAD Two-Line Elements for %d satellite(s).' %
           len(norad_sat_db))
 
 
@@ -1641,7 +1639,7 @@ def process_messages(msgs):
                         user = slack_user
                         break
                 if user == None:  # make a fake one
-                    logme('User not found, using default values...')
+                    logger.info('User not found, using default values...')
                     user = {'name': 'Slack User', 'profile': {
                         'display_name': 'Slack User', 'email': 'user@slack.com', 'phone': '8675309'}}
 
@@ -1653,13 +1651,13 @@ def process_messages(msgs):
                         parse_command(text, user, dt)
                     else:
                         try:
-                            logme('User %s sent text (%s) on %s.' % (
+                            logger.info('User %s sent text (%s) on %s.' % (
                                 user['profile']['display_name'], msg['text'], dt_last_message.strftime("%Y/%m/%d @ %H:%M:%S")))
                         except:
                             pass
                     # is this a command, starts with \
                 else:
-                    logme('Warning! Ignoring old/duplicate message from #%s ("%s" from %s).' %
+                    logger.info('Warning! Ignoring old/duplicate message from #%s ("%s" from %s).' %
                           (slack_channel_name, msg['text'], user['profile']['display_name']))
 
 
@@ -1669,20 +1667,20 @@ def parse_command(text, user, dt):
         # match the command first, then look for
         match = re.search(command[0], text, re.IGNORECASE)
         if match:  # compare with list of known commands, spelling and capitalization count!
-            logme('%s sent command (%s).' %
+            logger.info('%s sent command (%s).' %
                   (user['profile']['display_name'], text))
             # call associated function
             command[1](text, user)
             break
     if not match:  # did not recognize this command
-        logme('%s sent unrecognized command (%s) on %s.' % (
+        logger.info('%s sent unrecognized command (%s) on %s.' % (
             user['profile']['display_name'], text, dt.strftime("%Y/%m/%d @ %H:%M:%S")))
         send_message('%s, the almighty Itzamna does not recognize your command (%s).' % (
             user['profile']['display_name'], text))
 
 
 def doSimulate():
-    logme('Configuring simulate mode...')
+    logger.info('Configuring simulate mode...')
     # use #dev for testing
     global slack_channel_name
     slack_channel_name = 'dev'
@@ -1817,7 +1815,7 @@ share = False
 if simulate:
     doSimulate()  # adjust configuration for simulated mode
 
-logme('Starting itzamna Slack bot service...')
+logger.info('Starting itzamna Slack bot service...')
 
 # build up a database of satellites from NORAD TLEs
 buildSatDatabase()
@@ -1831,9 +1829,9 @@ telescope = Telescope(False)
 # main loop
 while True:
     # connect to slack
-    logme('Trying to connect to Slack...')
+    logger.info('Trying to connect to Slack...')
     if sc.rtm_connect():
-        logme('Connected to Slack!')
+        logger.info('Connected to Slack!')
         slack_connected = True
         # get list of users
         slack_users = get_users()
@@ -1848,27 +1846,27 @@ while True:
             abort('Error! Could not find #%s.' % slack_channel_name)
         # send welcome message
         doWelcome()
-        logme('Listening for commands on #%s...' % slack_channel_name)
+        logger.info('Listening for commands on #%s...' % slack_channel_name)
         # data loop
         while True:
             try:
                 msgs = sc.rtm_read()  # returns array of json objects, e.g. return of json.loads()
             except:
-                logme('Error! Connection with Slack was lost. Retrying...')
+                logger.info('Error! Connection with Slack was lost. Retrying...')
                 sc.rtm_connect()
             # process incoming messages
             process_messages(msgs)
             # ping to ensure connection is intact
             if (datetime.datetime.now() - dt_last_activity).total_seconds() > 60:
-                logme('Pinging Slack server...')
+                logger.info('Pinging Slack server...')
                 if not ping():
-                    logme('Error! Connection with Slack was lost. Retrying...')
+                    logger.info('Error! Connection with Slack was lost. Retrying...')
                     sc.rtm_connect()
-                logme('Received pong...still connected to Slack!')
+                logger.info('Received pong...still connected to Slack!')
                 dt_last_activity = datetime.datetime.now()
             # wait
             time.sleep(read_delay_s)
     else:
-        logme("Error! Slack connection failed. Retrying in %d seconds..." %
+        logger.info("Error! Slack connection failed. Retrying in %d seconds..." %
               (slack_token, reconnect_delay_s))
     time.sleep(reconnect_delay_s)
