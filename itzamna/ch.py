@@ -590,11 +590,11 @@ class query():
                         this_eph.append('n.a.')
                     fieldnames.append('lunar_presence')
                     datatypes.append(object)
-                if (item.find('R.A._(ICRF/J2000.0)') > -1):
+                if (item.find('R.A._(ICRF)') > -1):
                     this_eph.append(np.float64(line[idx]))
                     fieldnames.append('RA')
                     datatypes.append(np.float64)
-                if (item.find('DEC_(ICRF/J2000.0)') > -1):
+                if (item.find('DEC_(ICRF)') > -1):
                     this_eph.append(np.float64(line[idx]))
                     fieldnames.append('DEC')
                     datatypes.append(np.float64)
