@@ -624,7 +624,8 @@ def doOffset(command, user):
                 'Error. Valid values of RA and DEC offsets are +/- 0 to 60 arcmin.')
             return
         # convert to degrees
-        offset_ra_deg = (offset_ra/60.0)*(360.0/24.0)
+        # offset_ra_deg = (offset_ra/60.0)*(360.0/24.0)
+        offset_ra_deg = (offset_ra/60.0)
         offset_dec_deg = offset_dec/60.0
         (output, error, pid) = runSubprocess(
             ['tx', 'offset', 'ra=%f' % offset_ra_deg, 'dec=%f' % offset_dec_deg], simulate)
